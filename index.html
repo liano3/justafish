@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Just A Fish</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐟</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Ma+Shan+Zheng&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #3cc8c8;
+            --accent-rgb: 60, 200, 200;
+            --panel-bg: rgba(25, 70, 90, 0.85);
+            --panel-border: rgba(60, 200, 200, 0.3);
+            --panel-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(60, 200, 200, 0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
+        body {
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #2d8a9a 0%, #1a6b7a 20%, #0f4a5a 40%, #0a3545 70%, #051f28 100%);
+            cursor: none;
+        }
+        .surface-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(120, 220, 240, 0.35) 0%, rgba(80, 180, 200, 0.2) 30%, rgba(50, 150, 170, 0.1) 50%, transparent 80%);
+            pointer-events: none;
+            z-index: 2;
+        }
+        .ocean { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .light-ray {
+            position: absolute;
+            top: -20%;
+            width: 60px;
+            height: 140%;
+            background: linear-gradient(to bottom, rgba(180, 240, 255, 0.15) 0%, rgba(120, 220, 240, 0.08) 40%, rgba(80, 180, 200, 0.03) 70%, transparent 100%);
+            animation: sway 8s ease-in-out infinite;
+            filter: blur(8px);
+        }
+        @keyframes sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+        .fish-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
+        .fish {
+            font-size: 80px;
+            animation: swim 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.5));
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .fish:hover { transform: scale(1.2) rotate(-10deg); }
+        @keyframes swim {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(-5deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(15px) rotate(5deg); }
+        }
+        .title {
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: #fff;
+            text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.8), 0 0 30px rgba(var(--accent-rgb), 0.6), 0 0 50px rgba(var(--accent-rgb), 0.4);
+            z-index: 20;
+            animation: float 4s ease-in-out infinite;
+            text-align: center;
+            white-space: nowrap;
+        }
+        @keyframes float { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-10px); } }
+        .subtitle {
+            position: fixed;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Ma Shan Zheng', cursive;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            z-index: 20;
+            text-align: center;
+            animation: fadeInUp 2s ease-out;
+            text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.8), 0 0 40px rgba(var(--accent-rgb), 0.5), 0 0 60px rgba(var(--accent-rgb), 0.3);
+            letter-spacing: 4px;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .domain { position: fixed; bottom: 8%; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.4); font-size: 1rem; z-index: 20; letter-spacing: 3px; }
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: rise linear infinite;
+            pointer-events: none;
+        }
+        @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 50% { opacity: 0.6; } 100% { transform: translateY(-100vh) scale(0.5); opacity: 0; } }
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+        }
+        .cursor-dot { position: fixed; width: 6px; height: 6px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); }
+        .glow-orb { position: fixed; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--accent-rgb), 0.3) 0%, transparent 70%); pointer-events: none; z-index: 1; transform: translate(-50%, -50%); }
+        .ripple { position: absolute; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.6); animation: ripple 1s ease-out forwards; pointer-events: none; }
+        @keyframes ripple { 0% { width: 0; height: 0; opacity: 1; } 100% { width: 150px; height: 150px; opacity: 0; } }
+        .particle { position: absolute; width: 4px; height: 4px; background: rgba(255, 255, 255, 0.6); border-radius: 50%; pointer-events: none; animation: sparkle 1s ease-out forwards; }
+        @keyframes sparkle { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+        .hidden-fish { position: fixed; font-size: 30px; opacity: 0; pointer-events: none; z-index: 15; }
+        .hidden-fish.show { opacity: 0.6; animation: swimAway 3s ease-out forwards; }
+        @keyframes swimAway { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--tr)); opacity: 0; } }
+
+        .navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(30, 80, 100, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(80, 200, 200, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            will-change: transform;
+        }
+        .navbar-divider { width: 1px; height: 24px; background: rgba(255, 255, 255, 0.15); margin: 0 4px; }
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .nav-btn:hover, .nav-btn.active { background: rgba(var(--accent-rgb), 0.3); }
+        .nav-btn svg { width: 20px; height: 20px; color: rgba(255, 255, 255, 0.8); transition: color 0.2s; }
+        .nav-btn:hover svg, .nav-btn.active svg { color: #fff; }
+        .nav-tooltip {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 10px;
+            background: rgba(25, 70, 90, 0.9);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #fff;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .nav-btn:hover .nav-tooltip { opacity: 1; }
+
+        .panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: var(--panel-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 40px;
+            z-index: 100;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            will-change: opacity, transform;
+            backface-visibility: hidden;
+        }
+        .panel.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .panel-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .panel-close:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .panel-header h3 { color: #fff; font-size: 1.1rem; font-weight: 700; }
+        .panel-header-icon { font-size: 1.3rem; }
+
+        .clock-panel { min-width: 340px; text-align: center; }
+        .clock-mode-toggle { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+        .clock-mode-btn {
+            padding: 8px 20px;
+            border: 1px solid rgba(var(--accent-rgb), 0.3);
+            background: rgba(var(--accent-rgb), 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .clock-mode-btn:hover { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
+        .clock-mode-btn.active { background: rgba(var(--accent-rgb), 0.5); border-color: rgba(var(--accent-rgb), 0.8); color: #fff; box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3); }
+        .digital-clock { font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.6); letter-spacing: 4px; }
+        .digital-date { font-size: 1.1rem; color: rgba(255, 255, 255, 0.5); margin-top: 10px; }
+        .analog-clock { width: 280px; height: 280px; margin: 0 auto; position: relative; }
+        .analog-clock-face {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(40, 90, 100, 0.6);
+            border: 4px solid rgba(var(--accent-rgb), 0.7);
+            position: relative;
+            box-shadow: 0 0 50px rgba(var(--accent-rgb), 0.4), inset 0 0 40px rgba(0, 0, 0, 0.4);
+        }
+        .analog-clock-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .analog-hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; border-radius: 4px; }
+        .analog-hour { width: 6px; height: 70px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.8)); margin-left: -3px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+        .analog-minute { width: 4px; height: 100px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.7)); margin-left: -2px; box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
+        .analog-second { width: 2px; height: 110px; background: linear-gradient(to top, var(--accent), rgba(var(--accent-rgb), 0.8)); margin-left: -1px; box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6); }
+        .analog-mark { position: absolute; background: rgba(255, 255, 255, 0.5); left: 50%; transform-origin: center 136px; }
+        .analog-mark.minute { width: 2px; height: 10px; top: 0; margin-left: -1px; }
+        .analog-mark.hour { width: 3px; height: 18px; top: 0; margin-left: -1.5px; background: rgba(255, 255, 255, 0.8); border-radius: 2px; }
+        .analog-number { position: absolute; font-size: 1.2rem; font-weight: 700; color: rgba(255, 255, 255, 0.9); text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5); }
+
+        .profile-card { min-width: 320px; cursor: default; }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #0d2847);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 15px;
+            box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.4);
+            animation: pulse 3s ease-in-out infinite;
+            overflow: hidden;
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.4); } 50% { box-shadow: 0 4px 25px rgba(var(--accent-rgb), 0.7); } }
+        .profile-name { text-align: center; color: #fff; font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
+        .profile-title { text-align: center; color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 20px; }
+        .profile-links { display: flex; flex-direction: column; gap: 10px; }
+        .profile-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .profile-link:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(var(--accent-rgb), 0.5); transform: translateX(5px); color: #fff; }
+        .profile-link svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .profile-link span { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .announcement-panel { min-width: 340px; cursor: default; }
+        .announcement-list { display: flex; flex-direction: column; gap: 15px; max-height: 300px; overflow-y: auto; }
+        .announcement-list::-webkit-scrollbar { width: 4px; }
+        .announcement-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 2px; }
+        .announcement-list::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.5); border-radius: 2px; }
+        .announcement-item { position: relative; padding-left: 20px; }
+        .announcement-item::before { content: ''; position: absolute; left: 0; top: 8px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.6); }
+        .announcement-date { color: rgba(255, 255, 255, 0.5); font-size: 0.75rem; margin-bottom: 5px; }
+        .announcement-content { color: rgba(255, 255, 255, 0.85); font-size: 0.9rem; line-height: 1.5; }
+        .announcement-tag { display: inline-block; padding: 2px 8px; background: rgba(var(--accent-rgb), 0.3); border-radius: 10px; font-size: 0.7rem; color: var(--accent); margin-left: 8px; }
+
+        .bookmark-panel { max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border-radius: 24px; padding: 30px; }
+        .bookmark-content { display: flex; flex-direction: column; gap: 20px; }
+        .bookmark-folder-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            background: rgba(var(--accent-rgb), 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 10px;
+            border: 1px solid rgba(var(--accent-rgb), 0.2);
+        }
+        .bookmark-folder-header:hover { background: rgba(var(--accent-rgb), 0.25); border-color: rgba(var(--accent-rgb), 0.4); }
+        .bookmark-folder-header.expanded { background: rgba(var(--accent-rgb), 0.35); border-color: rgba(var(--accent-rgb), 0.5); }
+        .bookmark-folder-icon { font-size: 1rem; transition: transform 0.2s ease; }
+        .bookmark-folder-header.expanded .bookmark-folder-icon { transform: rotate(90deg); }
+        .bookmark-folder-name { color: #fff; font-weight: 600; font-size: 0.95rem; }
+        .bookmark-folder-count { color: rgba(255, 255, 255, 0.5); font-size: 0.8rem; margin-left: auto; }
+        .bookmark-links { display: none; flex-wrap: wrap; gap: 8px; padding-left: 15px; }
+        .bookmark-links.show { display: flex; }
+        .bookmark-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .bookmark-link:hover { background: rgba(var(--accent-rgb), 0.2); border-color: rgba(var(--accent-rgb), 0.6); color: #fff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2); }
+        .bookmark-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .schulte-panel { min-width: 340px; max-width: 95vw; }
+        .schulte-header { text-align: center; margin-bottom: 20px; }
+        .schulte-header h3 { color: #fff; font-size: 1.3rem; font-weight: 700; }
+        .schulte-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
+        .schulte-stats strong { color: var(--accent); font-size: 1.1rem; }
+        .schulte-grid-wrapper { position: relative; }
+        .schulte-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(13, 40, 71, 0.9);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        .schulte-overlay.hidden { opacity: 0; pointer-events: none; }
+        .schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 25px; width: min(300px, 80vw); }
+        .schulte-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(var(--accent-rgb), 0.2);
+            border: 1px solid rgba(var(--accent-rgb), 0.3);
+            border-radius: 12px;
+            font-size: clamp(1rem, 4vw, 1.4rem);
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .schulte-cell:hover { background: rgba(var(--accent-rgb), 0.35); border-color: rgba(var(--accent-rgb), 0.5); }
+        .schulte-cell.correct { background: rgba(var(--accent-rgb), 0.6); border-color: rgba(var(--accent-rgb), 0.8); transform: scale(0.95); }
+        .schulte-cell.wrong { background: rgba(255, 100, 100, 0.4); border-color: rgba(255, 100, 100, 0.6); animation: shake 0.3s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .schulte-restart {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 30px;
+            background: rgba(var(--accent-rgb), 0.3);
+            border: 1px solid rgba(var(--accent-rgb), 0.5);
+            border-radius: 25px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .schulte-restart:hover { background: rgba(var(--accent-rgb), 0.5); border-color: rgba(var(--accent-rgb), 0.7); }
+
+        @media (max-width: 768px) {
+            .fish { font-size: 60px; }
+            .panel { min-width: 90% !important; padding: 25px; }
+            .schulte-grid { width: 85vw; gap: 4px; }
+            .schulte-panel { min-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="surface-light"></div>
+    <div class="ocean" id="ocean"></div>
+    <div class="glow-orb" id="glowOrb"></div>
+    <h1 class="title">Just A Fish</h1>
+    <div class="fish-container"><div class="fish" id="fish">🐟</div></div>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="domain" id="domain"></div>
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <nav class="navbar">
+        <button class="nav-btn" id="toggleProfile">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <span class="nav-tooltip">个人信息</span>
+        </button>
+        <button class="nav-btn" id="toggleAnnouncement">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            <span class="nav-tooltip">公告</span>
+        </button>
+        <div class="navbar-divider"></div>
+        <button class="nav-btn" id="toggleClock">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="nav-tooltip">时钟</span>
+        </button>
+        <button class="nav-btn" id="toggleBookmark">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+            <span class="nav-tooltip">收藏夹</span>
+        </button>
+        <button class="nav-btn" id="toggleSchulte">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            <span class="nav-tooltip">舒尔特方格</span>
+        </button>
+    </nav>
+
+    <div class="panel clock-panel" id="clockPanel">
+        <button class="panel-close" data-panel="clockPanel">×</button>
+        <div class="clock-mode-toggle">
+            <button class="clock-mode-btn active" data-mode="digital">数字</button>
+            <button class="clock-mode-btn" data-mode="analog">指针</button>
+        </div>
+        <div class="digital-clock" id="digitalClock"></div>
+        <div class="digital-date" id="digitalDate"></div>
+        <div class="analog-clock" id="analogClock" style="display:none;">
+            <div class="analog-clock-face" id="clockFace">
+                <div class="analog-hand analog-hour" id="hourHand"></div>
+                <div class="analog-hand analog-minute" id="minuteHand"></div>
+                <div class="analog-hand analog-second" id="secondHand"></div>
+                <div class="analog-clock-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel profile-card" id="profileCard">
+        <button class="panel-close" data-panel="profileCard">×</button>
+        <div class="profile-avatar" id="profileAvatar"></div>
+        <div class="profile-name" id="profileName"></div>
+        <div class="profile-title" id="profileTitle"></div>
+        <div class="profile-links" id="profileLinks"></div>
+    </div>
+
+    <div class="panel announcement-panel" id="announcementPanel">
+        <button class="panel-close" data-panel="announcementPanel">×</button>
+        <div class="panel-header">
+            <span class="panel-header-icon">🔔</span>
+            <h3>公告栏</h3>
+        </div>
+        <div class="announcement-list" id="announcementList"></div>
+    </div>
+
+    <div class="panel bookmark-panel" id="bookmarkPanel">
+        <button class="panel-close" data-panel="bookmarkPanel">×</button>
+        <div class="panel-header">
+            <span class="panel-header-icon">⭐</span>
+            <h3>收藏夹</h3>
+        </div>
+        <div class="bookmark-content" id="bookmarkContent"></div>
+    </div>
+
+    <div class="panel schulte-panel" id="schultePanel">
+        <button class="panel-close" data-panel="schultePanel">×</button>
+        <div class="schulte-header"><h3>舒尔特方格</h3></div>
+        <div class="schulte-stats">
+            <span>时间: <strong id="schulteTime">0.00</strong>s</span>
+            <span>最佳: <strong id="schulteBest">--</strong></span>
+        </div>
+        <div class="schulte-grid-wrapper">
+            <div class="schulte-overlay" id="schulteOverlay">点击开始</div>
+            <div class="schulte-grid" id="schulteGrid"></div>
+        </div>
+        <button class="schulte-restart" id="schulteRestart">重新开始</button>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        const CONFIG = {"profile":{"name":"Ning Li","title":"USTC Master Student","avatar":"./avatar.png","slogan":"鱼没有记忆，但鱼很快乐","domain":"justafish.cn"},"links":[{"url":"https://blog.justafish.cn/","label":"blog.justafish.cn","icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253\" /></svg>"},{"url":"https://github.com/liano3","label":"github.com/liano3","icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"currentColor\" viewBox=\"0 0 24 24\"><path d=\"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z\"/></svg>"},{"url":"mailto:1291516518@qq.com","label":"1291516518@qq.com","icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z\" /></svg>"}],"announcements":[{"date":"2026-02-24","content":"个人主页上线啦！欢迎访问~","tag":"新站"},{"date":"2025-09-01","content":"中科大研究生入学","tag":"生活"}],"bookmarks":[{"name":"收藏夹栏","links":[{"url":"https://ustcguide.cn/","label":"USTC GUIDE"},{"url":"https://latex.ustc.edu.cn/","label":"USTC Overleaf"},{"url":"https://aistudio.google.com/","label":"Google AI Studio"}]},{"name":"学习","links":[{"url":"https://papers.cool/","label":"Cool Papers"},{"url":"https://zh.d2l.ai/","label":"动手学深度学习"},{"url":"https://oi-wiki.org/","label":"OI Wiki"},{"url":"https://labuladong.online/algo/","label":"labuladong 的算法笔记"},{"url":"https://codetop.cc/","label":"CodeTop 面试题目总结"}]},{"name":"其他","links":[{"url":"https://ustcgroup.pages.dev/","label":"USTC群聊信息汇总"},{"url":"https://lkssite.vip/","label":"LKs 网站推荐合集"},{"url":"https://www.flaticon.com/","label":"Icons"},{"url":"https://next-ai-drawio.jiang.jp/zh/","label":"Next AI Drawio"},{"url":"https://excalidraw.com/","label":"Excalidraw"},{"url":"https://cspaper.org/","label":"CS Paper Reviews"},{"url":"https://ccfddl.com/","label":"CCF DDL"},{"url":"https://cook.aiursoft.com/","label":"Cook"}]}]};
+        CONFIG.animation = {
+            fishEmojis: ['🐠', '🐡', '🦈', '🐬', '🐳', '🐋', '🦑', '🐙', '🦐', '🦞', '🦀', '🐚'],
+            lightRayCount: 8,
+            bubbleInterval: 800,
+            bubbleInitialCount: 10
+        };
+
+        const $ = id => document.getElementById(id);
+        const cursor = $('cursor'), cursorDot = $('cursorDot'), glowOrb = $('glowOrb'), fish = $('fish'), ocean = $('ocean');
+
+        function initLightRays() {
+            for (let i = 0; i < CONFIG.animation.lightRayCount; i++) {
+                const ray = document.createElement('div');
+                ray.className = 'light-ray';
+                ray.style.cssText = `left:${10 + i * 12}%;animation-delay:${i * 0.5}s;opacity:${0.1 + Math.random() * 0.1}`;
+                ocean.appendChild(ray);
+            }
+        }
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            const size = 5 + Math.random() * 25;
+            bubble.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;bottom:-30px;animation-duration:${5+Math.random()*10}s`;
+            document.body.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 15000);
+        }
+
+        function initBubbles() {
+            setInterval(createBubble, CONFIG.animation.bubbleInterval);
+            for (let i = 0; i < CONFIG.animation.bubbleInitialCount; i++) setTimeout(createBubble, i * 200);
+        }
+
+        function initAnnouncements() {
+            const list = $('announcementList');
+            CONFIG.announcements.forEach(item => {
+                list.innerHTML += `<div class="announcement-item"><div class="announcement-date">${item.date}</div><div class="announcement-content">${item.content}<span class="announcement-tag">${item.tag}</span></div></div>`;
+            });
+        }
+
+        function initCursor() {
+            document.addEventListener('mousemove', e => {
+                [cursor, cursorDot, glowOrb].forEach(el => { el.style.left = `${e.clientX}px`; el.style.top = `${e.clientY}px`; });
+            });
+            document.addEventListener('mousedown', () => cursor.style.transform = 'translate(-50%, -50%) scale(0.8)');
+            document.addEventListener('mouseup', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+        }
+
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.cssText = `left:${x - 75}px;top:${y - 75}px`;
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 1000);
+        }
+
+        function createParticles(x, y, count = 8) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const angle = (i / count) * Math.PI * 2, distance = 30 + Math.random() * 30;
+                particle.style.cssText = `left:${x + Math.cos(angle) * distance}px;top:${y + Math.sin(angle) * distance}px`;
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function initFishInteraction() {
+            let fishY = 0;
+            fish.addEventListener('click', e => {
+                e.stopPropagation();
+                const rect = fish.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+                createParticles(cx, cy, 12);
+                const hiddenFish = document.createElement('div');
+                hiddenFish.className = 'hidden-fish';
+                hiddenFish.textContent = CONFIG.animation.fishEmojis[Math.floor(Math.random() * CONFIG.animation.fishEmojis.length)];
+                hiddenFish.style.cssText = `left:${cx}px;top:${cy}px;--tx:${(Math.random() - 0.5) * 400}px;--ty:${(Math.random() - 0.5) * 400}px;--tr:${(Math.random() - 0.5) * 360}deg`;
+                document.body.appendChild(hiddenFish);
+                requestAnimationFrame(() => hiddenFish.classList.add('show'));
+                setTimeout(() => hiddenFish.remove(), 3000);
+                fish.textContent = CONFIG.animation.fishEmojis[Math.floor(Math.random() * CONFIG.animation.fishEmojis.length)];
+            });
+            document.addEventListener('wheel', e => {
+                fishY = Math.max(-100, Math.min(100, fishY + e.deltaY * 0.5));
+                fish.parentElement.style.transform = `translate(-50%, calc(-50% + ${fishY}px))`;
+            });
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.panel.show').forEach(panel => {
+                panel.classList.remove('show');
+            });
+            document.querySelectorAll('.nav-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        function togglePanel(toggleBtn, panel, onOpen, onClose) {
+            const closePanel = () => {
+                if (!panel.classList.contains('show')) return;
+                panel.classList.remove('show');
+                toggleBtn.classList.remove('active');
+                onClose && onClose();
+            };
+            toggleBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                if (panel.classList.contains('show')) {
+                    closePanel();
+                } else {
+                    closeAllPanels();
+                    panel.classList.add('show');
+                    toggleBtn.classList.add('active');
+                    onOpen && onOpen();
+                }
+            });
+            panel.addEventListener('click', e => e.stopPropagation());
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && panel.classList.contains('show')) closePanel();
+            });
+            return closePanel;
+        }
+
+        function initClickOutsideToClose() {
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.nav-btn') && !e.target.closest('.panel')) {
+                    closeAllPanels();
+                }
+            });
+        }
+
+        function initProfile() {
+            $('profileAvatar').innerHTML = `<img src="${CONFIG.profile.avatar}" alt="avatar">`;
+            $('profileName').textContent = CONFIG.profile.name;
+            $('profileTitle').textContent = CONFIG.profile.title;
+            const links = $('profileLinks');
+            CONFIG.links.forEach(link => {
+                links.innerHTML += `<a href="${link.url}" target="${link.url.startsWith('mailto:') ? '_self' : '_blank'}" class="profile-link">${link.icon}<span>${link.label}</span></a>`;
+            });
+        }
+
+        function initClock() {
+            const panel = $('clockPanel'), toggleBtn = $('toggleClock');
+            const digitalClock = $('digitalClock'), digitalDate = $('digitalDate'), analogClock = $('analogClock');
+            const hourHand = $('hourHand'), minuteHand = $('minuteHand'), secondHand = $('secondHand');
+            const clockFace = $('clockFace'), modeBtns = document.querySelectorAll('.clock-mode-btn');
+            let clockInterval = null, lastSecond = -1;
+
+            function createMarks() {
+                for (let i = 0; i < 60; i++) {
+                    const mark = document.createElement('div');
+                    mark.className = i % 5 === 0 ? 'analog-mark hour' : 'analog-mark minute';
+                    mark.style.transform = `rotate(${i * 6}deg)`;
+                    clockFace.appendChild(mark);
+                }
+                [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].forEach((num, i) => {
+                    const angle = (i * 30 - 90) * (Math.PI / 180);
+                    const span = document.createElement('span');
+                    span.className = 'analog-number';
+                    span.textContent = num;
+                    span.style.cssText = `left:${140 + 105 * Math.cos(angle)}px;top:${140 + 105 * Math.sin(angle)}px;transform:translate(-50%,-50%)`;
+                    clockFace.appendChild(span);
+                });
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const currentSecond = now.getSeconds();
+                if (currentSecond !== lastSecond) {
+                    lastSecond = currentSecond;
+                    digitalClock.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(currentSecond).padStart(2, '0')}`;
+                    digitalDate.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()]}`;
+                }
+                secondHand.style.transform = `rotate(${(currentSecond + now.getMilliseconds() / 1000) * 6}deg)`;
+                minuteHand.style.transform = `rotate(${(now.getMinutes() + currentSecond / 60) * 6}deg)`;
+                hourHand.style.transform = `rotate(${(now.getHours() % 12 + now.getMinutes() / 60) * 30}deg)`;
+            }
+
+            function startClock() {
+                if (clockInterval) cancelAnimationFrame(clockInterval);
+                lastSecond = -1;
+                function tick() { updateClock(); clockInterval = requestAnimationFrame(tick); }
+                tick();
+            }
+
+            function stopClock() { if (clockInterval) { cancelAnimationFrame(clockInterval); clockInterval = null; } }
+
+            createMarks();
+            const closePanel = togglePanel(toggleBtn, panel, startClock, stopClock);
+            panel.querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); closePanel(); });
+            modeBtns.forEach(btn => btn.addEventListener('click', e => {
+                e.stopPropagation();
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const isDigital = btn.dataset.mode === 'digital';
+                digitalClock.style.display = digitalDate.style.display = isDigital ? 'block' : 'none';
+                analogClock.style.display = isDigital ? 'none' : 'block';
+            }));
+        }
+
+        function initBookmarks() {
+            const panel = $('bookmarkPanel'), toggleBtn = $('toggleBookmark'), content = $('bookmarkContent');
+            const externalIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>';
+
+            CONFIG.bookmarks.forEach((folder, idx) => {
+                const folderDiv = document.createElement('div');
+                folderDiv.innerHTML = `<div class="bookmark-folder-header${idx === 0 ? ' expanded' : ''}"><span class="bookmark-folder-icon">▶</span><span class="bookmark-folder-name">${folder.name}</span><span class="bookmark-folder-count">${folder.links.length}</span></div><div class="bookmark-links${idx === 0 ? ' show' : ''}">${folder.links.map(l => `<a href="${l.url}" target="_blank" class="bookmark-link">${l.label}${externalIcon}</a>`).join('')}</div>`;
+                folderDiv.querySelector('.bookmark-folder-header').addEventListener('click', e => {
+                    e.stopPropagation();
+                    folderDiv.querySelector('.bookmark-folder-header').classList.toggle('expanded');
+                    folderDiv.querySelector('.bookmark-links').classList.toggle('show');
+                });
+                content.appendChild(folderDiv);
+            });
+
+            const closePanel = togglePanel(toggleBtn, panel);
+            panel.querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); closePanel(); });
+        }
+
+        function initSchulte() {
+            const panel = $('schultePanel'), toggleBtn = $('toggleSchulte');
+            const grid = $('schulteGrid'), timeDisplay = $('schulteTime'), bestDisplay = $('schulteBest');
+            const overlay = $('schulteOverlay'), restartBtn = $('schulteRestart');
+            let numbers = [], currentNum = 1, startTime = null, timerInterval = null, isRunning = false;
+            let bestTime = localStorage.getItem('schulteBest') ? parseFloat(localStorage.getItem('schulteBest')) : null;
+
+            function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+            function createGrid() {
+                grid.innerHTML = '';
+                numbers = shuffle(Array.from({length: 25}, (_, i) => i + 1));
+                currentNum = 1; startTime = null; isRunning = false;
+                timeDisplay.textContent = '0.00';
+                bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : '--';
+                overlay.classList.remove('hidden');
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                numbers.forEach(num => {
+                    const cell = document.createElement('div');
+                    cell.className = 'schulte-cell';
+                    cell.textContent = num;
+                    cell.addEventListener('click', () => {
+                        if (!isRunning) return;
+                        if (num === currentNum) {
+                            cell.classList.add('correct');
+                            currentNum++;
+                            if (currentNum > 25) {
+                                clearInterval(timerInterval);
+                                isRunning = false;
+                                const finalTime = (Date.now() - startTime) / 1000;
+                                timeDisplay.textContent = finalTime.toFixed(2);
+                                if (!bestTime || finalTime < bestTime) {
+                                    bestTime = finalTime;
+                                    localStorage.setItem('schulteBest', bestTime.toString());
+                                    bestDisplay.textContent = bestTime.toFixed(2) + 's';
+                                }
+                            }
+                        } else { cell.classList.add('wrong'); setTimeout(() => cell.classList.remove('wrong'), 300); }
+                    });
+                    grid.appendChild(cell);
+                });
+            }
+
+            overlay.addEventListener('click', () => {
+                if (!isRunning) {
+                    isRunning = true;
+                    startTime = Date.now();
+                    overlay.classList.add('hidden');
+                    timerInterval = setInterval(() => { timeDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(2); }, 10);
+                }
+            });
+
+            const closePanel = togglePanel(toggleBtn, panel, () => { if (!grid.children.length) createGrid(); });
+            panel.querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); closePanel(); });
+            restartBtn.addEventListener('click', e => { e.stopPropagation(); createGrid(); });
+        }
+
+        function init() {
+            $('subtitle').textContent = CONFIG.profile.slogan;
+            $('domain').textContent = CONFIG.profile.domain;
+            initProfile();
+            initLightRays();
+            initBubbles();
+            initAnnouncements();
+            initCursor();
+            document.addEventListener('click', e => createRipple(e.clientX, e.clientY));
+            initFishInteraction();
+            initClickOutsideToClose();
+            
+            const profileClose = togglePanel($('toggleProfile'), $('profileCard'));
+            $('profileCard').querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); profileClose(); });
+            
+            const announcementClose = togglePanel($('toggleAnnouncement'), $('announcementPanel'));
+            $('announcementPanel').querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); announcementClose(); });
+            
+            initClock();
+            initBookmarks();
+            initSchulte();
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('*').forEach(el => el.style.animation = 'none');
+        }
+
+        init();
+    })();
+    </script>
+</body>
+</html>
