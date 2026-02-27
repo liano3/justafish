@@ -131,13 +131,10 @@
             align-items: center;
             gap: 8px;
             padding: 8px 12px;
-            background: rgba(30, 80, 100, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(30, 80, 100, 0.85);
             border-radius: 50px;
             border: 1px solid rgba(80, 200, 200, 0.3);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            will-change: transform;
         }
         .navbar-divider { width: 1px; height: 24px; background: rgba(255, 255, 255, 0.15); margin: 0 4px; }
         .nav-btn {
@@ -179,8 +176,6 @@
             left: 50%;
             transform: translate(-50%, -50%) scale(0.9);
             background: var(--panel-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
             border-radius: 30px;
             padding: 40px;
             z-index: 100;
@@ -190,7 +185,6 @@
             pointer-events: none;
             transition: opacity 0.3s ease, transform 0.3s ease;
             will-change: opacity, transform;
-            backface-visibility: hidden;
         }
         .panel.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
         .panel-close {
@@ -360,12 +354,11 @@
         .schulte-header h3 { color: #fff; font-size: 1.3rem; font-weight: 700; }
         .schulte-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
         .schulte-stats strong { color: var(--accent); font-size: 1.1rem; }
-        .schulte-grid-wrapper { position: relative; }
+        .schulte-grid-wrapper { position: relative; display: inline-block; }
         .schulte-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(13, 40, 71, 0.9);
-            backdrop-filter: blur(30px);
+            background: rgba(13, 40, 71, 1);
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -373,10 +366,9 @@
             color: rgba(255, 255, 255, 0.9);
             font-size: 1.1rem;
             z-index: 10;
-            transition: opacity 0.3s ease;
             cursor: pointer;
         }
-        .schulte-overlay.hidden { opacity: 0; pointer-events: none; }
+        .schulte-overlay.hidden { display: none; }
         .schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 25px; width: min(300px, 80vw); }
         .schulte-cell {
             aspect-ratio: 1;
