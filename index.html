@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Just A Fish</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐟</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Ma+Shan+Zheng&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.font.im">
+    <link rel="preconnect" href="https://fonts.gstatic.font.im" crossorigin>
+    <link href="https://fonts.font.im/css2?family=Pacifico&family=Ma+Shan+Zheng&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #3cc8c8;
@@ -169,6 +169,17 @@
             transition: opacity 0.2s ease;
         }
         .nav-btn:hover .nav-tooltip { opacity: 1; }
+        .nav-btn .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            display: none;
+        }
+        .nav-btn .badge.show { display: block; }
 
         .panel {
             position: fixed;
@@ -353,7 +364,7 @@
         .schulte-header h3 { color: #fff; font-size: 1.3rem; font-weight: 700; }
         .schulte-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
         .schulte-stats strong { color: var(--accent); font-size: 1.1rem; }
-        .schulte-grid-wrapper { position: relative; }
+        .schulte-grid-wrapper { position: relative; width: min(300px, 80vw); margin: 0 auto; }
         .schulte-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -369,7 +380,7 @@
             cursor: pointer;
         }
         .schulte-overlay.hidden { opacity: 0; pointer-events: none; }
-        .schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 25px; width: min(300px, 80vw); }
+        .schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 25px; }
         .schulte-cell {
             aspect-ratio: 1;
             display: flex;
@@ -407,7 +418,7 @@
         @media (max-width: 768px) {
             .fish { font-size: 60px; }
             .panel { min-width: 90% !important; padding: 25px; }
-            .schulte-grid { width: 85vw; gap: 4px; }
+            .schulte-grid-wrapper { width: 85vw; }
             .schulte-panel { min-width: 90%; }
         }
     </style>
@@ -431,6 +442,7 @@
         <button class="nav-btn" id="toggleAnnouncement">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
             <span class="nav-tooltip">公告</span>
+            <span class="badge" id="announcementBadge"></span>
         </button>
         <div class="navbar-divider"></div>
         <button class="nav-btn" id="toggleClock">
@@ -640,6 +652,26 @@
             });
         }
 
+        function initAnnouncementBadge() {
+            const badge = $('announcementBadge');
+            const lastViewedKey = 'announcementLastViewed';
+            const latestDate = CONFIG.announcements.length > 0 ? CONFIG.announcements[0].date : null;
+            const lastViewed = localStorage.getItem(lastViewedKey);
+            
+            if (latestDate && (!lastViewed || lastViewed < latestDate)) {
+                badge.classList.add('show');
+            }
+            
+            const toggleBtn = $('toggleAnnouncement');
+            const originalHandler = toggleBtn.onclick;
+            toggleBtn.addEventListener('click', () => {
+                if (latestDate) {
+                    localStorage.setItem(lastViewedKey, latestDate);
+                }
+                badge.classList.remove('show');
+            });
+        }
+
         function initProfile() {
             $('profileAvatar').innerHTML = `<img src="${CONFIG.profile.avatar}" alt="avatar">`;
             $('profileName').textContent = CONFIG.profile.name;
@@ -792,6 +824,7 @@
             initLightRays();
             initBubbles();
             initAnnouncements();
+            initAnnouncementBadge();
             initCursor();
             document.addEventListener('click', e => createRipple(e.clientX, e.clientY));
             initFishInteraction();
