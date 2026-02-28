@@ -4,7 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Just A Fish</title>
+    <meta name="description" content="Just A Fish - 个人主页，记录，导航">
+    <meta name="keywords" content="个人主页,Just A Fish,博客,主页,生活,学习,记录,导航">
+    <meta name="author" content="Ning Li">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐟</text></svg>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Just A Fish">
+    <meta property="og:description" content="Just A Fish - 个人主页，记录，导航">
+    <meta property="og:url" content="https://justafish.cn">
+    <meta property="og:site_name" content="Just A Fish">
+    <meta property="og:image" content="https://justafish.cn/avatar.png">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Just A Fish">
+    <meta name="twitter:description" content="Just A Fish - 个人主页，记录，导航">
     <link rel="preconnect" href="https://fonts.font.im">
     <link rel="preconnect" href="https://fonts.gstatic.font.im" crossorigin>
     <link href="https://fonts.font.im/css2?family=Pacifico&family=Ma+Shan+Zheng&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
@@ -43,6 +56,7 @@
             background: linear-gradient(to bottom, rgba(180, 240, 255, 0.15) 0%, rgba(120, 220, 240, 0.08) 40%, rgba(80, 180, 200, 0.03) 70%, transparent 100%);
             animation: sway 8s ease-in-out infinite;
             filter: blur(8px);
+            will-change: transform;
         }
         @keyframes sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
         .fish-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
@@ -53,6 +67,7 @@
             transition: transform 0.3s ease;
             cursor: pointer;
             pointer-events: auto;
+            will-change: transform;
         }
         .fish:hover { transform: scale(1.2) rotate(-10deg); }
         @keyframes swim {
@@ -74,6 +89,7 @@
             animation: float 4s ease-in-out infinite;
             text-align: center;
             white-space: nowrap;
+            will-change: transform;
         }
         @keyframes float { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-10px); } }
         .subtitle {
@@ -98,6 +114,7 @@
             background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 50%, transparent 70%);
             animation: rise linear infinite;
             pointer-events: none;
+            will-change: transform, opacity;
         }
         @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 50% { opacity: 0.6; } 100% { transform: translateY(-100vh) scale(0.5); opacity: 0; } }
         .cursor {
@@ -227,53 +244,72 @@
         .panel-header-icon { font-size: 1.3rem; }
 
         .clock-panel { min-width: 340px; text-align: center; }
-        .clock-mode-toggle { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .clock-mode-btn {
-            padding: 8px 20px;
-            border: 1px solid rgba(var(--accent-rgb), 0.3);
-            background: rgba(var(--accent-rgb), 0.1);
-            color: rgba(255, 255, 255, 0.7);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-        }
-        .clock-mode-btn:hover { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
-        .clock-mode-btn.active { background: rgba(var(--accent-rgb), 0.5); border-color: rgba(var(--accent-rgb), 0.8); color: #fff; box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3); }
-        .digital-clock { font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.6); letter-spacing: 4px; }
-        .digital-date { font-size: 1.1rem; color: rgba(255, 255, 255, 0.5); margin-top: 10px; }
-        .analog-clock { width: 280px; height: 280px; margin: 0 auto; position: relative; }
+        .clock-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .clock-tab { padding: 8px 20px; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 20px; color: rgba(255, 255, 255, 0.7); cursor: pointer; transition: all 0.2s ease; font-size: 0.9rem; }
+        .clock-tab:hover { background: rgba(255, 255, 255, 0.15); }
+        .clock-tab.active { background: rgba(var(--accent-rgb), 0.3); color: #fff; }
+        .clock-content { display: none; }
+        .clock-content.active { display: block; }
+        .digital-clock { font-size: 3rem; font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.6); letter-spacing: 4px; margin-bottom: 5px; }
+        .digital-date { font-size: 1rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 20px; }
+        .analog-clock { width: 240px; height: 240px; margin: 0 auto; position: relative; }
+        .pomodoro-display { margin: 20px 0; }
+        .pomodoro-timer { font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 0 40px rgba(var(--accent-rgb), 0.8); margin-bottom: 10px; }
+        .pomodoro-status { font-size: 1rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 20px; }
+        .pomodoro-progress { width: 200px; height: 200px; margin: 0 auto 20px; position: relative; }
+        .pomodoro-progress svg { transform: rotate(-90deg); }
+        .pomodoro-progress-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 8; }
+        .pomodoro-progress-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+        .pomodoro-progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; font-weight: 700; color: #fff; }
+        .pomodoro-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .pomodoro-btn { padding: 12px 30px; border: none; border-radius: 25px; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; }
+        .pomodoro-btn-primary { background: rgba(var(--accent-rgb), 0.3); color: #fff; border: 1px solid rgba(var(--accent-rgb), 0.5); }
+        .pomodoro-btn-primary:hover { background: rgba(var(--accent-rgb), 0.5); }
+        .pomodoro-btn-secondary { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .pomodoro-btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+        .pomodoro-stats { display: flex; justify-content: center; gap: 30px; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; }
+        .pomodoro-stats strong { color: var(--accent); font-size: 1.1rem; }
+        .pomodoro-settings { display: flex; justify-content: center; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .pomodoro-setting { display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.6); font-size: 0.8rem; }
+        .pomodoro-setting input { width: 50px; padding: 4px 8px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; text-align: center; font-size: 0.85rem; }
+        .pomodoro-setting input:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
+
         .analog-clock-face {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             background: rgba(40, 90, 100, 0.6);
-            border: 4px solid rgba(var(--accent-rgb), 0.7);
+            border: 3px solid rgba(var(--accent-rgb), 0.7);
             position: relative;
-            box-shadow: 0 0 50px rgba(var(--accent-rgb), 0.4), inset 0 0 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.4), inset 0 0 30px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box; 
         }
+
         .analog-clock-center {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             background: var(--accent);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.9);
+            box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.9);
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
-        .analog-hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; border-radius: 4px; }
-        .analog-hour { width: 6px; height: 70px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.8)); margin-left: -3px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-        .analog-minute { width: 4px; height: 100px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.7)); margin-left: -2px; box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
-        .analog-second { width: 2px; height: 110px; background: linear-gradient(to top, var(--accent), rgba(var(--accent-rgb), 0.8)); margin-left: -1px; box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6); }
-        .analog-mark { position: absolute; background: rgba(255, 255, 255, 0.5); left: 50%; transform-origin: center 136px; }
-        .analog-mark.minute { width: 2px; height: 10px; top: 0; margin-left: -1px; }
-        .analog-mark.hour { width: 3px; height: 18px; top: 0; margin-left: -1.5px; background: rgba(255, 255, 255, 0.8); border-radius: 2px; }
-        .analog-number { position: absolute; font-size: 1.2rem; font-weight: 700; color: rgba(255, 255, 255, 0.9); text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5); }
 
+        .analog-hand { position: absolute; bottom: 50%; left: 50%; transform-origin: center bottom; border-radius: 3px; }
+        .analog-hour { width: 5px; height: 60px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.8)); margin-left: -2.5px; box-shadow: 0 0 8px rgba(255, 255, 255, 0.3); }
+        .analog-minute { width: 3px; height: 85px; background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0.7)); margin-left: -1.5px; box-shadow: 0 0 6px rgba(255, 255, 255, 0.2); }
+        .analog-second { width: 2px; height: 100px; background: linear-gradient(to top, var(--accent), rgba(var(--accent-rgb), 0.8)); margin-left: -1px; box-shadow: 0 0 5px rgba(var(--accent-rgb), 0.6); }
+
+        .analog-mark { position: absolute; background: rgba(255, 255, 255, 0.5); left: 50%; transform-origin: center 114px; }
+
+        .analog-mark.minute { width: 2px; height: 10px; top: 3px; margin-left: -1px; }
+        .analog-mark.hour { width: 3px; height: 18px; top: 3px; margin-left: -1.5px; background: rgba(255, 255, 255, 0.8); border-radius: 2px; }
+
+        .analog-number { position: absolute; font-size: 1.0rem; font-weight: 700; color: rgba(255, 255, 255, 0.9); text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
         .profile-card { min-width: 320px; cursor: default; }
         .profile-avatar {
             width: 80px;
@@ -421,6 +457,16 @@
             .schulte-grid-wrapper { width: 85vw; }
             .schulte-panel { min-width: 90%; }
         }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .fish, .title, .subtitle, .light-ray, .bubble, .profile-avatar {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -461,18 +507,52 @@
 
     <div class="panel clock-panel" id="clockPanel">
         <button class="panel-close" data-panel="clockPanel">×</button>
-        <div class="clock-mode-toggle">
-            <button class="clock-mode-btn active" data-mode="digital">数字</button>
-            <button class="clock-mode-btn" data-mode="analog">指针</button>
+        <div class="clock-tabs">
+            <button class="clock-tab active" data-tab="clock">时钟</button>
+            <button class="clock-tab" data-tab="pomodoro">番茄钟</button>
         </div>
-        <div class="digital-clock" id="digitalClock"></div>
-        <div class="digital-date" id="digitalDate"></div>
-        <div class="analog-clock" id="analogClock" style="display:none;">
-            <div class="analog-clock-face" id="clockFace">
-                <div class="analog-hand analog-hour" id="hourHand"></div>
-                <div class="analog-hand analog-minute" id="minuteHand"></div>
-                <div class="analog-hand analog-second" id="secondHand"></div>
-                <div class="analog-clock-center"></div>
+        <div class="clock-content active" id="clockContent">
+            <div class="digital-clock" id="digitalClock"></div>
+            <div class="digital-date" id="digitalDate"></div>
+            <div class="analog-clock" id="analogClock">
+                <div class="analog-clock-face" id="clockFace">
+                    <div class="analog-hand analog-hour" id="hourHand"></div>
+                    <div class="analog-hand analog-minute" id="minuteHand"></div>
+                    <div class="analog-hand analog-second" id="secondHand"></div>
+                    <div class="analog-clock-center"></div>
+                </div>
+            </div>
+        </div>
+        <div class="clock-content" id="pomodoroContent">
+            <div class="pomodoro-display">
+                <div class="pomodoro-progress">
+                    <svg width="200" height="200">
+                        <circle class="pomodoro-progress-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="pomodoro-progress-bar" id="pomodoroProgress" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="pomodoro-progress-text" id="pomodoroTimer">25:00</div>
+                </div>
+                <div class="pomodoro-status" id="pomodoroStatus">准备开始</div>
+            </div>
+            <div class="pomodoro-controls">
+                <button class="pomodoro-btn pomodoro-btn-primary" id="pomodoroStart">开始</button>
+                <button class="pomodoro-btn pomodoro-btn-secondary" id="pomodoroReset">重置</button>
+            </div>
+            <div class="pomodoro-stats">
+                <span>已完成: <strong id="pomodoroCount">0</strong> 个</span>
+                <span>总时长: <strong id="pomodoroTotal">0</strong> 分钟</span>
+            </div>
+            <div class="pomodoro-settings">
+                <div class="pomodoro-setting">
+                    <span>专注</span>
+                    <input type="number" id="pomodoroWork" value="25" min="1" max="60">
+                    <span>分钟</span>
+                </div>
+                <div class="pomodoro-setting">
+                    <span>休息</span>
+                    <input type="number" id="pomodoroBreak" value="5" min="1" max="30">
+                    <span>分钟</span>
+                </div>
             </div>
         </div>
     </div>
@@ -686,7 +766,7 @@
             const panel = $('clockPanel'), toggleBtn = $('toggleClock');
             const digitalClock = $('digitalClock'), digitalDate = $('digitalDate'), analogClock = $('analogClock');
             const hourHand = $('hourHand'), minuteHand = $('minuteHand'), secondHand = $('secondHand');
-            const clockFace = $('clockFace'), modeBtns = document.querySelectorAll('.clock-mode-btn');
+            const clockFace = $('clockFace');
             let clockInterval = null, lastSecond = -1;
 
             function createMarks() {
@@ -701,7 +781,7 @@
                     const span = document.createElement('span');
                     span.className = 'analog-number';
                     span.textContent = num;
-                    span.style.cssText = `left:${140 + 105 * Math.cos(angle)}px;top:${140 + 105 * Math.sin(angle)}px;transform:translate(-50%,-50%)`;
+                    span.style.cssText = `left:${120 + 88 * Math.cos(angle)}px;top:${120 + 88 * Math.sin(angle)}px;transform:translate(-50%,-50%)`;
                     clockFace.appendChild(span);
                 });
             }
@@ -731,14 +811,136 @@
             createMarks();
             const closePanel = togglePanel(toggleBtn, panel, startClock, stopClock);
             panel.querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); closePanel(); });
-            modeBtns.forEach(btn => btn.addEventListener('click', e => {
-                e.stopPropagation();
-                modeBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const isDigital = btn.dataset.mode === 'digital';
-                digitalClock.style.display = digitalDate.style.display = isDigital ? 'block' : 'none';
-                analogClock.style.display = isDigital ? 'none' : 'block';
-            }));
+
+            const tabs = panel.querySelectorAll('.clock-tab');
+            const contents = panel.querySelectorAll('.clock-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetId = tab.dataset.tab + 'Content';
+                    $(targetId).classList.add('active');
+                });
+            });
+        }
+
+        function initPomodoro() {
+            const timerDisplay = $('pomodoroTimer');
+            const statusDisplay = $('pomodoroStatus');
+            const progressBar = $('pomodoroProgress');
+            const startBtn = $('pomodoroStart');
+            const resetBtn = $('pomodoroReset');
+            const countDisplay = $('pomodoroCount');
+            const totalDisplay = $('pomodoroTotal');
+            const workInput = $('pomodoroWork');
+            const breakInput = $('pomodoroBreak');
+            const circumference = 2 * Math.PI * 90;
+            
+            let isRunning = false;
+            let isWork = true;
+            let timeLeft = 25 * 60;
+            let totalTime = 25 * 60;
+            let pomodoroRAF = null;
+            let lastUpdate = 0;
+            let completedCount = parseInt(localStorage.getItem('pomodoroCount') || '0');
+            let totalMinutes = parseInt(localStorage.getItem('pomodoroTotal') || '0');
+
+            countDisplay.textContent = completedCount;
+            totalDisplay.textContent = totalMinutes;
+
+            function formatTime(seconds) {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+
+            function updateDisplay() {
+                timerDisplay.textContent = formatTime(timeLeft);
+                const progress = timeLeft / totalTime;
+                progressBar.style.strokeDashoffset = circumference * (1 - progress);
+            }
+
+            function updateStatus() {
+                statusDisplay.textContent = isWork ? (isRunning ? '专注中...' : '准备专注') : (isRunning ? '休息中...' : '准备休息');
+            }
+
+            function switchMode() {
+                if (isWork) {
+                    isWork = false;
+                    totalTime = parseInt(breakInput.value) * 60;
+                    timeLeft = totalTime;
+                    completedCount++;
+                    totalMinutes += parseInt(workInput.value);
+                    localStorage.setItem('pomodoroCount', completedCount.toString());
+                    localStorage.setItem('pomodoroTotal', totalMinutes.toString());
+                    countDisplay.textContent = completedCount;
+                    totalDisplay.textContent = totalMinutes;
+                } else {
+                    isWork = true;
+                    totalTime = parseInt(workInput.value) * 60;
+                    timeLeft = totalTime;
+                }
+                updateDisplay();
+                updateStatus();
+            }
+
+            function tick(timestamp) {
+                if (!isRunning) return;
+                if (timestamp - lastUpdate >= 1000) {
+                    lastUpdate = timestamp;
+                    timeLeft--;
+                    updateDisplay();
+                    if (timeLeft <= 0) {
+                        switchMode();
+                    }
+                }
+                pomodoroRAF = requestAnimationFrame(tick);
+            }
+
+            function start() {
+                if (isRunning) {
+                    isRunning = false;
+                    startBtn.textContent = '继续';
+                    if (pomodoroRAF) cancelAnimationFrame(pomodoroRAF);
+                } else {
+                    isRunning = true;
+                    startBtn.textContent = '暂停';
+                    lastUpdate = performance.now();
+                    pomodoroRAF = requestAnimationFrame(tick);
+                }
+                updateStatus();
+            }
+
+            function reset() {
+                isRunning = false;
+                if (pomodoroRAF) cancelAnimationFrame(pomodoroRAF);
+                isWork = true;
+                totalTime = parseInt(workInput.value) * 60;
+                timeLeft = totalTime;
+                startBtn.textContent = '开始';
+                updateDisplay();
+                updateStatus();
+            }
+
+            updateDisplay();
+            updateStatus();
+            startBtn.addEventListener('click', start);
+            resetBtn.addEventListener('click', reset);
+            workInput.addEventListener('change', () => {
+                if (!isRunning && isWork) {
+                    totalTime = parseInt(workInput.value) * 60;
+                    timeLeft = totalTime;
+                    updateDisplay();
+                }
+            });
+            breakInput.addEventListener('change', () => {
+                if (!isRunning && !isWork) {
+                    totalTime = parseInt(breakInput.value) * 60;
+                    timeLeft = totalTime;
+                    updateDisplay();
+                }
+            });
         }
 
         function initBookmarks() {
@@ -764,10 +966,21 @@
             const panel = $('schultePanel'), toggleBtn = $('toggleSchulte');
             const grid = $('schulteGrid'), timeDisplay = $('schulteTime'), bestDisplay = $('schulteBest');
             const overlay = $('schulteOverlay'), restartBtn = $('schulteRestart');
-            let numbers = [], currentNum = 1, startTime = null, timerInterval = null, isRunning = false;
+            let numbers = [], currentNum = 1, startTime = null, timerRAF = null, isRunning = false;
             let bestTime = localStorage.getItem('schulteBest') ? parseFloat(localStorage.getItem('schulteBest')) : null;
 
             function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+            function updateTimer() {
+                if (isRunning) {
+                    timeDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(2);
+                    timerRAF = requestAnimationFrame(updateTimer);
+                }
+            }
+
+            function stopTimer() {
+                if (timerRAF) { cancelAnimationFrame(timerRAF); timerRAF = null; }
+            }
 
             function createGrid() {
                 grid.innerHTML = '';
@@ -776,7 +989,7 @@
                 timeDisplay.textContent = '0.00';
                 bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : '--';
                 overlay.classList.remove('hidden');
-                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                stopTimer();
                 numbers.forEach(num => {
                     const cell = document.createElement('div');
                     cell.className = 'schulte-cell';
@@ -787,7 +1000,7 @@
                             cell.classList.add('correct');
                             currentNum++;
                             if (currentNum > 25) {
-                                clearInterval(timerInterval);
+                                stopTimer();
                                 isRunning = false;
                                 const finalTime = (Date.now() - startTime) / 1000;
                                 timeDisplay.textContent = finalTime.toFixed(2);
@@ -808,7 +1021,7 @@
                     isRunning = true;
                     startTime = Date.now();
                     overlay.classList.add('hidden');
-                    timerInterval = setInterval(() => { timeDisplay.textContent = ((Date.now() - startTime) / 1000).toFixed(2); }, 10);
+                    timerRAF = requestAnimationFrame(updateTimer);
                 }
             });
 
@@ -837,6 +1050,7 @@
             $('announcementPanel').querySelector('.panel-close').addEventListener('click', e => { e.stopPropagation(); announcementClose(); });
             
             initClock();
+            initPomodoro();
             initBookmarks();
             initSchulte();
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('*').forEach(el => el.style.animation = 'none');
