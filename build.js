@@ -12,7 +12,7 @@ const DEFAULT_CONFIG = {
     links: [
         { url: 'https://blog.justafish.cn/', label: 'blog.justafish.cn', icon: 'blog' },
         { url: 'https://github.com/liano3', label: 'github.com/liano3', icon: 'github' },
-        { url: 'mailto:1291516518@qq.com', label: '1291516518@qq.com', icon: 'email' }
+        { url: 'mailto:ningli03@mail.ustc.edu.cn', label: 'ningli03@mail.ustc.edu.cn', icon: 'email' }
     ],
     announcements: [
         { date: '2026-02-24', content: '个人主页上线啦！欢迎访问~', tag: '新站' },
@@ -60,6 +60,8 @@ const ICONS = {
     email: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>'
 };
 
+const EXTERNAL_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
+
 function parseEnv(env, defaultValue) {
     return env || defaultValue;
 }
@@ -74,6 +76,91 @@ function parseJsonEnv(env, defaultValue) {
     }
 }
 
+function buildOceanMode(config) {
+    const templatePath = path.join(__dirname, 'index.template.html');
+    const outputPath = path.join(__dirname, 'index.html');
+
+    const oceanConfig = {
+        profile: config.profile,
+        links: config.links.map(link => ({
+            url: link.url,
+            label: link.label,
+            icon: ICONS[link.icon] || link.icon
+        })),
+        announcements: config.announcements,
+        bookmarks: config.bookmarks
+    };
+
+    let html = fs.readFileSync(templatePath, 'utf8');
+    html = html.replace('{{CONFIG}}', JSON.stringify(oceanConfig));
+    fs.writeFileSync(outputPath, html);
+
+    console.log('✅ Ocean mode build completed!');
+}
+
+function buildModernMode(config) {
+    const templatePath = path.join(__dirname, 'modern.template.html');
+    const outputPath = path.join(__dirname, 'modern.html');
+
+    let html = fs.readFileSync(templatePath, 'utf8');
+
+    html = html.replace(/{{PROFILE_NAME}}/g, config.profile.name);
+    html = html.replace(/{{PROFILE_TITLE}}/g, config.profile.title);
+    html = html.replace(/{{PROFILE_AVATAR}}/g, config.profile.avatar);
+    html = html.replace(/{{PROFILE_SLOGAN}}/g, config.profile.slogan);
+    html = html.replace(/{{PROFILE_DOMAIN}}/g, config.profile.domain);
+
+    const heroLinks = config.links.map((link, index) => {
+        const isPrimary = index === 0;
+        const className = isPrimary ? 'hero-link hero-link-primary' : 'hero-link hero-link-secondary';
+        const icon = ICONS[link.icon] || '';
+        return `<a href="${link.url}" target="${link.url.startsWith('mailto:') ? '_self' : '_blank'}" class="${className}">
+            ${icon}
+            ${link.label}
+        </a>`;
+    }).join('\n                        ');
+    html = html.replace('{{HERO_LINKS}}', heroLinks);
+
+    const infoLinks = config.links.map(link => {
+        return `<div class="info-item">
+            <span class="info-label">${link.icon === 'blog' ? '博客' : link.icon === 'github' ? 'GitHub' : '邮箱'}</span>
+            <span class="info-value"><a href="${link.url}" target="${link.url.startsWith('mailto:') ? '_self' : '_blank'}">${link.label}</a></span>
+        </div>`;
+    }).join('\n                            ');
+    html = html.replace('{{INFO_LINKS}}', infoLinks);
+
+    const announcements = config.announcements.map(item => {
+        return `<div class="announcement-item">
+            <div class="announcement-date">${item.date}</div>
+            <div class="announcement-content">${item.content}<span class="announcement-tag">${item.tag}</span></div>
+        </div>`;
+    }).join('\n                        ');
+    html = html.replace('{{ANNOUNCEMENTS}}', announcements);
+
+    const bookmarks = config.bookmarks.map((folder, idx) => {
+        const links = folder.links.map(l => {
+            return `<a href="${l.url}" target="_blank" class="bookmark-link">${l.label}${EXTERNAL_ICON}</a>`;
+        }).join('\n                        ');
+        return `<div class="bookmark-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <div class="category-title">
+                            <span>${folder.name}</span>
+                            <span class="category-count">${folder.links.length}</span>
+                        </div>
+                        <svg class="category-toggle ${idx === 0 ? 'expanded' : ''}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="bookmark-links ${idx === 0 ? 'show' : ''}">
+                        ${links}
+                    </div>
+                </div>`;
+    }).join('\n                        ');
+    html = html.replace('{{BOOKMARKS}}', bookmarks);
+
+    fs.writeFileSync(outputPath, html);
+
+    console.log('✅ Modern mode build completed!');
+}
+
 function build() {
     const config = {
         profile: {
@@ -83,23 +170,15 @@ function build() {
             slogan: parseEnv(process.env.PROFILE_SLOGAN, DEFAULT_CONFIG.profile.slogan),
             domain: parseEnv(process.env.PROFILE_DOMAIN, DEFAULT_CONFIG.profile.domain)
         },
-        links: parseJsonEnv(process.env.PROFILE_LINKS, DEFAULT_CONFIG.links).map(link => ({
-            url: link.url,
-            label: link.label,
-            icon: ICONS[link.icon] || link.icon
-        })),
+        links: parseJsonEnv(process.env.PROFILE_LINKS, DEFAULT_CONFIG.links),
         announcements: parseJsonEnv(process.env.ANNOUNCEMENTS, DEFAULT_CONFIG.announcements),
         bookmarks: parseJsonEnv(process.env.BOOKMARKS, DEFAULT_CONFIG.bookmarks)
     };
 
-    const templatePath = path.join(__dirname, 'index.template.html');
-    const outputPath = path.join(__dirname, 'index.html');
+    buildOceanMode(config);
+    buildModernMode(config);
 
-    let html = fs.readFileSync(templatePath, 'utf8');
-    html = html.replace('{{CONFIG}}', JSON.stringify(config));
-    fs.writeFileSync(outputPath, html);
-
-    console.log('✅ Build completed!');
+    console.log('\n📊 Build Summary:');
     console.log(`   Profile: ${config.profile.name}`);
     console.log(`   Links: ${config.links.length}`);
     console.log(`   Announcements: ${config.announcements.length}`);

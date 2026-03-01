@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Just A Fish</title>
+    <script>
+        (function() {
+            var preferred = localStorage.getItem('preferredMode');
+            if (preferred === 'modern') {
+                window.location.replace('modern.html');
+            }
+        })();
+    </script>
     <meta name="description" content="Just A Fish - 个人主页，记录，导航">
     <meta name="keywords" content="个人主页,Just A Fish,博客,主页,生活,学习,记录,导航">
     <meta name="author" content="Ning Li">
@@ -503,6 +511,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
             <span class="nav-tooltip">舒尔特方格</span>
         </button>
+        <div class="navbar-divider"></div>
+        <a href="modern.html" class="nav-btn" id="switchToModern" title="切换到现代模式">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+            <span class="nav-tooltip">现代模式</span>
+        </a>
     </nav>
 
     <div class="panel clock-panel" id="clockPanel">
@@ -1055,6 +1068,12 @@
             initSchulte();
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('*').forEach(el => el.style.animation = 'none');
         }
+
+        $('switchToModern').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.setItem('preferredMode', 'modern');
+            window.location.href = 'modern.html';
+        });
 
         init();
     })();
