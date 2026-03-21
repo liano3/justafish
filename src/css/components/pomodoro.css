@@ -1,0 +1,11 @@
+.pomodoro-display { text-align: center; }
+.pomodoro-progress svg { transform: rotate(-90deg); }
+.pomodoro-progress-bg { fill: none; stroke-width: 8; }
+.pomodoro-progress-bar { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.pomodoro-controls { display: flex; gap: 12px; justify-content: center; }
+.pomodoro-btn { border-radius: 25px; border: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+.pomodoro-settings { display: flex; gap: 16px; justify-content: center; }
+.pomodoro-setting { display: flex; align-items: center; gap: 8px; }
+.pomodoro-setting input { width: 50px; text-align: center; }
+.pomodoro-setting input:focus { outline: none; }
+.pomodoro-stats { display: flex; justify-content: center; }

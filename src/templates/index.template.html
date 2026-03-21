@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Just A Fish</title>
+    <script>
+        (function() {
+            var preferred = localStorage.getItem('preferredMode');
+            if (preferred === 'modern') {
+                window.location.replace('modern.html');
+            }
+        })();
+    </script>
+    <meta name="description" content="Just A Fish - 个人主页，记录，导航">
+    <meta name="keywords" content="个人主页,Just A Fish,博客,主页,生活,学习,记录,导航">
+    <meta name="author" content="Ning Li">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐟</text></svg>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Just A Fish">
+    <meta property="og:description" content="Just A Fish - 个人主页，记录，导航">
+    <meta property="og:url" content="https://justafish.cn">
+    <meta property="og:site_name" content="Just A Fish">
+    <meta property="og:image" content="https://justafish.cn/avatar.png">
+    <meta property="og:locale" content="zh_CN">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Just A Fish">
+    <meta name="twitter:description" content="Just A Fish - 个人主页，记录，导航">
+    <link rel="preconnect" href="https://fonts.font.im">
+    <link rel="preconnect" href="https://fonts.gstatic.font.im" crossorigin>
+    <link href="https://fonts.font.im/css2?family=Pacifico&family=Ma+Shan+Zheng&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+/* {{INLINE_CSS}} */
+    </style>
+</head>
+<body>
+    <div class="surface-light"></div>
+    <div class="ocean" id="ocean"></div>
+    <div class="glow-orb" id="glowOrb"></div>
+    <h1 class="title">Just A Fish</h1>
+    <div class="fish-container"><div class="fish" id="fish">🐟</div></div>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="domain" id="domain"></div>
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <nav class="navbar">
+        <button class="nav-btn" id="toggleProfile">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <span class="nav-tooltip">个人信息</span>
+        </button>
+        <button class="nav-btn" id="toggleAnnouncement">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            <span class="nav-tooltip">公告</span>
+            <span class="badge" id="announcementBadge"></span>
+        </button>
+        <div class="navbar-divider"></div>
+        <button class="nav-btn" id="toggleClock">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="nav-tooltip">时钟</span>
+        </button>
+        <button class="nav-btn" id="toggleBookmark">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+            <span class="nav-tooltip">收藏夹</span>
+        </button>
+        <button class="nav-btn" id="toggleSchulte">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            <span class="nav-tooltip">舒尔特方格</span>
+        </button>
+        <div class="navbar-divider"></div>
+        <a href="modern.html" class="nav-btn" id="switchToModern" title="切换到现代模式">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+            <span class="nav-tooltip">现代模式</span>
+        </a>
+    </nav>
+
+    <div class="panel clock-panel" id="clockPanel">
+        <button class="panel-close" data-panel="clockPanel">×</button>
+        <div class="clock-tabs">
+            <button class="clock-tab active" data-tab="clock">时钟</button>
+            <button class="clock-tab" data-tab="pomodoro">番茄钟</button>
+        </div>
+        <div class="clock-content active" id="clockContent">
+            <div class="digital-clock" id="digitalClock"></div>
+            <div class="digital-date" id="digitalDate"></div>
+            <div class="analog-clock" id="analogClock">
+                <div class="analog-clock-face" id="clockFace">
+                    <div class="analog-hand analog-hour" id="hourHand"></div>
+                    <div class="analog-hand analog-minute" id="minuteHand"></div>
+                    <div class="analog-hand analog-second" id="secondHand"></div>
+                    <div class="analog-clock-center"></div>
+                </div>
+            </div>
+        </div>
+        <div class="clock-content" id="pomodoroContent">
+            <div class="pomodoro-display">
+                <div class="pomodoro-progress">
+                    <svg width="200" height="200">
+                        <circle class="pomodoro-progress-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="pomodoro-progress-bar" id="pomodoroProgress" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="pomodoro-progress-text" id="pomodoroTimer">25:00</div>
+                </div>
+                <div class="pomodoro-status" id="pomodoroStatus">准备开始</div>
+            </div>
+            <div class="pomodoro-controls">
+                <button class="pomodoro-btn pomodoro-btn-primary" id="pomodoroStart">开始</button>
+                <button class="pomodoro-btn pomodoro-btn-secondary" id="pomodoroReset">重置</button>
+            </div>
+            <div class="pomodoro-stats">
+                <span>已完成: <strong id="pomodoroCount">0</strong> 个</span>
+                <span>总时长: <strong id="pomodoroTotal">0</strong> 分钟</span>
+            </div>
+            <div class="pomodoro-settings">
+                <div class="pomodoro-setting">
+                    <span>专注</span>
+                    <input type="number" id="pomodoroWork" value="25" min="1" max="60">
+                    <span>分钟</span>
+                </div>
+                <div class="pomodoro-setting">
+                    <span>休息</span>
+                    <input type="number" id="pomodoroBreak" value="5" min="1" max="30">
+                    <span>分钟</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel profile-card" id="profileCard">
+        <button class="panel-close" data-panel="profileCard">×</button>
+        <div class="profile-avatar" id="profileAvatar"></div>
+        <div class="profile-name" id="profileName"></div>
+        <div class="profile-title" id="profileTitle"></div>
+        <div class="profile-links" id="profileLinks"></div>
+    </div>
+
+    <div class="panel announcement-panel" id="announcementPanel">
+        <button class="panel-close" data-panel="announcementPanel">×</button>
+        <div class="panel-header">
+            <span class="panel-header-icon">🔔</span>
+            <h3>公告栏</h3>
+        </div>
+        <div class="announcement-list" id="announcementList"></div>
+    </div>
+
+    <div class="panel bookmark-panel" id="bookmarkPanel">
+        <button class="panel-close" data-panel="bookmarkPanel">×</button>
+        <div class="panel-header">
+            <span class="panel-header-icon">⭐</span>
+            <h3>收藏夹</h3>
+        </div>
+        <div class="bookmark-content" id="bookmarkContent"></div>
+    </div>
+
+    <div class="panel schulte-panel" id="schultePanel">
+        <button class="panel-close" data-panel="schultePanel">×</button>
+        <div class="schulte-header"><h3>舒尔特方格</h3></div>
+        <div class="schulte-stats">
+            <span>时间: <strong id="schulteTime">0.00</strong>s</span>
+            <span>最佳: <strong id="schulteBest">--</strong></span>
+        </div>
+        <div class="schulte-grid-wrapper">
+            <div class="schulte-overlay" id="schulteOverlay">点击开始</div>
+            <div class="schulte-grid" id="schulteGrid"></div>
+        </div>
+        <button class="schulte-restart" id="schulteRestart">重新开始</button>
+    </div>
+
+    <script>
+/* {{INLINE_JS}} */
+    </script>
+</body>
+</html>
