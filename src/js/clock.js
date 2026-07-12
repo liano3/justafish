@@ -6,32 +6,39 @@ function initClock(opts) {
     var digitalClock = $(opts.digitalClockId);
     var digitalDate = $(opts.digitalDateId);
     var faceSize = opts.faceSize || 240;
+    var faceStyle = getComputedStyle(faceEl);
+    var borderX = Number(faceStyle.borderLeftWidth.replace('px', '')) + Number(faceStyle.borderRightWidth.replace('px', ''));
+    var borderY = Number(faceStyle.borderTopWidth.replace('px', '')) + Number(faceStyle.borderBottomWidth.replace('px', ''));
+    var faceWidth = faceEl.clientWidth || faceSize - borderX;
+    var faceHeight = faceEl.clientHeight || faceSize - borderY;
     var showNumbers = opts.showNumbers !== undefined ? opts.showNumbers : true;
     var clockRAF = null;
     var lastSecond = -1;
 
     // Create marks
-    var markOrigin = Math.floor(faceSize / 2) - 6;
     for (var i = 0; i < 60; i++) {
         var mark = document.createElement('div');
         mark.className = i % 5 === 0 ? 'analog-mark hour' : 'analog-mark minute';
         mark.style.transform = 'rotate(' + (i * 6) + 'deg)';
-        if (opts.markOrigin) {
-            mark.style.transformOrigin = 'center ' + opts.markOrigin + 'px';
-        }
         faceEl.appendChild(mark);
+        var markTop = Number(getComputedStyle(mark).top.replace('px', ''));
+        var markOrigin = opts.markOrigin !== undefined
+            ? opts.markOrigin
+            : faceHeight / 2 - markTop;
+        mark.style.transformOrigin = 'center ' + markOrigin + 'px';
     }
 
     // Create numbers
     if (showNumbers) {
         var nums = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
         var radius = opts.numberRadius || 88;
-        var cx = faceSize / 2;
-        var cy = faceSize / 2;
+        var cx = faceWidth / 2;
+        var cy = faceHeight / 2;
         nums.forEach(function(num, idx) {
             var angle = (idx * 30 - 90) * (Math.PI / 180);
             var span = document.createElement('span');
-            span.className = 'analog-number';
+            var isCardinal = num % 3 === 0;
+            span.className = 'analog-number' + (isCardinal ? ' analog-number-cardinal' : '');
             span.textContent = num;
             span.style.cssText = 'left:' + (cx + radius * Math.cos(angle)) + 'px;top:' + (cy + radius * Math.sin(angle)) + 'px;transform:translate(-50%,-50%)';
             faceEl.appendChild(span);

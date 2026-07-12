@@ -6,7 +6,7 @@
     "build": "node build.js",
     "preview": "node build.js && cd dist && python3 -m http.server 8080"
   },
-  "keywords": ["personal", "homepage", "fish", "ocean"],
-  "author": "Ning Li",
+  "keywords": ["personal", "homepage", "fish"],
+  "author": "Just A Fish Contributors",
   "license": "MIT"
 }

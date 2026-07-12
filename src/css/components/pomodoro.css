@@ -6,6 +6,30 @@
 .pomodoro-btn { border-radius: 25px; border: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
 .pomodoro-settings { display: flex; gap: 16px; justify-content: center; }
 .pomodoro-setting { display: flex; align-items: center; gap: 8px; }
-.pomodoro-setting input { width: 50px; text-align: center; }
+.pomodoro-setting input { width: 70px; text-align: center; }
 .pomodoro-setting input:focus { outline: none; }
 .pomodoro-stats { display: flex; justify-content: center; }
+.pomodoro-reminder-controls { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.pomodoro-sound-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.pomodoro-sound-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pomodoro-switch { position: relative; width: 34px; height: 20px; border-radius: 10px; transition: background 0.2s ease; }
+.pomodoro-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: white; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); transition: transform 0.2s ease; }
+.pomodoro-sound-toggle input:checked + .pomodoro-switch::after { transform: translateX(14px); }
+.pomodoro-sound-toggle input:focus-visible + .pomodoro-switch { outline: 2px solid currentColor; outline-offset: 2px; }
+.pomodoro-preview { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+.pomodoro-preview svg { width: 17px; height: 17px; }
+.pomodoro-toast { position: fixed; right: 24px; bottom: 24px; z-index: 200; width: min(360px, calc(100vw - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; border-radius: 8px; color: white; background: #334155; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.24); opacity: 0; transform: translateY(12px); transition: opacity 0.2s ease, transform 0.2s ease; }
+.pomodoro-toast[hidden] { display: none; }
+.pomodoro-toast.is-visible { opacity: 1; transform: translateY(0); }
+.pomodoro-toast-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: #1d4ed8; background: white; }
+.pomodoro-toast-icon svg { width: 19px; height: 19px; }
+.pomodoro-toast-content { min-width: 0; display: flex; flex: 1; flex-direction: column; text-align: left; line-height: 1.35; }
+.pomodoro-toast-content strong { font-size: 0.92rem; font-weight: 600; }
+.pomodoro-toast-content span { margin-top: 2px; color: #e2e8f0; font-size: 0.78rem; }
+.pomodoro-toast-close { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 6px; color: #e2e8f0; background: transparent; cursor: pointer; }
+.pomodoro-toast-close:hover { color: white; background: rgba(255, 255, 255, 0.12); }
+.pomodoro-toast-close svg { width: 18px; height: 18px; }
+
+@media (max-width: 768px) {
+    .pomodoro-toast { right: 16px; bottom: calc(86px + env(safe-area-inset-bottom)); }
+}

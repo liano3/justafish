@@ -1,50 +1,135 @@
 const DEFAULT_CONFIG = {
     profile: {
-        name: 'Ning Li',
-        title: 'USTC Master Student',
+        siteName: 'Just A Fish',
+        siteIcon: '🐟',
+        name: 'Alex Chen',
+        title: 'Computer Science Student',
         avatar: './avatar.png',
-        slogan: '鱼没有记忆，但鱼很快乐',
-        domain: 'justafish.cn'
+        slogan: '保持好奇，持续创造',
+        domain: 'example.com',
+        introduction: '正在学习计算机科学，关注智能系统与软件工程，并持续记录项目实践。',
+        birthday: '2002-08-15',
+        email: 'alex.chen@example.com',
+        phone: '+86 000 0000 0000',
+        links: [
+            { url: 'https://example.com/blog', label: 'example.com/blog', icon: 'blog' },
+            { url: 'https://github.com/octocat', label: 'github.com/octocat', icon: 'github' },
+            { url: 'mailto:alex.chen@example.com', label: 'alex.chen@example.com', icon: 'email' }
+        ]
     },
-    links: [
-        { url: 'https://blog.justafish.cn/', label: 'blog.justafish.cn', icon: 'blog' },
-        { url: 'https://github.com/liano3', label: 'github.com/liano3', icon: 'github' },
-        { url: 'mailto:ningli03@mail.ustc.edu.cn', label: 'ningli03@mail.ustc.edu.cn', icon: 'email' }
-    ],
     announcements: [
-        { date: '2026-02-24', content: '个人主页上线啦！欢迎访问~', tag: '新站' },
-        { date: '2025-09-01', content: '中科大研究生入学', tag: '生活' }
+        {
+            enabled: true,
+            icon: '📢',
+            content: '欢迎来到示例个人主页，页面内容可以通过环境变量配置。',
+            link: { label: '配置说明', url: 'https://example.com/docs' },
+            expiresAt: ''
+        },
+        {
+            enabled: true,
+            icon: '✨',
+            content: '简历页面已整理项目、论文、教育和获奖经历。',
+            link: null,
+            expiresAt: ''
+        },
+        {
+            enabled: true,
+            icon: '🧩',
+            content: '应用页面提供时钟、番茄钟、舒尔特方格和 2048。',
+            link: null,
+            expiresAt: ''
+        }
+    ],
+    education: [
+        {
+            school: '星海大学',
+            degree: '硕士研究生',
+            major: '计算机科学与技术',
+            start: '2025',
+            end: '至今',
+            description: '研究方向包括智能系统与大模型应用。'
+        },
+        {
+            school: '远川理工学院',
+            degree: '工学学士',
+            major: '软件工程',
+            start: '2021',
+            end: '2025',
+            description: '主修数据结构、机器学习与软件工程。'
+        }
+    ],
+    awards: [
+        {
+            title: '优秀学生奖学金',
+            issuer: '星海大学',
+            date: '2026-06',
+            description: '奖励在课程学习与研究实践中的综合表现。'
+        },
+        {
+            title: '高校软件创意赛一等奖',
+            issuer: '软件创意赛组委会',
+            date: '2024-11',
+            description: '负责核心系统设计与前端实现。'
+        }
+    ],
+    works: [
+        {
+            tag: 'project',
+            title: 'Just A Fish 个人主页',
+            organization: '个人项目',
+            period: '2026',
+            description: '一个通过 Vercel 环境变量驱动内容的个人主页，包含简历、书签、效率工具与小游戏。',
+            keywords: ['JavaScript', 'CSS', 'Vercel'],
+            links: [
+                { label: '项目主页', url: 'https://example.com/projects/homepage' }
+            ]
+        },
+        {
+            tag: 'project',
+            title: '智能文献阅读助手',
+            organization: '星海大学智能系统实验室',
+            period: '2025 - 2026',
+            description: '面向学术论文的检索、摘要与知识整理工具，支持结构化阅读笔记和重点内容追踪。',
+            keywords: ['LLM', 'RAG', 'Web'],
+            links: [
+                { label: '项目主页', url: 'https://example.com/projects/paper-assistant' }
+            ]
+        },
+        {
+            tag: 'paper',
+            title: 'Efficient Collaboration for Language Model Agents',
+            publication: 'ACL 2026',
+            authors: 'Alex Chen, Taylor Liu',
+            description: '研究语言模型智能体在长程任务中的协作与信息共享机制。',
+            keywords: ['LLM Agents', 'Collaboration'],
+            links: [
+                { label: '论文', url: 'https://example.com/papers/agent-collaboration' }
+            ]
+        }
     ],
     bookmarks: [
         {
-            "name": "收藏夹栏",
+            "name": "常用网站",
             "links":[
-                { "url": "https://ustcguide.cn/", "label": "USTC GUIDE" },
-                { "url": "https://latex.ustc.edu.cn/", "label": "USTC Overleaf" },
-                { "url": "https://aistudio.google.com/", "label": "Google AI Studio" }
+                { "url": "https://example.com/", "label": "Example" },
+                { "url": "https://github.com/", "label": "GitHub" },
+                { "url": "https://developer.mozilla.org/", "label": "MDN Web Docs" }
             ]
         },
         {
-            "name": "学习",
+            "name": "学习资源",
             "links":[
-                { "url": "https://papers.cool/", "label": "Cool Papers" },
-                { "url": "https://zh.d2l.ai/", "label": "动手学深度学习" },
-                { "url": "https://oi-wiki.org/", "label": "OI Wiki" },
-                { "url": "https://labuladong.online/algo/", "label": "labuladong 的算法笔记" },
-                { "url": "https://codetop.cc/", "label": "CodeTop 面试题目总结" }
+                { "url": "https://arxiv.org/", "label": "arXiv" },
+                { "url": "https://paperswithcode.com/", "label": "Papers with Code" },
+                { "url": "https://ocw.mit.edu/", "label": "MIT OpenCourseWare" }
             ]
         },
         {
-            "name": "其他",
+            "name": "在线工具",
             "links":[
-                { "url": "https://ustcgroup.pages.dev/", "label": "USTC群聊信息汇总" },
-                { "url": "https://lkssite.vip/", "label": "LKs 网站推荐合集" },
-                { "url": "https://www.flaticon.com/", "label": "Icons" },
-                { "url": "https://next-ai-drawio.jiang.jp/zh/", "label": "Next AI Drawio" },
                 { "url": "https://excalidraw.com/", "label": "Excalidraw" },
-                { "url": "https://cspaper.org/", "label": "CS Paper Reviews" },
-                { "url": "https://ccfddl.com/", "label": "CCF DDL" },
-                { "url": "https://cook.aiursoft.com/", "label": "Cook" }
+                { "url": "https://www.overleaf.com/", "label": "Overleaf" },
+                { "url": "https://jsonformatter.org/", "label": "JSON Formatter" }
             ]
         }
     ]

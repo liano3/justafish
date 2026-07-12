@@ -1,3 +1,5 @@
+var modernClock = null;
+
 window.switchPage = function(pageId) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     $(pageId).classList.add('active');
@@ -5,6 +7,10 @@ window.switchPage = function(pageId) {
         link.classList.toggle('active', link.dataset.page === pageId);
     });
     window.scrollTo(0, 0);
+    if (modernClock) {
+        if (pageId === 'apps') modernClock.start();
+        else modernClock.stop();
+    }
 };
 
 window.toggleTheme = function() {
@@ -26,13 +32,237 @@ function initTheme() {
     }
 }
 
+function initResumeAge() {
+    var ageDisplay = $('resumeAge');
+    if (!ageDisplay) return;
+    var parts = (ageDisplay.dataset.birthday || '').split('-').map(Number);
+    if (parts.length !== 3 || parts.some(function(value) { return !Number.isFinite(value); })) return;
+    var today = new Date();
+    var age = today.getFullYear() - parts[0];
+    if (today.getMonth() < parts[1] - 1 || (today.getMonth() === parts[1] - 1 && today.getDate() < parts[2])) age--;
+    if (age >= 0) ageDisplay.textContent = age + ' 岁';
+}
+
+function initAnnouncements() {
+    var banner = $('announcementBanner');
+    if (!banner) return;
+    var slides = Array.from(banner.querySelectorAll('[data-announcement-slide]'));
+    var originalDots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
+
+    slides = slides.filter(function(slide, index) {
+        var expiresAt = slide.dataset.expiresAt;
+        if (!expiresAt) return true;
+        var expiresTimestamp = /^\d{4}-\d{2}-\d{2}$/.test(expiresAt)
+            ? new Date(expiresAt + 'T23:59:59').getTime()
+            : Date.parse(expiresAt);
+        var expired = Number.isFinite(expiresTimestamp) && expiresTimestamp < Date.now();
+        if (expired) {
+            slide.remove();
+            if (originalDots[index]) originalDots[index].remove();
+        }
+        return !expired;
+    });
+
+    if (!slides.length) {
+        banner.remove();
+        return;
+    }
+
+    var dots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
+    dots.forEach(function(dot, index) {
+        dot.dataset.announcementIndex = index;
+        dot.setAttribute('aria-label', '查看第 ' + (index + 1) + ' 条公告');
+    });
+
+    var currentIndex = -1;
+    var rotationTimer = null;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function showAnnouncement(nextIndex, immediate) {
+        var normalizedIndex = (nextIndex + slides.length) % slides.length;
+        if (normalizedIndex === currentIndex) return;
+        var previousSlide = currentIndex >= 0 ? slides[currentIndex] : null;
+        if (previousSlide) {
+            previousSlide.classList.remove('is-active');
+            previousSlide.setAttribute('aria-hidden', 'true');
+            if (!immediate) {
+                previousSlide.classList.add('is-leaving');
+                setTimeout(function() {
+                    previousSlide.classList.remove('is-leaving');
+                }, 260);
+            }
+        }
+
+        currentIndex = normalizedIndex;
+        slides[currentIndex].classList.remove('is-leaving');
+        slides[currentIndex].classList.add('is-active');
+        slides[currentIndex].setAttribute('aria-hidden', 'false');
+        dots.forEach(function(dot, index) {
+            var isActive = index === currentIndex;
+            dot.classList.toggle('is-active', isActive);
+            dot.setAttribute('aria-pressed', isActive.toString());
+        });
+    }
+
+    function stopRotation() {
+        if (rotationTimer) clearInterval(rotationTimer);
+        rotationTimer = null;
+    }
+
+    function startRotation() {
+        stopRotation();
+        if (slides.length < 2 || reduceMotion.matches) return;
+        rotationTimer = setInterval(function() {
+            showAnnouncement(currentIndex + 1, false);
+        }, 5000);
+    }
+
+    slides.forEach(function(slide) {
+        slide.classList.remove('is-active', 'is-leaving');
+        slide.setAttribute('aria-hidden', 'true');
+    });
+    showAnnouncement(0, true);
+    startRotation();
+
+    dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+            showAnnouncement(parseInt(dot.dataset.announcementIndex), false);
+            startRotation();
+        });
+    });
+    banner.addEventListener('mouseenter', stopRotation);
+    banner.addEventListener('mouseleave', startRotation);
+    banner.addEventListener('focusin', stopRotation);
+    banner.addEventListener('focusout', function(event) {
+        if (!banner.contains(event.relatedTarget)) startRotation();
+    });
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) stopRotation();
+        else startRotation();
+    });
+}
+
+function initToolFullscreen() {
+    var cards = Array.from(document.querySelectorAll('.tool-card'));
+    var activeCard = null;
+    var inertedElements = [];
+
+    function setBackgroundInert(card) {
+        var current = card;
+        while (current && current.parentElement) {
+            var parent = current.parentElement;
+            Array.from(parent.children).forEach(function(sibling) {
+                if (sibling !== current && !sibling.inert) {
+                    sibling.inert = true;
+                    inertedElements.push(sibling);
+                }
+            });
+            if (parent === document.body) break;
+            current = parent;
+        }
+    }
+
+    function restoreBackground() {
+        inertedElements.forEach(function(element) { element.inert = false; });
+        inertedElements = [];
+    }
+
+    function getFocusableElements(card) {
+        return Array.from(card.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+            .filter(function(element) { return !element.hidden && element.getClientRects().length > 0; });
+    }
+
+    function closeFullscreen() {
+        if (!activeCard) return;
+        var card = activeCard;
+        var button = card.querySelector('.tool-fullscreen-toggle');
+        var title = card.querySelector('.tool-title').textContent.trim();
+        card.classList.remove('is-fullscreen');
+        card.removeAttribute('role');
+        card.removeAttribute('aria-modal');
+        card.removeAttribute('aria-labelledby');
+        button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-label', '全屏查看' + title);
+        button.title = '全屏查看';
+        document.body.classList.remove('tool-fullscreen-open');
+        restoreBackground();
+        activeCard = null;
+        button.focus();
+    }
+
+    function openFullscreen(card) {
+        if (activeCard && activeCard !== card) closeFullscreen();
+        var button = card.querySelector('.tool-fullscreen-toggle');
+        var titleElement = card.querySelector('.tool-title');
+        var title = titleElement.textContent.trim();
+        card.classList.add('is-fullscreen');
+        card.setAttribute('role', 'dialog');
+        card.setAttribute('aria-modal', 'true');
+        card.setAttribute('aria-labelledby', titleElement.id);
+        button.setAttribute('aria-expanded', 'true');
+        button.setAttribute('aria-label', '退出' + title + '全屏');
+        button.title = '恢复';
+        document.body.classList.add('tool-fullscreen-open');
+        setBackgroundInert(card);
+        activeCard = card;
+        button.focus();
+    }
+
+    cards.forEach(function(card, index) {
+        var header = card.querySelector('.tool-header');
+        var titleElement = card.querySelector('.tool-title');
+        var title = titleElement.textContent.trim();
+        if (!titleElement.id) titleElement.id = 'toolTitle' + (index + 1);
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'tool-fullscreen-toggle';
+        button.setAttribute('aria-label', '全屏查看' + title);
+        button.setAttribute('aria-expanded', 'false');
+        button.title = '全屏查看';
+        button.innerHTML = '<svg class="tool-maximize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg><svg class="tool-minimize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>';
+        button.addEventListener('click', function() {
+            if (activeCard === card) closeFullscreen();
+            else openFullscreen(card);
+        });
+        header.appendChild(button);
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && activeCard) {
+            event.preventDefault();
+            closeFullscreen();
+            return;
+        }
+        if (event.key === 'Tab' && activeCard) {
+            var focusable = getFocusableElements(activeCard);
+            if (!focusable.length) {
+                event.preventDefault();
+                return;
+            }
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            } else if (!activeCard.contains(document.activeElement)) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+    });
+}
+
 window.toggleCategory = function(header) {
-    header.querySelector('.category-toggle').classList.toggle('expanded');
-    header.nextElementSibling.classList.toggle('show');
+    var expanded = header.querySelector('.category-toggle').classList.toggle('expanded');
+    header.nextElementSibling.classList.toggle('show', expanded);
+    header.setAttribute('aria-expanded', expanded.toString());
 };
 
 function initModernClock() {
-    initClock({
+    return initClock({
         faceId: 'analogFace',
         hourId: 'analogHour',
         minuteId: 'analogMinute',
@@ -40,9 +270,9 @@ function initModernClock() {
         digitalClockId: 'digitalClock',
         digitalDateId: 'digitalDate',
         faceSize: 200,
-        showNumbers: false,
-        markOrigin: 97,
-        startImmediately: true
+        showNumbers: true,
+        numberRadius: 73,
+        startImmediately: false
     });
 }
 
@@ -57,7 +287,14 @@ function initModernPomodoro() {
         totalId: 'pomodoroTotal',
         workInputId: 'pomodoroWork',
         breakInputId: 'pomodoroBreak',
-        circleRadius: 85
+        soundToggleId: 'pomodoroSound',
+        previewBtnId: 'pomodoroPreview',
+        toastId: 'pomodoroToast',
+        toastMessageId: 'pomodoroToastMessage',
+        toastDetailId: 'pomodoroToastDetail',
+        toastCloseId: 'pomodoroToastClose',
+        circleRadius: 85,
+        exposeAs: 'pomodoro'
     });
 }
 
@@ -75,12 +312,10 @@ function initModernSchulte() {
 }
 
 initTheme();
-initModernClock();
+initResumeAge();
+initAnnouncements();
+modernClock = initModernClock();
 initModernPomodoro();
 initModernSchulte();
-
-$('switchToOcean').addEventListener('click', function(e) {
-    e.preventDefault();
-    localStorage.setItem('preferredMode', 'ocean');
-    window.location.href = 'index.html';
-});
+initGame2048();
+initToolFullscreen();

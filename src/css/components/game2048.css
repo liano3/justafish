@@ -1,0 +1,57 @@
+.game2048 { max-width: 320px; margin: 0 auto; }
+.game2048-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 16px; }
+.game2048-stat { min-width: 72px; text-align: center; }
+.game2048-stat-value { color: var(--text); font-size: 1.5rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.game2048-stat-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
+
+.game2048-board {
+    position: relative; width: min(100%, 280px); aspect-ratio: 1; margin: 0 auto;
+    padding: 8px; border-radius: var(--radius-sm); background: var(--bg-tertiary);
+    touch-action: none; outline: none;
+}
+.game2048-board:focus-visible { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
+.game2048-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 8px; width: 100%; height: 100%; }
+.game2048-cell {
+    display: flex; align-items: center; justify-content: center; min-width: 0;
+    border-radius: 6px; background: var(--bg-secondary); color: var(--text);
+    font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.game2048-tile { box-shadow: var(--shadow); }
+.game2048-tile-2 { background: #f8fafc; color: #334155; }
+.game2048-tile-4 { background: #e0f2fe; color: #334155; }
+.game2048-tile-8 { background: #bfdbfe; color: #1e3a8a; }
+.game2048-tile-16 { background: #93c5fd; color: #1e3a8a; }
+.game2048-tile-32 { background: #60a5fa; color: #ffffff; }
+.game2048-tile-64 { background: #2563eb; color: #ffffff; }
+.game2048-tile-128 { background: #22c55e; color: #052e16; }
+.game2048-tile-256 { background: #eab308; color: #422006; }
+.game2048-tile-512 { background: #f97316; color: #ffffff; }
+.game2048-tile-1024 { background: #ef4444; color: #ffffff; }
+.game2048-tile-2048 { background: #8b5cf6; color: #ffffff; }
+.game2048-tile-super { background: #0f172a; color: #ffffff; }
+.game2048-cell.digits-4 { font-size: 1.1rem; }
+.game2048-cell.digits-5 { font-size: 0.9rem; }
+.game2048-cell.digits-many { font-size: 0.75rem; }
+.game2048-cell.is-new { animation: game2048Pop 0.16s ease-out; }
+.game2048-cell.is-merged { animation: game2048Merge 0.2s ease-out; }
+
+.game2048-message {
+    position: absolute; inset: 8px; z-index: 5; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; border-radius: 6px;
+    background: #64748b; color: #ffffff; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.game2048-message.show { opacity: 1; pointer-events: auto; }
+.game2048-message-text { font-size: 1.25rem; font-weight: 700; }
+.game2048-message-actions { display: flex; gap: 8px; }
+
+.game2048-controls { display: flex; align-items: center; justify-content: center; margin-top: 18px; }
+.game2048-new-game { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.game2048-new-game svg { width: 16px; height: 16px; }
+
+@keyframes game2048Pop { from { transform: scale(0.65); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes game2048Merge { 50% { transform: scale(1.12); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .game2048-cell { animation: none !important; }
+}

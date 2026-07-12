@@ -1,6 +1,6 @@
 # Just A Fish 🐟
 
-一个简洁优雅的个人主页，支持海洋模式和现代模式切换，通过环境变量自定义所有配置。
+一个简洁优雅的个人主页，通过环境变量自定义所有配置。
 
 ---
 
@@ -15,22 +15,22 @@ web1/
         clock.css              # 时钟组件样式
         pomodoro.css           # 番茄钟样式
         schulte.css            # 舒尔特方格样式
-      ocean.css                # 海洋模式样式
-      modern.css               # 现代模式样式
+        game2048.css           # 2048 游戏样式
+      modern.css               # 主页样式
     js/
       common.js                # $()、formatTime()、shuffle() 等工具函数
-      clock.js                 # 时钟模块（参数化，两种模式共用）
+      clock.js                 # 时钟模块
       pomodoro.js              # 番茄钟模块
       schulte.js               # 舒尔特方格模块
-      ocean/
-        main.js                # 海洋模式：光线、气泡、鱼、面板系统、初始化
+      game2048.js              # 2048 输入、渲染与本地存档适配
+      vendor/
+        2048-core.js           # 2048 官方 MIT 核心游戏逻辑
       modern/
-        main.js                # 现代模式：主题切换、SPA 路由、初始化
+        main.js                # 主题切换、SPA 路由、初始化
     templates/
-      index.template.html      # 海洋模式 HTML 骨架
-      modern.template.html     # 现代模式 HTML 骨架
+      modern.template.html     # 主页 HTML 骨架
     config/
-      default.js               # 默认配置（个人信息、链接、公告、书签）
+      default.js               # 默认配置（个人信息、简历、书签）
   dist/                        # 构建输出目录（已 gitignore）
   build.js                     # 构建脚本
   package.json
@@ -52,17 +52,17 @@ cd dist && python3 -m http.server 8080
 npm run preview
 ```
 
-访问 `http://localhost:8080` 查看海洋模式，`http://localhost:8080/modern.html` 查看现代模式。
+访问 `http://localhost:8080` 查看主页。
 
 ### 构建流程
 
 `node build.js` 会执行以下操作：
 
-1. 按顺序拼接 CSS：`common.css` → 组件样式 → 模式样式
-2. 按顺序拼接 JS：`common.js` → 组件模块 → 模式入口
+1. 按顺序拼接 CSS：`common.css` → 组件样式 → 主页样式
+2. 按顺序拼接 JS：`common.js` → 组件模块 → 主页入口
 3. 将 CSS/JS 内联到 HTML 模板中
 4. 注入配置数据（环境变量 > 默认配置）
-5. 输出 `dist/index.html` 和 `dist/modern.html`
+5. 输出 `dist/index.html`
 6. 复制静态资源（avatar.png、BingSiteAuth.xml）
 
 ### 修改内容
@@ -73,6 +73,8 @@ npm run preview
 - **改默认配置**：编辑 `src/config/default.js`
 
 修改后运行 `node build.js` 重新构建。
+
+2048 核心逻辑基于 [Gabriele Cirulli 的 2048](https://github.com/gabrielecirulli/2048)，按 MIT License 使用并保留原始许可声明。
 
 ---
 
@@ -87,40 +89,128 @@ npm run preview
 
 ## 环境变量配置
 
-在 Vercel 中设置以下环境变量来自定义你的主页，不设置则使用 `src/config/default.js` 中的默认值。
+在 Vercel 中设置以下环境变量来自定义主页。不设置时使用 `src/config/default.js` 中的演示数据。数组变量中的每一项都应是 JSON 对象；结构无效时构建会输出警告并回退到演示数据。
 
-### 个人信息
+| 变量名 | JSON 类型 | 说明 |
+|--------|-----------|------|
+| `PROFILE_JSON` | 对象 | 个人信息、个人介绍和外部链接 |
+| `ANNOUNCEMENTS_JSON` | 数组 | 首页滚动公告 |
+| `EDUCATION_JSON` | 数组 | 教育经历 |
+| `AWARDS_JSON` | 数组 | 获奖经历 |
+| `WORKS_JSON` | 数组 | 项目与论文，通过 `tag` 区分 |
+| `BOOKMARKS` | 数组 | 收藏夹分组 |
 
-| 变量名 | 说明 |
-|--------|------|
-| `PROFILE_NAME` | 姓名 |
-| `PROFILE_TITLE` | 头衔/身份 |
-| `PROFILE_AVATAR` | 头像 URL |
-| `PROFILE_SLOGAN` | Slogan 文案 |
-| `PROFILE_DOMAIN` | 底部显示的域名 |
+原来的 `PROFILE_NAME`、`PROFILE_TITLE`、`PROFILE_AVATAR`、`PROFILE_SLOGAN`、`PROFILE_DOMAIN` 和 `PROFILE_LINKS` 已合并为 `PROFILE_JSON`。旧的动态列表 `ANNOUNCEMENTS` 不再读取，首页公告使用新的 `ANNOUNCEMENTS_JSON`。
 
-### 社交链接 (PROFILE_LINKS)
+### 个人信息 (PROFILE_JSON)
 
-JSON 数组格式：
+```json
+{
+  "siteName": "Just A Fish",
+  "siteIcon": "🐟",
+  "name": "Alex Chen",
+  "title": "Computer Science Student",
+  "avatar": "./avatar.png",
+  "slogan": "保持好奇，持续创造",
+  "domain": "example.com",
+  "introduction": "正在学习计算机科学，关注智能系统与软件工程。",
+  "birthday": "2002-08-15",
+  "email": "alex.chen@example.com",
+  "phone": "+86 000 0000 0000",
+  "links": [
+    {"url": "https://example.com/blog", "label": "example.com/blog", "icon": "blog"},
+    {"url": "https://github.com/octocat", "label": "github.com/octocat", "icon": "github"},
+    {"url": "mailto:alex.chen@example.com", "label": "alex.chen@example.com", "icon": "email"}
+  ]
+}
+```
+
+`siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。
+
+`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
+
+### 首页公告 (ANNOUNCEMENTS_JSON)
 
 ```json
 [
-  {"url": "https://blog.justafish.cn/", "label": "blog.justafish.cn", "icon": "blog"},
-  {"url": "https://github.com/liano3", "label": "github.com/liano3", "icon": "github"},
-  {"url": "mailto:1291516518@qq.com", "label": "1291516518@qq.com", "icon": "email"}
+  {
+    "enabled": true,
+    "icon": "📢",
+    "content": "欢迎来到示例个人主页。",
+    "link": {
+      "label": "查看详情",
+      "url": "https://example.com"
+    },
+    "expiresAt": "2026-12-31"
+  },
+  {
+    "enabled": true,
+    "icon": "✨",
+    "content": "新的项目与论文已经发布。",
+    "link": null,
+    "expiresAt": ""
+  }
 ]
 ```
 
-支持的 `icon` 类型：`blog`、`github`、`scholar`、`email`
+多条公告每 5 秒纵向切换，鼠标悬停或键盘聚焦时暂停。`icon`、`link` 和 `expiresAt` 可省略；`enabled` 为 `false` 或到期的公告会自动隐藏。没有有效公告时整个公告栏不渲染。
 
-### 公告栏 (ANNOUNCEMENTS)
-
-JSON 数组格式，按时间倒序排列：
+### 教育经历 (EDUCATION_JSON)
 
 ```json
 [
-  {"date": "2026-02-24", "content": "个人主页上线啦！欢迎访问~", "tag": "新站"},
-  {"date": "2025-09-01", "content": "中科大研究生入学", "tag": "生活"}
+  {
+    "school": "星海大学",
+    "degree": "硕士研究生",
+    "major": "计算机科学与技术",
+    "start": "2025",
+    "end": "至今",
+    "description": "研究方向或补充说明。"
+  }
+]
+```
+
+### 获奖经历 (AWARDS_JSON)
+
+```json
+[
+  {
+    "title": "优秀研究生奖学金",
+    "issuer": "星海大学",
+    "date": "2026-06",
+    "description": "奖项说明。"
+  }
+]
+```
+
+### 项目与论文 (WORKS_JSON)
+
+项目使用 `organization` 表示所属学校、实验室、公司或开源组织；论文使用合并后的 `publication`，例如 `ACL 2026`。
+
+```json
+[
+  {
+    "tag": "project",
+    "title": "项目名称",
+    "organization": "所属单位",
+    "period": "2025 - 2026",
+    "description": "项目简介。",
+    "keywords": ["JavaScript", "Web"],
+    "links": [
+      {"label": "GitHub", "url": "https://github.com/example/project"}
+    ]
+  },
+  {
+    "tag": "paper",
+    "title": "Paper Title",
+    "publication": "ACL 2026",
+    "authors": "Author One, Author Two",
+    "description": "论文简介。",
+    "keywords": ["LLM", "Agent"],
+    "links": [
+      {"label": "论文", "url": "https://aclanthology.org/"}
+    ]
+  }
 ]
 ```
 
@@ -131,10 +221,10 @@ JSON 数组格式，支持文件夹分组：
 ```json
 [
   {
-    "name": "学习",
+    "name": "学习资源",
     "links": [
-      {"url": "https://papers.cool/", "label": "Cool Papers"},
-      {"url": "https://oi-wiki.org/", "label": "OI Wiki"}
+      {"url": "https://arxiv.org/", "label": "arXiv"},
+      {"url": "https://paperswithcode.com/", "label": "Papers with Code"}
     ]
   }
 ]
