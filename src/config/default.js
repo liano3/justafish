@@ -3,6 +3,7 @@ const DEFAULT_CONFIG = {
         siteName: 'Just A Fish',
         siteIcon: '🐟',
         name: 'Alex Chen',
+        nickname: 'Alex Chen',
         title: 'Computer Science Student',
         avatar: './avatar.png',
         slogan: '保持好奇，持续创造',

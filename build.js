@@ -249,6 +249,7 @@ function buildHomepage(config) {
     html = html.replace(/{{SITE_ICON}}/g, escapeHtml(config.profile.siteIcon));
     html = html.replace(/{{SITE_FAVICON}}/g, createTextFavicon(config.profile.siteIcon));
     html = html.replace(/{{PROFILE_NAME}}/g, escapeHtml(config.profile.name));
+    html = html.replace(/{{PROFILE_NICKNAME}}/g, escapeHtml(config.profile.nickname || config.profile.name));
     html = html.replace(/{{PROFILE_TITLE}}/g, escapeHtml(config.profile.title));
     html = html.replace(/{{PROFILE_AVATAR}}/g, safeUrl(config.profile.avatar));
     html = html.replace(/{{PROFILE_SLOGAN}}/g, escapeHtml(config.profile.slogan));

@@ -111,6 +111,7 @@ npm run preview
   "siteName": "Just A Fish",
   "siteIcon": "🐟",
   "name": "Alex Chen",
+  "nickname": "Alex",
   "title": "Computer Science Student",
   "avatar": "./avatar.png",
   "slogan": "保持好奇，持续创造",
@@ -127,7 +128,7 @@ npm run preview
 }
 ```
 
-`siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。
+`siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。`name` 用于简历姓名和作者信息，`nickname` 用于首页名称；未设置 `nickname` 时使用 `name`。
 
 `birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
 
