@@ -43,6 +43,28 @@ function initResumeAge() {
     if (age >= 0) ageDisplay.textContent = age + ' 岁';
 }
 
+function initResumePrivacy() {
+    var phoneButton = document.querySelector('[data-phone-reveal]');
+    if (!phoneButton) return;
+    phoneButton.addEventListener('click', function() {
+        var token = phoneButton.dataset.phoneReveal;
+        if (!token) return;
+        try {
+            var phone = window.atob(token);
+            var label = phoneButton.querySelector('[data-phone-label]');
+            var action = phoneButton.querySelector('[data-phone-action]');
+            if (label) label.textContent = phone;
+            if (action) action.remove();
+            phoneButton.classList.add('is-revealed');
+            phoneButton.setAttribute('aria-label', '电话号码 ' + phone);
+            phoneButton.setAttribute('aria-pressed', 'true');
+            phoneButton.removeAttribute('data-phone-reveal');
+        } catch (error) {
+            phoneButton.setAttribute('aria-label', '电话号码暂时无法显示');
+        }
+    });
+}
+
 function initAnnouncements() {
     var banner = $('announcementBanner');
     if (!banner) return;
@@ -313,6 +335,7 @@ function initModernSchulte() {
 
 initTheme();
 initResumeAge();
+initResumePrivacy();
 initAnnouncements();
 modernClock = initModernClock();
 initModernPomodoro();

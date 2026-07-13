@@ -4,13 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{SITE_NAME}}</title>
-    <meta name="description" content="{{SITE_NAME}} - 个人主页，记录，导航">
-    <meta name="keywords" content="个人主页,{{SITE_NAME}},博客,主页,生活,学习,记录,导航">
+    <meta name="description" content="{{SEO_DESCRIPTION}}">
+    <meta name="keywords" content="{{SEO_KEYWORDS}}">
     <meta name="author" content="{{PROFILE_NAME}}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="{{SITE_URL}}">
     <link rel="icon" href="{{SITE_FAVICON}}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{SITE_NAME}}">
-    <meta property="og:description" content="{{SITE_NAME}} - 个人主页，记录，导航">
+    <meta property="og:site_name" content="{{SITE_NAME}}">
+    <meta property="og:title" content="{{PROFILE_NICKNAME}} · {{SITE_NAME}}">
+    <meta property="og:description" content="{{SEO_DESCRIPTION}}">
+    <meta property="og:url" content="{{SITE_URL}}">
+    <meta property="og:image" content="{{SHARE_IMAGE}}">
+    <meta property="og:image:alt" content="{{PROFILE_NAME}}的头像">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{PROFILE_NICKNAME}} · {{SITE_NAME}}">
+    <meta name="twitter:description" content="{{SEO_DESCRIPTION}}">
+    <meta name="twitter:image" content="{{SHARE_IMAGE}}">
+    <script type="application/ld+json">{{STRUCTURED_DATA}}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -67,6 +78,7 @@
                                 {{RESUME_CONTACTS}}
                             </div>
                             <p class="resume-introduction">{{PROFILE_INTRODUCTION}}</p>
+                            {{RESEARCH_INTERESTS}}
                         </div>
                         <div class="resume-avatar">
                             <img src="{{PROFILE_AVATAR}}" alt="{{PROFILE_NAME}}" width="112" height="112" loading="lazy" decoding="async">
@@ -241,7 +253,7 @@
         </main>
 
         <footer class="footer">
-            <p>&copy; 2024 <a href="{{PROFILE_DOMAIN_URL}}">{{PROFILE_DOMAIN}}</a> · Made with ❤️</p>
+            <p>&copy; 2024 <a href="{{PROFILE_DOMAIN_URL}}">{{PROFILE_DOMAIN}}</a> · 最后更新 {{LAST_UPDATED}} · Made with ❤️</p>
         </footer>
 
         <nav class="mobile-nav">

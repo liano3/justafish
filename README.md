@@ -64,7 +64,7 @@ npm run preview
 2. 按顺序拼接 JS：`common.js` → 组件模块 → 主页入口
 3. 将 CSS/JS 内联到 HTML 模板中
 4. 注入配置数据（环境变量 > 默认配置）
-5. 输出 `dist/index.html`
+5. 输出 `dist/index.html`、`sitemap.xml` 和 `robots.txt`
 6. 复制静态资源（avatar.png、BingSiteAuth.xml）
 
 ### 修改内容
@@ -117,6 +117,7 @@ npm run preview
   "slogan": "保持好奇，持续创造",
   "domain": "example.com",
   "introduction": "正在学习计算机科学，关注智能系统与软件工程。",
+  "researchInterests": ["Intelligent Systems", "Software Engineering", "Human-Centered AI"],
   "birthday": "2002-08-15",
   "email": "alex.chen@example.com",
   "phone": "+86 000 0000 0000",
@@ -130,7 +131,9 @@ npm run preview
 
 `siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。`name` 用于简历姓名和作者信息，`nickname` 用于首页名称；未设置 `nickname` 时使用 `name`。
 
-`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
+`researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方，其中电话号码默认脱敏，点击后才显示完整号码；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
+
+SEO 描述、规范网址、分享信息和人物结构化数据会从个人信息自动生成。需要覆盖默认分享内容时，可在 `PROFILE_JSON` 中额外设置 `seoDescription` 和 `shareImage`；`shareImage` 支持站内相对路径或完整 HTTPS 地址。页脚、站点地图中的更新时间在每次构建时自动生成。
 
 ### 首页公告 (ANNOUNCEMENTS_JSON)
 

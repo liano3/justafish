@@ -9,6 +9,7 @@ const DEFAULT_CONFIG = {
         slogan: '保持好奇，持续创造',
         domain: 'example.com',
         introduction: '正在学习计算机科学，关注智能系统与软件工程，并持续记录项目实践。',
+        researchInterests: ['Intelligent Systems', 'Software Engineering', 'Human-Centered AI'],
         birthday: '2002-08-15',
         email: 'alex.chen@example.com',
         phone: '+86 000 0000 0000',

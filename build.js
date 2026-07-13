@@ -51,6 +51,102 @@ function safeUrl(value) {
     return '#';
 }
 
+function normalizeSiteUrl(value) {
+    const input = String(value || '').trim();
+    try {
+        const url = new URL(/^https?:\/\//i.test(input) ? input : `https://${input}`);
+        if (!['http:', 'https:'].includes(url.protocol)) return 'https://example.com/';
+        return new URL('/', url).href;
+    } catch (error) {
+        return 'https://example.com/';
+    }
+}
+
+function resolveHttpUrl(value, baseUrl) {
+    const input = String(value || '').trim();
+    if (!input) return '';
+    try {
+        const url = new URL(input, baseUrl);
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function formatUpdateDate(now = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(now).reduce((result, part) => {
+        result[part.type] = part.value;
+        return result;
+    }, {});
+    return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function getResearchInterests(profile) {
+    return Array.isArray(profile.researchInterests)
+        ? profile.researchInterests.filter(item => typeof item === 'string').map(item => item.trim()).filter(Boolean)
+        : [];
+}
+
+function createSeoData(profile) {
+    const siteUrl = normalizeSiteUrl(profile.domain);
+    const nickname = String(profile.nickname || profile.name || '').trim();
+    const identity = nickname && nickname !== profile.name
+        ? `${nickname}（${profile.name}）`
+        : String(profile.name || nickname);
+    const description = String(profile.seoDescription || '').trim()
+        || `${identity}的个人主页，${profile.title}。${profile.introduction}`;
+    const interests = getResearchInterests(profile);
+    const keywords = [...new Set([
+        profile.name,
+        nickname,
+        profile.siteName,
+        profile.title,
+        ...interests,
+        '个人主页',
+        '学术主页'
+    ].map(item => String(item || '').trim()).filter(Boolean))].join(',');
+    const shareImage = resolveHttpUrl(profile.shareImage || profile.avatar, siteUrl);
+    const sameAs = (Array.isArray(profile.links) ? profile.links : [])
+        .map(link => resolveHttpUrl(link.url, siteUrl))
+        .filter(Boolean);
+    const structuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: String(profile.name || ''),
+        alternateName: nickname,
+        jobTitle: String(profile.title || ''),
+        description,
+        url: siteUrl,
+        image: shareImage,
+        knowsAbout: interests,
+        sameAs
+    };
+    return {
+        siteUrl,
+        shareImage,
+        description,
+        keywords,
+        lastUpdated: formatUpdateDate(),
+        structuredData: JSON.stringify(structuredData).replace(/</g, '\\u003c')
+    };
+}
+
+function maskPhone(value) {
+    const phone = String(value || '').trim();
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 7) return '***';
+    if (phone.startsWith('+86') && digits.length >= 11) {
+        const localNumber = digits.slice(-11);
+        return `+86 ${localNumber.slice(0, 3)} **** ${localNumber.slice(-4)}`;
+    }
+    return `${digits.slice(0, 3)} **** ${digits.slice(-4)}`;
+}
+
 function renderProfileLinks(links) {
     return links.map((link, index) => {
         const isMail = String(link.url || '').startsWith('mailto:');
@@ -92,13 +188,22 @@ function renderResumeContacts(profile) {
                                 </a>`);
     }
     if (profile.phone) {
-        const phoneHref = `tel:${String(profile.phone).replace(/[^\d+]/g, '')}`;
-        contacts.push(`<a class="resume-contact" href="${safeUrl(phoneHref)}">
+        const phoneToken = Buffer.from(String(profile.phone), 'utf8').toString('base64');
+        contacts.push(`<button class="resume-contact resume-phone" type="button" data-phone-reveal="${escapeHtml(phoneToken)}" aria-label="显示电话号码" aria-pressed="false">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"></path></svg>
-                                    <span>${escapeHtml(profile.phone)}</span>
-                                </a>`);
+                                    <span data-phone-label>${escapeHtml(maskPhone(profile.phone))}</span>
+                                    <span class="resume-phone-action" data-phone-action>显示</span>
+                                </button>`);
     }
     return contacts.join('\n                                ');
+}
+
+function renderResearchInterests(profile) {
+    const interests = getResearchInterests(profile);
+    if (!interests.length) return '';
+    return `<div class="research-interests" aria-label="研究兴趣">
+                                ${interests.map(interest => `<span>${escapeHtml(interest)}</span>`).join('')}
+                            </div>`;
 }
 
 function renderAnnouncementsSection(announcements) {
@@ -215,7 +320,7 @@ function readFiles(filePaths) {
     return filePaths.map(f => fs.readFileSync(path.join(__dirname, f), 'utf8')).join('\n');
 }
 
-function buildHomepage(config) {
+function buildHomepage(config, seo) {
     const css = readFiles([
         'src/css/common.css',
         'src/css/components/clock.css',
@@ -242,9 +347,7 @@ function buildHomepage(config) {
     html = html.replace('/* {{INLINE_JS}} */', wrappedJs);
 
     const domain = escapeHtml(config.profile.domain);
-    const domainUrl = safeUrl(/^https?:\/\//i.test(config.profile.domain)
-        ? config.profile.domain
-        : `https://${config.profile.domain}`);
+    const domainUrl = escapeHtml(seo.siteUrl);
     html = html.replace(/{{SITE_NAME}}/g, escapeHtml(config.profile.siteName));
     html = html.replace(/{{SITE_ICON}}/g, escapeHtml(config.profile.siteIcon));
     html = html.replace(/{{SITE_FAVICON}}/g, createTextFavicon(config.profile.siteIcon));
@@ -256,9 +359,16 @@ function buildHomepage(config) {
     html = html.replace(/{{PROFILE_INTRODUCTION}}/g, escapeHtml(config.profile.introduction));
     html = html.replace(/{{PROFILE_DOMAIN_URL}}/g, domainUrl);
     html = html.replace(/{{PROFILE_DOMAIN}}/g, domain);
+    html = html.replace(/{{SEO_DESCRIPTION}}/g, escapeHtml(seo.description));
+    html = html.replace(/{{SEO_KEYWORDS}}/g, escapeHtml(seo.keywords));
+    html = html.replace(/{{SITE_URL}}/g, escapeHtml(seo.siteUrl));
+    html = html.replace(/{{SHARE_IMAGE}}/g, escapeHtml(seo.shareImage));
+    html = html.replace('{{STRUCTURED_DATA}}', seo.structuredData);
+    html = html.replace(/{{LAST_UPDATED}}/g, escapeHtml(seo.lastUpdated));
     html = html.replace('{{HERO_LINKS}}', renderProfileLinks(config.profile.links));
     html = html.replace('{{ANNOUNCEMENTS_SECTION}}', renderAnnouncementsSection(config.announcements));
     html = html.replace('{{RESUME_CONTACTS}}', renderResumeContacts(config.profile));
+    html = html.replace('{{RESEARCH_INTERESTS}}', renderResearchInterests(config.profile));
     html = html.replace('{{EDUCATION_SECTION}}', renderEducationSection(config.education));
     html = html.replace('{{AWARDS_SECTION}}', renderAwardsSection(config.awards));
     html = html.replace('{{WORKS_SECTION}}', renderWorksSection(config.works));
@@ -285,6 +395,24 @@ function buildHomepage(config) {
 
     fs.writeFileSync(path.join(__dirname, 'dist/index.html'), html);
     console.log('✅ Homepage build completed!');
+}
+
+function writeSeoFiles(seo) {
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>${escapeHtml(seo.siteUrl)}</loc>
+        <lastmod>${seo.lastUpdated}</lastmod>
+    </url>
+</urlset>
+`;
+    const robots = `User-agent: *
+Allow: /
+
+Sitemap: ${seo.siteUrl}sitemap.xml
+`;
+    fs.writeFileSync(path.join(__dirname, 'dist/sitemap.xml'), sitemap);
+    fs.writeFileSync(path.join(__dirname, 'dist/robots.txt'), robots);
 }
 
 function copyStaticAssets() {
@@ -330,7 +458,9 @@ function build() {
         bookmarks: parseJsonArrayEnv(process.env.BOOKMARKS, DEFAULT_CONFIG.bookmarks, 'BOOKMARKS', bookmarkFolder)
     };
 
-    buildHomepage(config);
+    const seo = createSeoData(config.profile);
+    buildHomepage(config, seo);
+    writeSeoFiles(seo);
     copyStaticAssets();
 
     console.log('\n📊 Build Summary:');
