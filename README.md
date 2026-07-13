@@ -121,6 +121,13 @@ npm run preview
   "birthday": "2002-08-15",
   "email": "alex.chen@example.com",
   "phone": "+86 000 0000 0000",
+  "footer": {
+    "enabled": true,
+    "startYear": "2024",
+    "showDomain": true,
+    "showLastUpdated": true,
+    "text": "Made with ❤️"
+  },
   "links": [
     {"url": "https://example.com/blog", "label": "example.com/blog", "icon": "blog"},
     {"url": "https://github.com/octocat", "label": "github.com/octocat", "icon": "github"},
@@ -133,7 +140,9 @@ npm run preview
 
 `researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方，其中电话号码默认脱敏，点击后才显示完整号码；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
 
-SEO 描述、规范网址、分享信息和人物结构化数据会从个人信息自动生成。需要覆盖默认分享内容时，可在 `PROFILE_JSON` 中额外设置 `seoDescription` 和 `shareImage`；`shareImage` 支持站内相对路径或完整 HTTPS 地址。页脚、站点地图中的更新时间在每次构建时自动生成。
+SEO 描述、规范网址、分享信息和人物结构化数据会从个人信息自动生成。需要覆盖默认分享内容时，可在 `PROFILE_JSON` 中额外设置 `seoDescription` 和 `shareImage`；`shareImage` 支持站内相对路径或完整 HTTPS 地址。
+
+`footer` 控制页脚：`enabled` 控制是否显示，`startYear` 是网站建立年份，`showDomain` 和 `showLastUpdated` 分别控制域名与更新时间，`text` 是末尾的自定义文字。页脚和站点地图中的更新时间在每次构建时自动生成。
 
 ### 首页公告 (ANNOUNCEMENTS_JSON)
 

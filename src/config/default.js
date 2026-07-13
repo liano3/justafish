@@ -13,6 +13,13 @@ const DEFAULT_CONFIG = {
         birthday: '2002-08-15',
         email: 'alex.chen@example.com',
         phone: '+86 000 0000 0000',
+        footer: {
+            enabled: true,
+            startYear: '2024',
+            showDomain: true,
+            showLastUpdated: true,
+            text: 'Made with ❤️'
+        },
         links: [
             { url: 'https://example.com/blog', label: 'example.com/blog', icon: 'blog' },
             { url: 'https://github.com/octocat', label: 'github.com/octocat', icon: 'github' },

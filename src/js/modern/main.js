@@ -1,17 +1,64 @@
 var modernClock = null;
+var validPageIds = ['home', 'resume', 'bookmarks', 'apps'];
+var currentPageId = null;
 
-window.switchPage = function(pageId) {
+function renderPage(pageId) {
+    if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-    $(pageId).classList.add('active');
+    var page = $(pageId);
+    if (!page) return;
+    page.classList.add('active');
     document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(function(link) {
-        link.classList.toggle('active', link.dataset.page === pageId);
+        var isActive = link.dataset.page === pageId;
+        link.classList.toggle('active', isActive);
+        if (isActive) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
     });
+    currentPageId = pageId;
     window.scrollTo(0, 0);
     if (modernClock) {
         if (pageId === 'apps') modernClock.start();
         else modernClock.stop();
     }
+}
+
+function getPageFromHash() {
+    if (!window.location.hash) return 'home';
+    var pageId = window.location.hash.slice(1);
+    return validPageIds.indexOf(pageId) === -1 ? null : pageId;
+}
+
+function getPageUrl(pageId) {
+    var baseUrl = window.location.pathname + window.location.search;
+    return pageId === 'home' ? baseUrl : baseUrl + '#' + pageId;
+}
+
+function syncPageFromLocation() {
+    var pageId = getPageFromHash();
+    if (!pageId) {
+        window.history.replaceState({ page: 'home' }, '', getPageUrl('home'));
+        pageId = 'home';
+    } else if (pageId === 'home' && window.location.hash) {
+        window.history.replaceState({ page: 'home' }, '', getPageUrl('home'));
+    }
+    renderPage(pageId);
+}
+
+window.switchPage = function(pageId) {
+    if (validPageIds.indexOf(pageId) === -1) return;
+    var nextUrl = getPageUrl(pageId);
+    var currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    if (nextUrl !== currentUrl) {
+        window.history.pushState({ page: pageId }, '', nextUrl);
+    }
+    renderPage(pageId);
 };
+
+function initPageRouting() {
+    syncPageFromLocation();
+    window.addEventListener('popstate', syncPageFromLocation);
+    window.addEventListener('hashchange', syncPageFromLocation);
+}
 
 window.toggleTheme = function() {
     var html = document.documentElement;
@@ -283,6 +330,88 @@ window.toggleCategory = function(header) {
     header.setAttribute('aria-expanded', expanded.toString());
 };
 
+function initBookmarkSearch() {
+    var input = $('bookmarkSearch');
+    var clearButton = $('bookmarkSearchClear');
+    var status = $('bookmarkSearchStatus');
+    var emptyState = $('bookmarkSearchEmpty');
+    var categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
+    if (!input || !clearButton || !status || !emptyState || !categories.length) return;
+
+    var totalCount = categories.reduce(function(total, category) {
+        return total + category.querySelectorAll('[data-bookmark-label]').length;
+    }, 0);
+
+    function restoreCategory(category) {
+        var originalExpanded = category.dataset.searchExpanded;
+        if (originalExpanded === undefined) return;
+        var expanded = originalExpanded === 'true';
+        var header = category.querySelector('.category-header');
+        var linksContainer = category.querySelector('.bookmark-links');
+        var toggle = category.querySelector('.category-toggle');
+        header.setAttribute('aria-expanded', expanded.toString());
+        linksContainer.classList.toggle('show', expanded);
+        toggle.classList.toggle('expanded', expanded);
+        delete category.dataset.searchExpanded;
+    }
+
+    function expandForSearch(category) {
+        var header = category.querySelector('.category-header');
+        var linksContainer = category.querySelector('.bookmark-links');
+        var toggle = category.querySelector('.category-toggle');
+        if (category.dataset.searchExpanded === undefined) {
+            category.dataset.searchExpanded = header.getAttribute('aria-expanded') || 'false';
+        }
+        header.setAttribute('aria-expanded', 'true');
+        linksContainer.classList.add('show');
+        toggle.classList.add('expanded');
+    }
+
+    function filterBookmarks() {
+        var query = input.value.trim().toLocaleLowerCase();
+        var visibleCount = 0;
+
+        categories.forEach(function(category) {
+            var categoryName = (category.dataset.bookmarkCategory || '').toLocaleLowerCase();
+            var categoryMatches = Boolean(query) && categoryName.indexOf(query) !== -1;
+            var links = Array.from(category.querySelectorAll('[data-bookmark-label]'));
+            var categoryCount = 0;
+
+            links.forEach(function(link) {
+                var label = (link.dataset.bookmarkLabel || '').toLocaleLowerCase();
+                var url = (link.dataset.bookmarkUrl || '').toLocaleLowerCase();
+                var matches = !query || categoryMatches || label.indexOf(query) !== -1 || url.indexOf(query) !== -1;
+                link.hidden = !matches;
+                if (matches) categoryCount++;
+            });
+
+            category.hidden = Boolean(query) && categoryCount === 0;
+            var count = category.querySelector('.category-count');
+            if (count) count.textContent = String(categoryCount);
+            if (query && categoryCount) expandForSearch(category);
+            else if (!query) restoreCategory(category);
+            visibleCount += categoryCount;
+        });
+
+        clearButton.hidden = !query;
+        status.textContent = query ? '找到 ' + visibleCount + ' 个书签' : '共 ' + totalCount + ' 个书签';
+        emptyState.hidden = !query || visibleCount > 0;
+    }
+
+    input.addEventListener('input', filterBookmarks);
+    input.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && input.value) {
+            input.value = '';
+            filterBookmarks();
+        }
+    });
+    clearButton.addEventListener('click', function() {
+        input.value = '';
+        filterBookmarks();
+        input.focus();
+    });
+}
+
 function initModernClock() {
     return initClock({
         faceId: 'analogFace',
@@ -337,8 +466,10 @@ initTheme();
 initResumeAge();
 initResumePrivacy();
 initAnnouncements();
+initBookmarkSearch();
 modernClock = initModernClock();
 initModernPomodoro();
 initModernSchulte();
 initGame2048();
 initToolFullscreen();
+initPageRouting();

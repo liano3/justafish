@@ -206,6 +206,30 @@ function renderResearchInterests(profile) {
                             </div>`;
 }
 
+function renderFooter(profile, seo) {
+    const footer = isRecord(profile.footer) ? profile.footer : {};
+    if (footer.enabled === false) return '';
+
+    const segments = [];
+    const identityParts = [];
+    const startYear = String(footer.startYear || '').trim();
+    if (startYear) identityParts.push(`&copy; ${escapeHtml(startYear)}`);
+    if (footer.showDomain !== false && profile.domain) {
+        identityParts.push(`<a href="${escapeHtml(seo.siteUrl)}">${escapeHtml(profile.domain)}</a>`);
+    }
+    if (identityParts.length) segments.push(identityParts.join('&nbsp;'));
+    if (footer.showLastUpdated !== false) {
+        segments.push(`Last updated ${escapeHtml(seo.lastUpdated)}`);
+    }
+    const text = String(footer.text || '').trim();
+    if (text) segments.push(escapeHtml(text));
+    if (!segments.length) return '';
+
+    return `<footer class="footer">
+            <p>${segments.map(segment => `<span class="footer-segment">${segment}</span>`).join('\n                ')}</p>
+        </footer>`;
+}
+
 function renderAnnouncementsSection(announcements) {
     const activeAnnouncements = announcements.filter(item => item && item.enabled !== false && item.content);
     if (!activeAnnouncements.length) return '';
@@ -346,8 +370,6 @@ function buildHomepage(config, seo) {
     html = html.replace('/* {{INLINE_CSS}} */', css);
     html = html.replace('/* {{INLINE_JS}} */', wrappedJs);
 
-    const domain = escapeHtml(config.profile.domain);
-    const domainUrl = escapeHtml(seo.siteUrl);
     html = html.replace(/{{SITE_NAME}}/g, escapeHtml(config.profile.siteName));
     html = html.replace(/{{SITE_ICON}}/g, escapeHtml(config.profile.siteIcon));
     html = html.replace(/{{SITE_FAVICON}}/g, createTextFavicon(config.profile.siteIcon));
@@ -357,14 +379,12 @@ function buildHomepage(config, seo) {
     html = html.replace(/{{PROFILE_AVATAR}}/g, safeUrl(config.profile.avatar));
     html = html.replace(/{{PROFILE_SLOGAN}}/g, escapeHtml(config.profile.slogan));
     html = html.replace(/{{PROFILE_INTRODUCTION}}/g, escapeHtml(config.profile.introduction));
-    html = html.replace(/{{PROFILE_DOMAIN_URL}}/g, domainUrl);
-    html = html.replace(/{{PROFILE_DOMAIN}}/g, domain);
     html = html.replace(/{{SEO_DESCRIPTION}}/g, escapeHtml(seo.description));
     html = html.replace(/{{SEO_KEYWORDS}}/g, escapeHtml(seo.keywords));
     html = html.replace(/{{SITE_URL}}/g, escapeHtml(seo.siteUrl));
     html = html.replace(/{{SHARE_IMAGE}}/g, escapeHtml(seo.shareImage));
     html = html.replace('{{STRUCTURED_DATA}}', seo.structuredData);
-    html = html.replace(/{{LAST_UPDATED}}/g, escapeHtml(seo.lastUpdated));
+    html = html.replace('{{FOOTER}}', renderFooter(config.profile, seo));
     html = html.replace('{{HERO_LINKS}}', renderProfileLinks(config.profile.links));
     html = html.replace('{{ANNOUNCEMENTS_SECTION}}', renderAnnouncementsSection(config.announcements));
     html = html.replace('{{RESUME_CONTACTS}}', renderResumeContacts(config.profile));
@@ -373,12 +393,14 @@ function buildHomepage(config, seo) {
     html = html.replace('{{AWARDS_SECTION}}', renderAwardsSection(config.awards));
     html = html.replace('{{WORKS_SECTION}}', renderWorksSection(config.works));
 
+    const bookmarkTotal = config.bookmarks.reduce((total, folder) => total + folder.links.length, 0);
+    html = html.replace('{{BOOKMARK_TOTAL}}', String(bookmarkTotal));
     const bookmarks = config.bookmarks.map((folder, idx) => {
         const links = folder.links.map(l => {
-            return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link">${escapeHtml(l.label)}${EXTERNAL_ICON}</a>`;
+            return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-bookmark-label="${escapeHtml(l.label)}" data-bookmark-url="${escapeHtml(l.url)}">${escapeHtml(l.label)}${EXTERNAL_ICON}</a>`;
         }).join('\n                        ');
         const groupId = `bookmarkGroup${idx + 1}`;
-        return `<div class="bookmark-category">
+        return `<div class="bookmark-category" data-bookmark-category="${escapeHtml(folder.name)}">
                     <button type="button" class="category-header" aria-expanded="${idx === 0 ? 'true' : 'false'}" aria-controls="${groupId}" onclick="toggleCategory(this)">
                         <span class="category-title">
                             <span>${escapeHtml(folder.name)}</span>
@@ -442,6 +464,11 @@ function build() {
         if (isRecordArray(profileEnv.links)) profileLinks = profileEnv.links;
         else console.warn('PROFILE_JSON.links must be a JSON array with valid object items; using default links.');
     }
+    let profileFooter = DEFAULT_CONFIG.profile.footer;
+    if (profileEnv.footer !== undefined) {
+        if (isRecord(profileEnv.footer)) profileFooter = { ...DEFAULT_CONFIG.profile.footer, ...profileEnv.footer };
+        else console.warn('PROFILE_JSON.footer must be a JSON object; using the default footer.');
+    }
     const itemWithOptionalLinks = item => isRecord(item)
         && (item.links === undefined || isRecordArray(item.links));
     const bookmarkFolder = folder => isRecord(folder) && isRecordArray(folder.links);
@@ -449,7 +476,8 @@ function build() {
         profile: {
             ...DEFAULT_CONFIG.profile,
             ...profileEnv,
-            links: profileLinks
+            links: profileLinks,
+            footer: profileFooter
         },
         announcements: parseJsonArrayEnv(process.env.ANNOUNCEMENTS_JSON, DEFAULT_CONFIG.announcements, 'ANNOUNCEMENTS_JSON'),
         education: parseJsonArrayEnv(process.env.EDUCATION_JSON, DEFAULT_CONFIG.education, 'EDUCATION_JSON'),

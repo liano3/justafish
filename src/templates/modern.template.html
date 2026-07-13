@@ -96,9 +96,21 @@
                     <div class="section-header">
                         <h2 class="section-title">我的书签</h2>
                     </div>
+                    <div class="bookmark-search" role="search">
+                        <div class="bookmark-search-field">
+                            <svg class="bookmark-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                            <label class="sr-only" for="bookmarkSearch">搜索书签</label>
+                            <input id="bookmarkSearch" type="search" placeholder="搜索分类、名称或网址" autocomplete="off" spellcheck="false" aria-describedby="bookmarkSearchStatus">
+                            <button class="bookmark-search-clear" id="bookmarkSearchClear" type="button" aria-label="清空搜索" title="清空搜索" hidden>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                            </button>
+                        </div>
+                        <p class="bookmark-search-status" id="bookmarkSearchStatus" aria-live="polite">共 {{BOOKMARK_TOTAL}} 个书签</p>
+                    </div>
                     <div class="bookmark-categories" id="bookmarkCategories">
                         {{BOOKMARKS}}
                     </div>
+                    <p class="bookmark-search-empty" id="bookmarkSearchEmpty" hidden>没有匹配的书签</p>
                 </div>
             </div>
 
@@ -252,9 +264,7 @@
             </div>
         </main>
 
-        <footer class="footer">
-            <p>&copy; 2024 <a href="{{PROFILE_DOMAIN_URL}}">{{PROFILE_DOMAIN}}</a> · 最后更新 {{LAST_UPDATED}} · Made with ❤️</p>
-        </footer>
+        {{FOOTER}}
 
         <nav class="mobile-nav">
             <button class="mobile-nav-link active" data-page="home" onclick="switchPage('home')">
