@@ -120,12 +120,12 @@ npm run preview
   "researchInterests": ["Intelligent Systems", "Software Engineering", "Human-Centered AI"],
   "birthday": "2002-08-15",
   "email": "alex.chen@example.com",
-  "phone": "+86 000 0000 0000",
   "footer": {
     "enabled": true,
     "startYear": "2024",
     "showDomain": true,
     "showLastUpdated": true,
+    "showVisitorCount": true,
     "text": "Made with ❤️"
   },
   "links": [
@@ -138,11 +138,11 @@ npm run preview
 
 `siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。`name` 用于简历姓名和作者信息，`nickname` 用于首页名称；未设置 `nickname` 时使用 `name`。
 
-`researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 和 `phone` 显示在简历姓名下方，其中电话号码默认脱敏，点击后才显示完整号码；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
+`researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 显示在简历姓名下方；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
 
 SEO 描述、规范网址、分享信息和人物结构化数据会从个人信息自动生成。需要覆盖默认分享内容时，可在 `PROFILE_JSON` 中额外设置 `seoDescription` 和 `shareImage`；`shareImage` 支持站内相对路径或完整 HTTPS 地址。
 
-`footer` 控制页脚：`enabled` 控制是否显示，`startYear` 是网站建立年份，`showDomain` 和 `showLastUpdated` 分别控制域名与更新时间，`text` 是末尾的自定义文字。页脚和站点地图中的更新时间在每次构建时自动生成。
+`footer` 控制页脚：`enabled` 控制是否显示，`startYear` 是网站建立年份，`showDomain`、`showLastUpdated` 和 `showVisitorCount` 分别控制域名、更新时间与全站 UV，`text` 是末尾的自定义文字。UV 使用不蒜子提供的匿名计数脚本；关闭后不会加载该第三方脚本，本地预览也不会计数。页脚和站点地图中的更新时间在每次构建时自动生成。
 
 ### 首页公告 (ANNOUNCEMENTS_JSON)
 

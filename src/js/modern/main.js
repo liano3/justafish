@@ -1,6 +1,61 @@
 var modernClock = null;
+var appsLoadPromise = null;
+var appsInitialized = false;
 var validPageIds = ['home', 'resume', 'bookmarks', 'apps'];
 var currentPageId = null;
+
+function setAppsLoadState(state) {
+    var status = $('appsLoadStatus');
+    var grid = $('appsGrid');
+    if (!status || !grid) return;
+    var isLoading = state === 'loading';
+    var hasError = state === 'error';
+    var message = status.querySelector('[data-apps-load-message]');
+    status.hidden = !isLoading && !hasError;
+    status.classList.toggle('is-error', hasError);
+    if (message) message.textContent = hasError ? '应用加载失败，请刷新后重试' : '正在加载应用';
+    grid.classList.toggle('is-loading', isLoading);
+    grid.classList.toggle('has-load-error', hasError);
+    grid.setAttribute('aria-busy', isLoading.toString());
+}
+
+function loadAppsBundle() {
+    if (window.JustAFishAppModules) return Promise.resolve(window.JustAFishAppModules);
+    if (appsLoadPromise) return appsLoadPromise;
+
+    setAppsLoadState('loading');
+    appsLoadPromise = new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = './assets/apps.js';
+        script.async = true;
+        script.onload = function() {
+            if (window.JustAFishAppModules) resolve(window.JustAFishAppModules);
+            else reject(new Error('应用模块没有正确注册'));
+        };
+        script.onerror = function() { reject(new Error('应用代码加载失败')); };
+        document.head.appendChild(script);
+    });
+    return appsLoadPromise;
+}
+
+function ensureAppsInitialized() {
+    return loadAppsBundle().then(function() {
+        if (!appsInitialized) {
+            modernClock = initModernClock();
+            initModernPomodoro();
+            initModernSchulte();
+            window.JustAFishAppModules.initGame2048();
+            initToolFullscreen();
+            appsInitialized = true;
+        }
+        setAppsLoadState('ready');
+        return modernClock;
+    }).catch(function(error) {
+        appsLoadPromise = null;
+        setAppsLoadState('error');
+        throw error;
+    });
+}
 
 function renderPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
@@ -16,9 +71,12 @@ function renderPage(pageId) {
     });
     currentPageId = pageId;
     window.scrollTo(0, 0);
-    if (modernClock) {
-        if (pageId === 'apps') modernClock.start();
-        else modernClock.stop();
+    if (pageId === 'apps') {
+        ensureAppsInitialized().then(function(clock) {
+            if (currentPageId === 'apps') clock.start();
+        }).catch(function() {});
+    } else if (modernClock) {
+        modernClock.stop();
     }
 }
 
@@ -88,28 +146,6 @@ function initResumeAge() {
     var age = today.getFullYear() - parts[0];
     if (today.getMonth() < parts[1] - 1 || (today.getMonth() === parts[1] - 1 && today.getDate() < parts[2])) age--;
     if (age >= 0) ageDisplay.textContent = age + ' 岁';
-}
-
-function initResumePrivacy() {
-    var phoneButton = document.querySelector('[data-phone-reveal]');
-    if (!phoneButton) return;
-    phoneButton.addEventListener('click', function() {
-        var token = phoneButton.dataset.phoneReveal;
-        if (!token) return;
-        try {
-            var phone = window.atob(token);
-            var label = phoneButton.querySelector('[data-phone-label]');
-            var action = phoneButton.querySelector('[data-phone-action]');
-            if (label) label.textContent = phone;
-            if (action) action.remove();
-            phoneButton.classList.add('is-revealed');
-            phoneButton.setAttribute('aria-label', '电话号码 ' + phone);
-            phoneButton.setAttribute('aria-pressed', 'true');
-            phoneButton.removeAttribute('data-phone-reveal');
-        } catch (error) {
-            phoneButton.setAttribute('aria-label', '电话号码暂时无法显示');
-        }
-    });
 }
 
 function initAnnouncements() {
@@ -413,7 +449,7 @@ function initBookmarkSearch() {
 }
 
 function initModernClock() {
-    return initClock({
+    return window.JustAFishAppModules.initClock({
         faceId: 'analogFace',
         hourId: 'analogHour',
         minuteId: 'analogMinute',
@@ -428,7 +464,7 @@ function initModernClock() {
 }
 
 function initModernPomodoro() {
-    initPomodoro({
+    window.JustAFishAppModules.initPomodoro({
         timerId: 'pomodoroTimer',
         statusId: 'pomodoroStatus',
         progressId: 'pomodoroProgress',
@@ -450,7 +486,7 @@ function initModernPomodoro() {
 }
 
 function initModernSchulte() {
-    initSchulte({
+    window.JustAFishAppModules.initSchulte({
         gridId: 'schulteGrid',
         timeId: 'schulteTime',
         bestId: 'schulteBest',
@@ -464,12 +500,6 @@ function initModernSchulte() {
 
 initTheme();
 initResumeAge();
-initResumePrivacy();
 initAnnouncements();
 initBookmarkSearch();
-modernClock = initModernClock();
-initModernPomodoro();
-initModernSchulte();
-initGame2048();
-initToolFullscreen();
 initPageRouting();

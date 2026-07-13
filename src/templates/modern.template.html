@@ -119,7 +119,11 @@
                     <div class="section-header">
                         <h2 class="section-title">实用工具与小游戏</h2>
                     </div>
-                    <div class="tools-grid">
+                    <div class="apps-load-status" id="appsLoadStatus" role="status" aria-live="polite" hidden>
+                        <span class="apps-load-spinner" aria-hidden="true"></span>
+                        <span data-apps-load-message>正在加载应用</span>
+                    </div>
+                    <div class="tools-grid" id="appsGrid" aria-busy="false">
                         <div class="tool-card">
                             <div class="tool-header">
                                 <div class="tool-icon">
@@ -302,5 +306,6 @@
     <script>
 /* {{INLINE_JS}} */
     </script>
+    {{VISITOR_COUNTER_SCRIPT}}
 </body>
 </html>

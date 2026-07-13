@@ -136,17 +136,6 @@ function createSeoData(profile) {
     };
 }
 
-function maskPhone(value) {
-    const phone = String(value || '').trim();
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length < 7) return '***';
-    if (phone.startsWith('+86') && digits.length >= 11) {
-        const localNumber = digits.slice(-11);
-        return `+86 ${localNumber.slice(0, 3)} **** ${localNumber.slice(-4)}`;
-    }
-    return `${digits.slice(0, 3)} **** ${digits.slice(-4)}`;
-}
-
 function renderProfileLinks(links) {
     return links.map((link, index) => {
         const isMail = String(link.url || '').startsWith('mailto:');
@@ -187,14 +176,6 @@ function renderResumeContacts(profile) {
                                     <span>${escapeHtml(profile.email)}</span>
                                 </a>`);
     }
-    if (profile.phone) {
-        const phoneToken = Buffer.from(String(profile.phone), 'utf8').toString('base64');
-        contacts.push(`<button class="resume-contact resume-phone" type="button" data-phone-reveal="${escapeHtml(phoneToken)}" aria-label="显示电话号码" aria-pressed="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"></path></svg>
-                                    <span data-phone-label>${escapeHtml(maskPhone(profile.phone))}</span>
-                                    <span class="resume-phone-action" data-phone-action>显示</span>
-                                </button>`);
-    }
     return contacts.join('\n                                ');
 }
 
@@ -217,17 +198,45 @@ function renderFooter(profile, seo) {
     if (footer.showDomain !== false && profile.domain) {
         identityParts.push(`<a href="${escapeHtml(seo.siteUrl)}">${escapeHtml(profile.domain)}</a>`);
     }
-    if (identityParts.length) segments.push(identityParts.join('&nbsp;'));
+    if (identityParts.length) segments.push({ html: identityParts.join('&nbsp;') });
     if (footer.showLastUpdated !== false) {
-        segments.push(`Last updated ${escapeHtml(seo.lastUpdated)}`);
+        segments.push({ html: `Last updated ${escapeHtml(seo.lastUpdated)}` });
+    }
+    if (footer.showVisitorCount !== false) {
+        segments.push({
+            html: '访客 <strong id="busuanzi_value_site_uv">0</strong>',
+            id: 'busuanzi_container_site_uv',
+            className: 'visitor-counter',
+            hidden: true
+        });
     }
     const text = String(footer.text || '').trim();
-    if (text) segments.push(escapeHtml(text));
+    if (text) segments.push({ html: escapeHtml(text) });
     if (!segments.length) return '';
 
     return `<footer class="footer">
-            <p>${segments.map(segment => `<span class="footer-segment">${segment}</span>`).join('\n                ')}</p>
+            <p>${segments.map(segment => {
+                const id = segment.id ? ` id="${segment.id}"` : '';
+                const className = `footer-segment${segment.className ? ` ${segment.className}` : ''}`;
+                const style = segment.hidden ? ' style="display:none"' : '';
+                return `<span${id} class="${className}"${style}>${segment.html}</span>`;
+            }).join('\n                ')}</p>
         </footer>`;
+}
+
+function renderVisitorCounterScript(profile) {
+    const footer = isRecord(profile.footer) ? profile.footer : {};
+    if (footer.enabled === false || footer.showVisitorCount === false) return '';
+    return `<script>
+    (function() {
+        var localHosts = ['localhost', '127.0.0.1', '::1', '[::1]'];
+        if (localHosts.indexOf(window.location.hostname) !== -1) return;
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+        document.body.appendChild(script);
+    })();
+    </script>`;
 }
 
 function renderAnnouncementsSection(announcements) {
@@ -356,15 +365,25 @@ function buildHomepage(config, seo) {
 
     const js = readFiles([
         'src/js/common.js',
+        'src/js/modern/main.js'
+    ]);
+
+    const appsJs = readFiles([
+        'src/js/common.js',
         'src/js/clock.js',
         'src/js/pomodoro.js',
         'src/js/schulte.js',
         'src/js/vendor/2048-core.js',
-        'src/js/game2048.js',
-        'src/js/modern/main.js'
+        'src/js/game2048.js'
     ]);
 
     const wrappedJs = "(function(){\n'use strict';\n" + js + "\n})();";
+    const wrappedAppsJs = "(function(){\n'use strict';\n" + appsJs
+        + "\nwindow.JustAFishAppModules = { initClock: initClock, initPomodoro: initPomodoro, initSchulte: initSchulte, initGame2048: initGame2048 };\n})();";
+
+    const assetsDir = path.join(__dirname, 'dist/assets');
+    if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
+    fs.writeFileSync(path.join(assetsDir, 'apps.js'), wrappedAppsJs);
 
     let html = fs.readFileSync(path.join(__dirname, 'src/templates/modern.template.html'), 'utf8');
     html = html.replace('/* {{INLINE_CSS}} */', css);
@@ -385,6 +404,7 @@ function buildHomepage(config, seo) {
     html = html.replace(/{{SHARE_IMAGE}}/g, escapeHtml(seo.shareImage));
     html = html.replace('{{STRUCTURED_DATA}}', seo.structuredData);
     html = html.replace('{{FOOTER}}', renderFooter(config.profile, seo));
+    html = html.replace('{{VISITOR_COUNTER_SCRIPT}}', renderVisitorCounterScript(config.profile));
     html = html.replace('{{HERO_LINKS}}', renderProfileLinks(config.profile.links));
     html = html.replace('{{ANNOUNCEMENTS_SECTION}}', renderAnnouncementsSection(config.announcements));
     html = html.replace('{{RESUME_CONTACTS}}', renderResumeContacts(config.profile));
