@@ -204,7 +204,7 @@ function renderFooter(profile, seo) {
     }
     if (footer.showVisitorCount !== false) {
         segments.push({
-            html: '访客 <strong id="busuanzi_value_site_uv">0</strong>',
+            html: 'Visitors <strong id="busuanzi_value_site_uv">0</strong>',
             id: 'busuanzi_container_site_uv',
             className: 'visitor-counter',
             hidden: true
