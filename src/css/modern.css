@@ -314,8 +314,26 @@ body.tool-fullscreen-open { overflow: hidden; }
 .footer a:hover { color: var(--primary); }
 .visitor-counter strong { margin-left: 4px; color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
 
+.back-to-top {
+    position: fixed; right: 24px; bottom: 24px; z-index: 90;
+    width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+    border: none; border-radius: var(--radius-sm); color: var(--text-secondary);
+    background: var(--bg); box-shadow: var(--shadow-md); cursor: pointer;
+    animation: backToTopIn 0.2s ease; transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.back-to-top[hidden] { display: none; }
+.back-to-top:hover { color: var(--primary); background: var(--bg-secondary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.back-to-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.back-to-top-progress { position: absolute; inset: 0; width: 44px; height: 44px; fill: none; transform: rotate(-90deg); }
+.back-to-top-track { stroke: var(--border); stroke-width: 2; }
+.back-to-top-value { stroke: var(--primary); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.12s linear; }
+.back-to-top-icon { position: relative; width: 18px; height: 18px; }
+@keyframes backToTopIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
 @media (prefers-reduced-motion: reduce) {
     .apps-load-spinner { animation: none; }
+    .back-to-top { animation: none; transition: none; }
+    .back-to-top-value { transition: none; }
 }
 
 @media (max-width: 768px) {
@@ -348,6 +366,7 @@ body.tool-fullscreen-open { overflow: hidden; }
     .work-card { min-height: 0; }
     .tools-grid { grid-template-columns: 1fr; }
     .clock-time { font-size: 2.5rem; }
+    .back-to-top { right: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); }
     .footer { padding: 20px 16px calc(88px + env(safe-area-inset-bottom)); font-size: 0.78rem; }
 }
 

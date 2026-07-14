@@ -3,6 +3,39 @@ var appsLoadPromise = null;
 var appsInitialized = false;
 var validPageIds = ['home', 'resume', 'bookmarks', 'apps'];
 var currentPageId = null;
+var backToTopButton = null;
+var backToTopProgress = null;
+var backToTopTicking = false;
+var pageScrollPositions = {};
+
+function updateBackToTopVisibility() {
+    if (!backToTopButton) return;
+    var scrollableDistance = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    var progress = scrollableDistance > 0
+        ? Math.min(100, Math.max(0, Math.round(window.scrollY / scrollableDistance * 100)))
+        : 0;
+    backToTopButton.hidden = window.scrollY <= 320;
+    backToTopButton.setAttribute('aria-label', '返回顶部，已阅读 ' + progress + '%');
+    backToTopButton.title = '返回顶部 · ' + progress + '%';
+    if (backToTopProgress) backToTopProgress.style.strokeDashoffset = String(100 - progress);
+    backToTopTicking = false;
+}
+
+function initBackToTop() {
+    backToTopButton = $('backToTop');
+    if (!backToTopButton) return;
+    backToTopProgress = backToTopButton.querySelector('[data-back-to-top-progress]');
+    window.addEventListener('scroll', function() {
+        if (backToTopTicking) return;
+        backToTopTicking = true;
+        requestAnimationFrame(updateBackToTopVisibility);
+    }, { passive: true });
+    backToTopButton.addEventListener('click', function() {
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    updateBackToTopVisibility();
+}
 
 function setAppsLoadState(state) {
     var status = $('appsLoadStatus');
@@ -59,6 +92,7 @@ function ensureAppsInitialized() {
 
 function renderPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
+    if (currentPageId) pageScrollPositions[currentPageId] = window.scrollY;
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var page = $(pageId);
     if (!page) return;
@@ -70,7 +104,10 @@ function renderPage(pageId) {
         else link.removeAttribute('aria-current');
     });
     currentPageId = pageId;
-    window.scrollTo(0, 0);
+    requestAnimationFrame(function() {
+        window.scrollTo(0, pageScrollPositions[pageId] || 0);
+        updateBackToTopVisibility();
+    });
     if (pageId === 'apps') {
         ensureAppsInitialized().then(function(clock) {
             if (currentPageId === 'apps') clock.start();
@@ -502,4 +539,5 @@ initTheme();
 initResumeAge();
 initAnnouncements();
 initBookmarkSearch();
+initBackToTop();
 initPageRouting();
