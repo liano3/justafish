@@ -155,23 +155,35 @@ function initPageRouting() {
     window.addEventListener('hashchange', syncPageFromLocation);
 }
 
+function updateThemeToggle(isDark) {
+    var toggle = document.querySelector('.theme-toggle');
+    var label = isDark ? '切换到浅色模式' : '切换到深色模式';
+    if (toggle) {
+        toggle.setAttribute('aria-label', label);
+        toggle.setAttribute('aria-pressed', isDark.toString());
+        toggle.title = label;
+    }
+    document.querySelector('.sun-icon').style.display = isDark ? 'none' : 'block';
+    document.querySelector('.moon-icon').style.display = isDark ? 'block' : 'none';
+}
+
 window.toggleTheme = function() {
     var html = document.documentElement;
     var isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? '' : 'dark');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    document.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
-    document.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
+    var nextIsDark = !isDark;
+    if (nextIsDark) html.setAttribute('data-theme', 'dark');
+    else html.removeAttribute('data-theme');
+    localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
+    updateThemeToggle(nextIsDark);
 };
 
 function initTheme() {
     var saved = localStorage.getItem('theme');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (saved === 'dark' || (!saved && prefersDark)) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.querySelector('.sun-icon').style.display = 'none';
-        document.querySelector('.moon-icon').style.display = 'block';
-    }
+    var isDark = saved === 'dark' || (!saved && prefersDark);
+    if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    updateThemeToggle(isDark);
 }
 
 function initResumeAge() {

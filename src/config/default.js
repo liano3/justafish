@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
         introduction: '正在学习计算机科学，关注智能系统与软件工程，并持续记录项目实践。',
         researchInterests: ['Intelligent Systems', 'Software Engineering', 'Human-Centered AI'],
         birthday: '2002-08-15',
+        phone: '182****9662',
         email: 'alex.chen@example.com',
         footer: {
             enabled: true,

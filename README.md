@@ -119,6 +119,7 @@ npm run preview
   "introduction": "正在学习计算机科学，关注智能系统与软件工程。",
   "researchInterests": ["Intelligent Systems", "Software Engineering", "Human-Centered AI"],
   "birthday": "2002-08-15",
+  "phone": "182****9662",
   "email": "alex.chen@example.com",
   "footer": {
     "enabled": true,
@@ -138,7 +139,7 @@ npm run preview
 
 `siteName` 控制浏览器标题和页头品牌名。`siteIcon` 是文本字段，支持 emoji 或短文本，并会同时用于页头图标和自动生成的 favicon，不需要额外上传图标文件。`name` 用于简历姓名和作者信息，`nickname` 用于首页名称；未设置 `nickname` 时使用 `name`。
 
-`researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`email` 显示在简历姓名下方；`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
+`researchInterests` 会在简历介绍下方显示为研究兴趣标签，并参与 SEO 关键词和结构化数据生成。`birthday` 使用 `YYYY-MM-DD` 格式，简历页会根据访问当天的日期自动计算年龄。`phone` 和 `email` 显示在简历姓名下方；电话支持使用 `182****9662` 这样的脱敏文本，并且不会生成拨号链接。`links` 只用于首页入口，支持的 `icon` 为 `blog`、`github`、`scholar`、`email`。
 
 SEO 描述、规范网址、分享信息和人物结构化数据会从个人信息自动生成。需要覆盖默认分享内容时，可在 `PROFILE_JSON` 中额外设置 `seoDescription` 和 `shareImage`；`shareImage` 支持站内相对路径或完整 HTTPS 地址。
 
