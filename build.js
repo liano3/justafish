@@ -2,6 +2,57 @@ const fs = require('fs');
 const path = require('path');
 const { DEFAULT_CONFIG, ICONS, EXTERNAL_ICON } = require('./src/config/default');
 
+function loadLocalEnvFile() {
+    const envPath = path.join(__dirname, '.env.local');
+    if (!fs.existsSync(envPath)) return;
+
+    const content = fs.readFileSync(envPath, 'utf8');
+    const assignments = [];
+    const lines = content.split(/\r?\n/);
+    let pending = null;
+
+    lines.forEach(rawLine => {
+        if (pending) {
+            pending.value += `\n${rawLine}`;
+            if (rawLine.endsWith(pending.quote)) {
+                assignments.push(pending);
+                pending = null;
+            }
+            return;
+        }
+
+        const trimmed = rawLine.trim();
+        if (!trimmed || trimmed.startsWith('#')) return;
+
+        const equalsIndex = rawLine.indexOf('=');
+        if (equalsIndex === -1) return;
+
+        const key = rawLine.slice(0, equalsIndex).trim();
+        const value = rawLine.slice(equalsIndex + 1).trim();
+        const quote = value[0];
+        if ((quote === "'" || quote === '"') && !value.endsWith(quote)) {
+            pending = { key, value, quote };
+            return;
+        }
+        assignments.push({ key, value });
+    });
+
+    assignments.forEach(({ key, value: rawValue }) => {
+        let value = rawValue.trim();
+        if (!key) return;
+
+        if (
+            (value.startsWith("'") && value.endsWith("'"))
+            || (value.startsWith('"') && value.endsWith('"'))
+        ) {
+            value = value.slice(1, -1);
+        }
+        process.env[key] = value;
+    });
+}
+
+loadLocalEnvFile();
+
 function parseJsonEnv(env, defaultValue) {
     if (!env) return defaultValue;
     try {
