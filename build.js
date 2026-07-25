@@ -9,7 +9,7 @@ const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
 const UI_TEXT = {
     zh: {
         NAV_HOME: '首页', NAV_RESUME: '简历', NAV_BOOKMARKS: '书签', NAV_APPS: '应用',
-        SWITCH_LANGUAGE_ARIA: 'Switch to English', THEME_TO_DARK: '切换到深色模式',
+        SWITCH_LANGUAGE_ARIA: 'Switch to English', GITHUB_PROJECT_ARIA: '查看 GitHub 项目', THEME_TO_DARK: '切换到深色模式',
         DOWNLOAD_PDF: '下载 PDF', BOOKMARKS_TITLE: '我的书签', BOOKMARK_SEARCH_LABEL: '搜索书签',
         BOOKMARK_SEARCH_PLACEHOLDER: '搜索分类、名称或网址', BOOKMARK_CLEAR: '清空搜索', BOOKMARK_EMPTY: '没有匹配的书签',
         APPS_TITLE: '实用工具与小游戏', APPS_LOADING: '正在加载应用', CLOCK: '时钟',
@@ -38,7 +38,7 @@ const UI_TEXT = {
     },
     en: {
         NAV_HOME: 'Home', NAV_RESUME: 'Resume', NAV_BOOKMARKS: 'Bookmarks', NAV_APPS: 'Apps',
-        SWITCH_LANGUAGE_ARIA: 'Switch to Chinese', THEME_TO_DARK: 'Switch to dark mode',
+        SWITCH_LANGUAGE_ARIA: 'Switch to Chinese', GITHUB_PROJECT_ARIA: 'View project on GitHub', THEME_TO_DARK: 'Switch to dark mode',
         DOWNLOAD_PDF: 'Download PDF', BOOKMARKS_TITLE: 'My Bookmarks', BOOKMARK_SEARCH_LABEL: 'Search bookmarks',
         BOOKMARK_SEARCH_PLACEHOLDER: 'Search categories, names, or URLs', BOOKMARK_CLEAR: 'Clear search', BOOKMARK_EMPTY: 'No matching bookmarks',
         APPS_TITLE: 'Tools & Mini Games', APPS_LOADING: 'Loading apps', CLOCK: 'Clock',
