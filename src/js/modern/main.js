@@ -1,7 +1,10 @@
 var modernClock = null;
 var appsLoadPromise = null;
 var appsInitialized = false;
-var validPageIds = ['home', 'resume', 'bookmarks', 'apps'];
+var validPageIds = Array.isArray(window.ENABLED_PAGE_IDS) && window.ENABLED_PAGE_IDS.length
+    ? window.ENABLED_PAGE_IDS.slice()
+    : ['home', 'resume', 'bookmarks', 'apps'];
+var defaultPageId = validPageIds[0];
 var currentPageId = null;
 var backToTopButton = null;
 var backToTopProgress = null;
@@ -15,8 +18,8 @@ function updateBackToTopVisibility() {
         ? Math.min(100, Math.max(0, Math.round(window.scrollY / scrollableDistance * 100)))
         : 0;
     backToTopButton.hidden = window.scrollY <= 320;
-    backToTopButton.setAttribute('aria-label', '返回顶部，已阅读 ' + progress + '%');
-    backToTopButton.title = '返回顶部 · ' + progress + '%';
+    backToTopButton.setAttribute('aria-label', t('backToTopProgress', { progress: progress }));
+    backToTopButton.title = t('backToTopTitle', { progress: progress });
     if (backToTopProgress) backToTopProgress.style.strokeDashoffset = String(100 - progress);
     backToTopTicking = false;
 }
@@ -46,7 +49,7 @@ function setAppsLoadState(state) {
     var message = status.querySelector('[data-apps-load-message]');
     status.hidden = !isLoading && !hasError;
     status.classList.toggle('is-error', hasError);
-    if (message) message.textContent = hasError ? '应用加载失败，请刷新后重试' : '正在加载应用';
+    if (message) message.textContent = hasError ? t('appsLoadError') : t('appsLoading');
     grid.classList.toggle('is-loading', isLoading);
     grid.classList.toggle('has-load-error', hasError);
     grid.setAttribute('aria-busy', isLoading.toString());
@@ -59,13 +62,13 @@ function loadAppsBundle() {
     setAppsLoadState('loading');
     appsLoadPromise = new Promise(function(resolve, reject) {
         var script = document.createElement('script');
-        script.src = './assets/apps.js';
+        script.src = (window.SITE_BASE_PATH || './') + 'assets/apps.js';
         script.async = true;
         script.onload = function() {
             if (window.JustAFishAppModules) resolve(window.JustAFishAppModules);
-            else reject(new Error('应用模块没有正确注册'));
+            else reject(new Error(t('appsRegistrationError')));
         };
-        script.onerror = function() { reject(new Error('应用代码加载失败')); };
+        script.onerror = function() { reject(new Error(t('appsBundleError'))); };
         document.head.appendChild(script);
     });
     return appsLoadPromise;
@@ -118,7 +121,7 @@ function renderPage(pageId) {
 }
 
 function getPageFromHash() {
-    if (!window.location.hash) return 'home';
+    if (!window.location.hash) return defaultPageId;
     var pageId = window.location.hash.slice(1);
     return validPageIds.indexOf(pageId) === -1 ? null : pageId;
 }
@@ -131,8 +134,10 @@ function getPageUrl(pageId) {
 function syncPageFromLocation() {
     var pageId = getPageFromHash();
     if (!pageId) {
-        window.history.replaceState({ page: 'home' }, '', getPageUrl('home'));
-        pageId = 'home';
+        pageId = defaultPageId;
+        window.history.replaceState({ page: pageId }, '', getPageUrl(pageId));
+    } else if (!window.location.hash && pageId !== 'home') {
+        window.history.replaceState({ page: pageId }, '', getPageUrl(pageId));
     } else if (pageId === 'home' && window.location.hash) {
         window.history.replaceState({ page: 'home' }, '', getPageUrl('home'));
     }
@@ -149,6 +154,13 @@ window.switchPage = function(pageId) {
     renderPage(pageId);
 };
 
+/* FEATURE:language:START */
+window.switchLanguage = function(link) {
+    var target = link.getAttribute('href') || '/';
+    window.location.href = target + (window.location.hash || '');
+};
+/* FEATURE:language:END */
+
 function initPageRouting() {
     syncPageFromLocation();
     window.addEventListener('popstate', syncPageFromLocation);
@@ -157,14 +169,14 @@ function initPageRouting() {
 
 function updateThemeToggle(isDark) {
     var toggle = document.querySelector('.theme-toggle');
-    var label = isDark ? '切换到浅色模式' : '切换到深色模式';
+    var label = isDark ? t('themeToLight') : t('themeToDark');
     if (toggle) {
         toggle.setAttribute('aria-label', label);
         toggle.setAttribute('aria-pressed', isDark.toString());
         toggle.title = label;
     }
-    document.querySelector('.sun-icon').style.display = isDark ? 'none' : 'block';
-    document.querySelector('.moon-icon').style.display = isDark ? 'block' : 'none';
+    document.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
+    document.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
 }
 
 window.toggleTheme = function() {
@@ -194,7 +206,109 @@ function initResumeAge() {
     var today = new Date();
     var age = today.getFullYear() - parts[0];
     if (today.getMonth() < parts[1] - 1 || (today.getMonth() === parts[1] - 1 && today.getDate() < parts[2])) age--;
-    if (age >= 0) ageDisplay.textContent = age + ' 岁';
+    if (age >= 0) ageDisplay.textContent = t('ageYears', { age: age });
+}
+
+function setResumeActionStatus(message) {
+    var status = $('resumeActionStatus');
+    if (status) status.textContent = message;
+}
+
+function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise(function(resolve, reject) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.top = '0';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+        var copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch (error) {
+            copied = false;
+        }
+        textarea.remove();
+        if (copied) resolve();
+        else reject(new Error(t('copyNotAllowed')));
+    });
+}
+
+function downloadPreparedResume(button) {
+    var label = button.querySelector('[data-resume-pdf-label]');
+    var url = button.dataset.pdfUrl || '/resume.pdf';
+    var filename = button.dataset.pdfFilename || 'resume.pdf';
+    button.disabled = true;
+    button.classList.remove('is-unavailable');
+    if (label) label.textContent = t('pdfChecking');
+    setResumeActionStatus(t('pdfCheckingStatus'));
+
+    return fetch(url, { method: 'HEAD', cache: 'no-store' }).then(function(response) {
+        var contentType = response.headers.get('content-type') || '';
+        if (!response.ok || contentType.toLowerCase().indexOf('application/pdf') === -1) {
+            throw new Error(t('pdfMissing'));
+        }
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        if (label) label.textContent = t('pdfDownloading');
+        setResumeActionStatus(t('pdfDownloadingStatus'));
+    }).catch(function() {
+        button.classList.add('is-unavailable');
+        if (label) label.textContent = t('comingSoon');
+        setResumeActionStatus(t('comingSoon'));
+    }).finally(function() {
+        button.disabled = false;
+        setTimeout(function() {
+            button.classList.remove('is-unavailable');
+            if (label) label.textContent = t('downloadPdf');
+        }, 2200);
+    });
+}
+
+function initResumeActions() {
+    var copyButton = document.querySelector('[data-copy-email]');
+    var pdfButton = $('resumePdfDownload');
+    var copyResetTimer = null;
+
+    if (copyButton) {
+        copyButton.addEventListener('click', function() {
+            var email = copyButton.dataset.copyEmail || '';
+            copyText(email).then(function() {
+                clearTimeout(copyResetTimer);
+                copyButton.classList.add('is-copied');
+                copyButton.setAttribute('aria-label', t('emailCopied'));
+                copyButton.title = t('copied');
+                setResumeActionStatus(t('emailCopiedStatus', { email: email }));
+                copyResetTimer = setTimeout(function() {
+                    copyButton.classList.remove('is-copied');
+                    copyButton.setAttribute('aria-label', t('copyEmail'));
+                    copyButton.title = t('copyEmail');
+                }, 1800);
+            }).catch(function() {
+                setResumeActionStatus(t('copyEmailFailed'));
+                copyButton.setAttribute('aria-label', t('copyEmailFailed'));
+                copyButton.title = t('copyFailed');
+            });
+        });
+    }
+
+    if (pdfButton) {
+        pdfButton.addEventListener('click', function() {
+            if (!pdfButton.disabled) downloadPreparedResume(pdfButton);
+        });
+    }
 }
 
 function initAnnouncements() {
@@ -225,7 +339,7 @@ function initAnnouncements() {
     var dots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
     dots.forEach(function(dot, index) {
         dot.dataset.announcementIndex = index;
-        dot.setAttribute('aria-label', '查看第 ' + (index + 1) + ' 条公告');
+        dot.setAttribute('aria-label', t('announcementIndex', { index: index + 1 }));
     });
 
     var currentIndex = -1;
@@ -336,8 +450,8 @@ function initToolFullscreen() {
         card.removeAttribute('aria-modal');
         card.removeAttribute('aria-labelledby');
         button.setAttribute('aria-expanded', 'false');
-        button.setAttribute('aria-label', '全屏查看' + title);
-        button.title = '全屏查看';
+        button.setAttribute('aria-label', t('fullscreenView', { title: title }));
+        button.title = t('fullscreen');
         document.body.classList.remove('tool-fullscreen-open');
         restoreBackground();
         activeCard = null;
@@ -354,8 +468,8 @@ function initToolFullscreen() {
         card.setAttribute('aria-modal', 'true');
         card.setAttribute('aria-labelledby', titleElement.id);
         button.setAttribute('aria-expanded', 'true');
-        button.setAttribute('aria-label', '退出' + title + '全屏');
-        button.title = '恢复';
+        button.setAttribute('aria-label', t('fullscreenExit', { title: title }));
+        button.title = t('restore');
         document.body.classList.add('tool-fullscreen-open');
         setBackgroundInert(card);
         activeCard = card;
@@ -370,9 +484,9 @@ function initToolFullscreen() {
         var button = document.createElement('button');
         button.type = 'button';
         button.className = 'tool-fullscreen-toggle';
-        button.setAttribute('aria-label', '全屏查看' + title);
+        button.setAttribute('aria-label', t('fullscreenView', { title: title }));
         button.setAttribute('aria-expanded', 'false');
-        button.title = '全屏查看';
+        button.title = t('fullscreen');
         button.innerHTML = '<svg class="tool-maximize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg><svg class="tool-minimize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>';
         button.addEventListener('click', function() {
             if (activeCard === card) closeFullscreen();
@@ -479,7 +593,9 @@ function initBookmarkSearch() {
         });
 
         clearButton.hidden = !query;
-        status.textContent = query ? '找到 ' + visibleCount + ' 个书签' : '共 ' + totalCount + ' 个书签';
+        status.textContent = query
+            ? t('bookmarksFound', { count: visibleCount })
+            : t('bookmarksTotal', { count: totalCount });
         emptyState.hidden = !query || visibleCount > 0;
     }
 
@@ -549,6 +665,7 @@ function initModernSchulte() {
 
 initTheme();
 initResumeAge();
+initResumeActions();
 initAnnouncements();
 initBookmarkSearch();
 initBackToTop();

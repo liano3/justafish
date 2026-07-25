@@ -64,8 +64,8 @@ npm run preview
 2. 按顺序拼接 JS：`common.js` → 组件模块 → 主页入口
 3. 将 CSS/JS 内联到 HTML 模板中
 4. 注入配置数据（环境变量 > 默认配置）
-5. 输出 `dist/index.html`、`sitemap.xml` 和 `robots.txt`
-6. 复制静态资源（avatar.png、BingSiteAuth.xml）
+5. 输出中文首页 `dist/index.html`、英文首页 `dist/en/index.html`、`sitemap.xml` 和 `robots.txt`
+6. 复制静态资源（avatar.png、BingSiteAuth.xml、resume.pdf、resume-en.pdf；文件存在时复制）
 
 ### 修改内容
 
@@ -95,14 +95,45 @@ npm run preview
 
 | 变量名 | JSON 类型 | 说明 |
 |--------|-----------|------|
+| `PAGES_JSON` | 对象 | 控制页面和双语版本是否参与构建 |
 | `PROFILE_JSON` | 对象 | 个人信息、个人介绍和外部链接 |
 | `ANNOUNCEMENTS_JSON` | 数组 | 首页滚动公告 |
 | `EDUCATION_JSON` | 数组 | 教育经历 |
 | `AWARDS_JSON` | 数组 | 获奖经历 |
 | `WORKS_JSON` | 数组 | 项目与论文，通过 `tag` 区分 |
 | `BOOKMARKS` | 数组 | 收藏夹分组 |
+| `PROFILE_EN_JSON` | 对象 | 英文个人信息；未设置字段继承 `PROFILE_JSON` |
+| `ANNOUNCEMENTS_EN_JSON` | 数组 | 英文首页公告；未设置时回退中文数据 |
+| `EDUCATION_EN_JSON` | 数组 | 英文教育经历；未设置时回退中文数据 |
+| `AWARDS_EN_JSON` | 数组 | 英文获奖经历；未设置时回退中文数据 |
+| `WORKS_EN_JSON` | 数组 | 英文项目与论文；未设置时回退中文数据 |
+| `BOOKMARKS_EN` | 数组 | 英文收藏夹；未设置时回退中文数据 |
 
 原来的 `PROFILE_NAME`、`PROFILE_TITLE`、`PROFILE_AVATAR`、`PROFILE_SLOGAN`、`PROFILE_DOMAIN` 和 `PROFILE_LINKS` 已合并为 `PROFILE_JSON`。旧的动态列表 `ANNOUNCEMENTS` 不再读取，首页公告使用新的 `ANNOUNCEMENTS_JSON`。
+
+### 页面显示控制 (PAGES_JSON)
+
+```json
+{
+  "home": true,
+  "resume": true,
+  "bookmarks": true,
+  "apps": true,
+  "language": true
+}
+```
+
+设为 `false` 的页面会同时从中文和英文构建结果中移除，包括桌面菜单、移动端菜单和页面内容。例如 `{"resume": false}` 会去除简历入口和简历页，直接访问 `#resume` 时会自动进入第一个仍然启用的页面。未填写的字段默认显示；如果全部设为 `false`，构建会保留首页，避免生成空网站。
+
+- `"language": false`：不生成 `/en/`、英文 sitemap 条目、`hreflang` 和中英切换控件及代码。
+
+### 中英文页面
+
+构建会生成两套独立静态页面：中文位于 `/`，英文位于 `/en/`。页头语言按钮会保留当前页面锚点，例如 `/#resume` 与 `/en/#resume` 之间直接切换。两套页面分别输出语言信息、canonical、`hreflang`、结构化数据和 sitemap 条目，不依赖运行时翻译接口。
+
+英文配置采用覆盖模式：只需在 `*_EN*` 变量中填写需要翻译的字段，共享的头像、邮箱、域名、外链和页脚配置会继承中文版本。英文数组变量未设置或无效时会回退到对应的中文数组。
+
+简历 PDF 使用静态文件：中文页面下载根目录的 `resume.pdf`，英文页面下载 `resume-en.pdf`。下载文件名分别为“中文姓名-简历.pdf”和“English-Name-Resume.pdf”；源文件不存在时按钮会显示 `Coming soon...`。
 
 ### 个人信息 (PROFILE_JSON)
 
@@ -150,7 +181,6 @@ SEO 描述、规范网址、分享信息和人物结构化数据会从个人信�
 ```json
 [
   {
-    "enabled": true,
     "icon": "📢",
     "content": "欢迎来到示例个人主页。",
     "link": {
@@ -160,7 +190,6 @@ SEO 描述、规范网址、分享信息和人物结构化数据会从个人信�
     "expiresAt": "2026-12-31"
   },
   {
-    "enabled": true,
     "icon": "✨",
     "content": "新的项目与论文已经发布。",
     "link": null,
@@ -169,7 +198,7 @@ SEO 描述、规范网址、分享信息和人物结构化数据会从个人信�
 ]
 ```
 
-多条公告每 5 秒纵向切换，鼠标悬停或键盘聚焦时暂停。`icon`、`link` 和 `expiresAt` 可省略；`enabled` 为 `false` 或到期的公告会自动隐藏。没有有效公告时整个公告栏不渲染。
+多条公告每 5 秒纵向切换，鼠标悬停或键盘聚焦时暂停。`icon`、`link` 和 `expiresAt` 可省略；到期的公告会自动隐藏。不需要的公告直接从数组中删除，没有有效公告时整个公告栏不渲染。
 
 ### 教育经历 (EDUCATION_JSON)
 

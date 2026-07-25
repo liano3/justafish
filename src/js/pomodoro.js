@@ -49,7 +49,9 @@ function initPomodoro(opts) {
     }
 
     function updateStatus() {
-        statusDisplay.textContent = isWork ? (isRunning ? '专注中...' : '准备专注') : (isRunning ? '休息中...' : '准备休息');
+        statusDisplay.textContent = isWork
+            ? (isRunning ? t('pomodoroFocusRunning') : t('pomodoroFocusReady'))
+            : (isRunning ? t('pomodoroBreakRunning') : t('pomodoroBreakReady'));
     }
 
     function restoreTitle() {
@@ -126,19 +128,19 @@ function initPomodoro(opts) {
     }
 
     function triggerReminder(completedWork, isPreview) {
-        var message = completedWork ? '专注完成，休息一下' : '休息结束，开始专注';
+        var message = completedWork ? t('pomodoroWorkComplete') : t('pomodoroBreakComplete');
         var detail;
         if (isPreview) {
-            detail = soundToggle.checked ? '提醒声音正常，到点会自动提示' : '声音已关闭，到点仍会显示页面提醒';
+            detail = soundToggle.checked ? t('pomodoroPreviewSoundOn') : t('pomodoroPreviewSoundOff');
         } else {
-            detail = completedWork ? '已自动进入休息计时' : '已自动开始下一轮专注';
+            detail = completedWork ? t('pomodoroAutoBreak') : t('pomodoroAutoFocus');
         }
 
         playChime();
         showToast(message, detail);
         if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
         if (document.hidden) {
-            document.title = '提醒：' + message;
+            document.title = t('pomodoroReminderTitle', { message: message });
             if (titleTimer) clearTimeout(titleTimer);
             titleTimer = setTimeout(restoreTitle, 30000);
         }
@@ -214,11 +216,11 @@ function initPomodoro(opts) {
             }
             isRunning = false;
             clearTimerHandles();
-            startBtn.textContent = '继续';
+            startBtn.textContent = t('continue');
             updateDisplay();
         } else {
             isRunning = true;
-            startBtn.textContent = '暂停';
+            startBtn.textContent = t('pause');
             unlockAudio();
             scheduleTimer();
         }
@@ -231,7 +233,7 @@ function initPomodoro(opts) {
         isWork = true;
         totalTime = readMinutes(workInput, 25) * 60;
         timeLeft = totalTime;
-        startBtn.textContent = '开始';
+        startBtn.textContent = t('start');
         updateDisplay();
         updateStatus();
     }

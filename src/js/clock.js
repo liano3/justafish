@@ -51,7 +51,12 @@ function initClock(opts) {
         if (currentSecond !== lastSecond) {
             lastSecond = currentSecond;
             digitalClock.textContent = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(currentSecond).padStart(2, '0');
-            digitalDate.textContent = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][now.getDay()];
+            digitalDate.textContent = new Intl.DateTimeFormat(t('dateLocale'), {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            }).format(now);
         }
         secondHand.style.transform = 'rotate(' + ((currentSecond + now.getMilliseconds() / 1000) * 6) + 'deg)';
         minuteHand.style.transform = 'rotate(' + ((now.getMinutes() + currentSecond / 60) * 6) + 'deg)';

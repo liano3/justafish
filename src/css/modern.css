@@ -76,15 +76,29 @@ body {
 
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
+/* FEATURE:language:START */
+.language-switch {
+    min-width: 40px; height: 40px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); background: var(--bg);
+    font-size: 0.78rem; line-height: 1; font-weight: 600; text-decoration: none; transition: var(--transition);
+}
+.language-switch:hover { color: var(--primary); background: var(--bg-tertiary); }
+/* FEATURE:language:END */
+
 .theme-toggle {
     width: 40px; height: 40px; border-radius: var(--radius-sm); border: 1px solid var(--border);
     background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: var(--transition); color: var(--text-secondary);
 }
 .theme-toggle:hover { background: var(--bg-tertiary); color: var(--text); }
-.logo:focus-visible, .nav-link:focus-visible, .theme-toggle:focus-visible, .hero-link:focus-visible, .mobile-nav-link:focus-visible {
+
+.logo:focus-visible, .nav-link:focus-visible, .hero-link:focus-visible, .mobile-nav-link:focus-visible {
     outline: 2px solid var(--primary); outline-offset: 2px;
 }
+/* FEATURE:language:START */
+.language-switch:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* FEATURE:language:END */
+.theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .main { flex: 1; padding-top: 64px; }
 
@@ -132,6 +146,13 @@ body {
 }
 
 .resume-container { max-width: 1000px; margin: 0 auto; padding: 64px 24px 88px; }
+.resume-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.resume-pdf-download { min-height: 30px; padding: 5px 9px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); background: transparent; font: inherit; font-size: 0.74rem; line-height: 1.25; font-weight: 500; cursor: pointer; transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease; }
+.resume-pdf-download:hover { border-color: var(--primary); color: var(--primary); background: rgba(37, 99, 235, 0.06); }
+.resume-pdf-download:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.resume-pdf-download:disabled { cursor: wait; opacity: 0.65; }
+.resume-pdf-download.is-unavailable { border-color: var(--text-muted); color: var(--text-secondary); background: var(--bg-tertiary); }
+.resume-pdf-download svg { width: 14px; height: 14px; flex: 0 0 auto; }
 .resume-profile { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 48px; align-items: start; padding-bottom: 48px; border-bottom: 1px solid var(--border); }
 .resume-profile-content { min-width: 0; }
 .resume-name { font-size: 1.85rem; line-height: 1.25; font-weight: 700; }
@@ -140,6 +161,15 @@ body {
 a.resume-contact:hover { color: var(--primary); }
 .resume-contact svg { width: 15px; height: 15px; flex: 0 0 auto; }
 .resume-contact span { overflow-wrap: anywhere; }
+.resume-email-group { max-width: 100%; display: inline-flex; align-items: center; gap: 3px; }
+.resume-copy-button { width: 27px; height: 27px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 6px; color: var(--text-muted); background: transparent; cursor: pointer; transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease; }
+.resume-copy-button:hover { color: var(--primary); background: var(--bg-tertiary); }
+.resume-copy-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.resume-copy-button svg { width: 15px; height: 15px; }
+.resume-copy-success-icon { display: none; }
+.resume-copy-button.is-copied { color: #16a34a; background: rgba(22, 163, 74, 0.1); }
+.resume-copy-button.is-copied .resume-copy-icon { display: none; }
+.resume-copy-button.is-copied .resume-copy-success-icon { display: block; }
 .resume-introduction { max-width: 700px; margin-top: 20px; color: var(--text-secondary); font-size: 1rem; line-height: 1.8; }
 .research-interests { max-width: 720px; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 7px; }
 .research-interests span { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); background: var(--bg-secondary); font-size: 0.75rem; line-height: 1.4; }

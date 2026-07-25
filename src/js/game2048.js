@@ -142,7 +142,7 @@ Game2048Actuator.prototype.actuate = function(grid, metadata) {
     this.score.textContent = metadata.score;
     this.best.textContent = metadata.bestScore;
     if (metadata.terminated) {
-        this.messageText.textContent = metadata.over ? '游戏结束' : '达到 2048';
+        this.messageText.textContent = metadata.over ? t('gameOver') : t('gameWon');
         this.keepPlayingButton.hidden = metadata.over;
         this.message.classList.add('show');
     } else {

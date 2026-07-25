@@ -29,21 +29,18 @@ const DEFAULT_CONFIG = {
     },
     announcements: [
         {
-            enabled: true,
             icon: '📢',
             content: '欢迎来到示例个人主页，页面内容可以通过环境变量配置。',
             link: { label: '配置说明', url: 'https://example.com/docs' },
             expiresAt: ''
         },
         {
-            enabled: true,
             icon: '✨',
             content: '简历页面已整理项目、论文、教育和获奖经历。',
             link: null,
             expiresAt: ''
         },
         {
-            enabled: true,
             icon: '🧩',
             content: '应用页面提供时钟、番茄钟、舒尔特方格和 2048。',
             link: null,
