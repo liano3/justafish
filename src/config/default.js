@@ -118,25 +118,25 @@ const DEFAULT_CONFIG = {
         {
             "name": "常用网站",
             "links":[
-                { "url": "https://example.com/", "label": "Example" },
-                { "url": "https://github.com/", "label": "GitHub" },
-                { "url": "https://developer.mozilla.org/", "label": "MDN Web Docs" }
+                { "url": "https://example.com/", "label": "Example", "description": "用于文档和测试的示例域名。", "tags": ["参考", "Web"] },
+                { "url": "https://github.com/", "label": "GitHub", "description": "代码托管、协作开发与开源项目平台。", "tags": ["开发", "Git"] },
+                { "url": "https://developer.mozilla.org/", "label": "MDN Web Docs", "description": "Web 开发技术文档与浏览器 API 参考。", "tags": ["开发", "Web", "文档"] }
             ]
         },
         {
             "name": "学习资源",
             "links":[
-                { "url": "https://arxiv.org/", "label": "arXiv" },
-                { "url": "https://paperswithcode.com/", "label": "Papers with Code" },
-                { "url": "https://ocw.mit.edu/", "label": "MIT OpenCourseWare" }
+                { "url": "https://arxiv.org/", "label": "arXiv", "description": "查找和阅读多学科预印本论文。", "tags": ["学术", "论文"] },
+                { "url": "https://paperswithcode.com/", "label": "Papers with Code", "description": "联系机器学习论文、代码和基准结果。", "tags": ["学术", "AI", "代码"] },
+                { "url": "https://ocw.mit.edu/", "label": "MIT OpenCourseWare", "description": "MIT 免费开放的课程讲义与学习资源。", "tags": ["课程", "学习"] }
             ]
         },
         {
             "name": "在线工具",
             "links":[
-                { "url": "https://excalidraw.com/", "label": "Excalidraw" },
-                { "url": "https://www.overleaf.com/", "label": "Overleaf" },
-                { "url": "https://jsonformatter.org/", "label": "JSON Formatter" }
+                { "url": "https://excalidraw.com/", "label": "Excalidraw", "description": "手绘风格的在线白板与流程图工具。", "tags": ["绘图", "效率"] },
+                { "url": "https://www.overleaf.com/", "label": "Overleaf", "description": "支持多人协作的在线 LaTeX 编辑器。", "tags": ["写作", "LaTeX"] },
+                { "url": "https://jsonformatter.org/", "label": "JSON Formatter", "description": "格式化、校验和查看 JSON 数据。", "tags": ["开发", "JSON"] }
             ]
         }
     ]

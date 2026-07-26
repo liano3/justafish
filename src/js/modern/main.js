@@ -535,10 +535,12 @@ function initBookmarkSearch() {
     var status = $('bookmarkSearchStatus');
     var emptyState = $('bookmarkSearchEmpty');
     var categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
+    var tagButtons = Array.from(document.querySelectorAll('[data-bookmark-tag]'));
+    var activeTag = '';
     if (!input || !clearButton || !status || !emptyState || !categories.length) return;
 
     var totalCount = categories.reduce(function(total, category) {
-        return total + category.querySelectorAll('[data-bookmark-label]').length;
+        return total + category.querySelectorAll('.bookmark-link').length;
     }, 0);
 
     function restoreCategory(category) {
@@ -567,36 +569,42 @@ function initBookmarkSearch() {
     }
 
     function filterBookmarks() {
-        var query = input.value.trim().toLocaleLowerCase();
+        var query = input.value.trim().toLowerCase();
+        var filterActive = Boolean(query || activeTag);
         var visibleCount = 0;
 
         categories.forEach(function(category) {
-            var categoryName = (category.dataset.bookmarkCategory || '').toLocaleLowerCase();
+            var categoryName = (category.dataset.bookmarkCategory || '').toLowerCase();
             var categoryMatches = Boolean(query) && categoryName.indexOf(query) !== -1;
-            var links = Array.from(category.querySelectorAll('[data-bookmark-label]'));
+            var links = Array.from(category.querySelectorAll('.bookmark-link'));
             var categoryCount = 0;
 
             links.forEach(function(link) {
-                var label = (link.dataset.bookmarkLabel || '').toLocaleLowerCase();
-                var url = (link.dataset.bookmarkUrl || '').toLocaleLowerCase();
-                var matches = !query || categoryMatches || label.indexOf(query) !== -1 || url.indexOf(query) !== -1;
+                var searchText = link.textContent.toLowerCase();
+                var url = (link.dataset.bookmarkUrl || '').toLowerCase();
+                var queryMatches = !query || categoryMatches || searchText.indexOf(query) !== -1
+                    || url.indexOf(query) !== -1;
+                var tagMatches = !activeTag || Array.from(link.querySelectorAll('[data-bookmark-tag-value]')).some(function(tag) {
+                    return tag.dataset.bookmarkTagValue === activeTag;
+                });
+                var matches = queryMatches && tagMatches;
                 link.hidden = !matches;
                 if (matches) categoryCount++;
             });
 
-            category.hidden = Boolean(query) && categoryCount === 0;
+            category.hidden = filterActive && categoryCount === 0;
             var count = category.querySelector('.category-count');
             if (count) count.textContent = String(categoryCount);
-            if (query && categoryCount) expandForSearch(category);
-            else if (!query) restoreCategory(category);
+            if (filterActive && categoryCount) expandForSearch(category);
+            else if (!filterActive) restoreCategory(category);
             visibleCount += categoryCount;
         });
 
         clearButton.hidden = !query;
-        status.textContent = query
+        status.textContent = filterActive
             ? t('bookmarksFound', { count: visibleCount })
             : t('bookmarksTotal', { count: totalCount });
-        emptyState.hidden = !query || visibleCount > 0;
+        emptyState.hidden = !filterActive || visibleCount > 0;
     }
 
     input.addEventListener('input', filterBookmarks);
@@ -610,6 +618,18 @@ function initBookmarkSearch() {
         input.value = '';
         filterBookmarks();
         input.focus();
+    });
+
+    tagButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            activeTag = (button.dataset.bookmarkTag || '').toLowerCase();
+            tagButtons.forEach(function(item) {
+                var selected = item === button;
+                item.classList.toggle('is-active', selected);
+                item.setAttribute('aria-pressed', selected.toString());
+            });
+            filterBookmarks();
+        });
     });
 }
 

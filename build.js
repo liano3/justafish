@@ -11,7 +11,8 @@ const UI_TEXT = {
         NAV_HOME: '首页', NAV_RESUME: '简历', NAV_BOOKMARKS: '书签', NAV_APPS: '应用',
         SWITCH_LANGUAGE_ARIA: 'Switch to English', GITHUB_PROJECT_ARIA: '查看 GitHub 项目', THEME_TO_DARK: '切换到深色模式',
         DOWNLOAD_PDF: '下载 PDF', BOOKMARKS_TITLE: '我的书签', BOOKMARK_SEARCH_LABEL: '搜索书签',
-        BOOKMARK_SEARCH_PLACEHOLDER: '搜索分类、名称或网址', BOOKMARK_CLEAR: '清空搜索', BOOKMARK_EMPTY: '没有匹配的书签',
+        BOOKMARK_SEARCH_PLACEHOLDER: '搜索分类、名称、描述、标签或网址', BOOKMARK_CLEAR: '清空搜索', BOOKMARK_EMPTY: '没有匹配的书签',
+        BOOKMARK_TAG_FILTER_ARIA: '按标签筛选书签', BOOKMARK_TAG_ALL: '全部',
         APPS_TITLE: '实用工具与小游戏', APPS_LOADING: '正在加载应用', CLOCK: '时钟',
         CLOCK_DATE_PLACEHOLDER: '2024年1月1日 星期一', POMODORO: '番茄钟', POMODORO_READY: '准备专注',
         START: '开始', RESET: '重置', SOUND_REMINDER: '声音提醒', PREVIEW_REMINDER: '试听提醒',
@@ -40,7 +41,8 @@ const UI_TEXT = {
         NAV_HOME: 'Home', NAV_RESUME: 'Resume', NAV_BOOKMARKS: 'Bookmarks', NAV_APPS: 'Apps',
         SWITCH_LANGUAGE_ARIA: 'Switch to Chinese', GITHUB_PROJECT_ARIA: 'View project on GitHub', THEME_TO_DARK: 'Switch to dark mode',
         DOWNLOAD_PDF: 'Download PDF', BOOKMARKS_TITLE: 'My Bookmarks', BOOKMARK_SEARCH_LABEL: 'Search bookmarks',
-        BOOKMARK_SEARCH_PLACEHOLDER: 'Search categories, names, or URLs', BOOKMARK_CLEAR: 'Clear search', BOOKMARK_EMPTY: 'No matching bookmarks',
+        BOOKMARK_SEARCH_PLACEHOLDER: 'Search categories, names, descriptions, tags, or URLs', BOOKMARK_CLEAR: 'Clear search', BOOKMARK_EMPTY: 'No matching bookmarks',
+        BOOKMARK_TAG_FILTER_ARIA: 'Filter bookmarks by tag', BOOKMARK_TAG_ALL: 'All',
         APPS_TITLE: 'Tools & Mini Games', APPS_LOADING: 'Loading apps', CLOCK: 'Clock',
         CLOCK_DATE_PLACEHOLDER: 'Monday, January 1, 2024', POMODORO: 'Pomodoro Timer', POMODORO_READY: 'Ready to focus',
         START: 'Start', RESET: 'Reset', SOUND_REMINDER: 'Sound reminder', PREVIEW_REMINDER: 'Preview reminder',
@@ -236,6 +238,17 @@ function getResearchInterests(profile) {
     return Array.isArray(profile.researchInterests)
         ? profile.researchInterests.filter(item => typeof item === 'string').map(item => item.trim()).filter(Boolean)
         : [];
+}
+
+function getBookmarkTags(bookmark) {
+    if (!Array.isArray(bookmark.tags)) return [];
+    const seen = new Set();
+    return bookmark.tags.map(tag => String(tag || '').trim()).filter(tag => {
+        const normalized = tag.toLowerCase();
+        if (!tag || seen.has(normalized)) return false;
+        seen.add(normalized);
+        return true;
+    });
 }
 
 function createSeoData(profile, locale, text) {
@@ -652,9 +665,38 @@ function buildHomepage(config, seo, locale) {
 
     const bookmarkTotal = config.bookmarks.reduce((total, folder) => total + folder.links.length, 0);
     html = html.replace('{{BOOKMARK_STATUS}}', escapeHtml(formatMessage(text.bookmarksTotal, { count: bookmarkTotal })));
+
+    const bookmarkTagCounts = new Map();
+    config.bookmarks.forEach(folder => {
+        folder.links.forEach(link => {
+            getBookmarkTags(link).forEach(label => {
+                const normalized = label.toLowerCase();
+                const existing = bookmarkTagCounts.get(normalized);
+                if (existing) existing.count++;
+                else bookmarkTagCounts.set(normalized, { label, count: 1 });
+            });
+        });
+    });
+    const bookmarkTagFilter = bookmarkTagCounts.size
+        ? `<div class="bookmark-tag-filter" id="bookmarkTagFilter" aria-label="${escapeHtml(text.BOOKMARK_TAG_FILTER_ARIA)}">
+                        <button type="button" class="bookmark-tag-filter-button is-active" data-bookmark-tag="" aria-pressed="true">${escapeHtml(text.BOOKMARK_TAG_ALL)} <span>${bookmarkTotal}</span></button>
+                        ${Array.from(bookmarkTagCounts.entries()).map(([normalized, tag]) => `<button type="button" class="bookmark-tag-filter-button" data-bookmark-tag="${escapeHtml(normalized)}" aria-pressed="false">${escapeHtml(tag.label)} <span>${tag.count}</span></button>`).join('')}
+                    </div>`
+        : '';
+    html = html.replace('{{BOOKMARK_TAG_FILTER}}', bookmarkTagFilter);
+
     const bookmarks = config.bookmarks.map((folder, idx) => {
         const links = folder.links.map(l => {
-            return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-bookmark-label="${escapeHtml(l.label)}" data-bookmark-url="${escapeHtml(l.url)}">${escapeHtml(l.label)}${EXTERNAL_ICON}</a>`;
+            const description = String(l.description || '').trim();
+            const tags = getBookmarkTags(l);
+            const tagItems = tags.length
+                ? `<span class="bookmark-link-tags">${tags.map(tag => `<span data-bookmark-tag-value="${escapeHtml(tag.toLowerCase())}">${escapeHtml(tag)}</span>`).join('')}</span>`
+                : '';
+            return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
+                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${EXTERNAL_ICON}</span>
+                            ${description ? `<span class="bookmark-link-description">${escapeHtml(description)}</span>` : ''}
+                            ${tagItems}
+                        </a>`;
         }).join('\n                        ');
         const groupId = `bookmarkGroup${idx + 1}`;
         return `<div class="bookmark-category" data-bookmark-category="${escapeHtml(folder.name)}">
