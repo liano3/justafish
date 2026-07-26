@@ -159,11 +159,12 @@ function initPomodoro(opts) {
 
     function switchMode() {
         if (isWork) {
+            var completedMinutes = totalTime / 60;
             isWork = false;
             totalTime = readMinutes(breakInput, 5) * 60;
             timeLeft = totalTime;
             completedCount++;
-            totalMinutes += readMinutes(workInput, 25);
+            totalMinutes += completedMinutes;
             localStorage.setItem('pomodoroCount', completedCount.toString());
             localStorage.setItem('pomodoroTotal', totalMinutes.toString());
             countDisplay.textContent = completedCount;

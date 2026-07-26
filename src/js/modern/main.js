@@ -1,6 +1,9 @@
+/* PAGE:apps:START */
 var modernClock = null;
 var appsLoadPromise = null;
 var appsInitialized = false;
+var closeToolFullscreen = function() {};
+/* PAGE:apps:END */
 var validPageIds = Array.isArray(window.ENABLED_PAGE_IDS) && window.ENABLED_PAGE_IDS.length
     ? window.ENABLED_PAGE_IDS.slice()
     : ['home', 'resume', 'bookmarks', 'apps'];
@@ -10,6 +13,16 @@ var backToTopButton = null;
 var backToTopProgress = null;
 var backToTopTicking = false;
 var pageScrollPositions = {};
+var themeTimer = null;
+var themeOverride = null;
+
+/* PAGE:apps:START */
+function iconMarkup(iconId, className) {
+    var classAttribute = className ? ' class="' + className + '"' : '';
+    return '<svg' + classAttribute + ' aria-hidden="true" focusable="false"><use href="'
+        + window.ICON_SPRITE_URL + '#' + iconId + '"></use></svg>';
+}
+/* PAGE:apps:END */
 
 function updateBackToTopVisibility() {
     if (!backToTopButton) return;
@@ -40,6 +53,7 @@ function initBackToTop() {
     updateBackToTopVisibility();
 }
 
+/* PAGE:apps:START */
 function setAppsLoadState(state) {
     var status = $('appsLoadStatus');
     var grid = $('appsGrid');
@@ -62,7 +76,7 @@ function loadAppsBundle() {
     setAppsLoadState('loading');
     appsLoadPromise = new Promise(function(resolve, reject) {
         var script = document.createElement('script');
-        script.src = (window.SITE_BASE_PATH || './') + 'assets/apps.js';
+        script.src = window.APPS_SCRIPT_URL || ((window.SITE_BASE_PATH || './') + 'assets/apps.js');
         script.async = true;
         script.onload = function() {
             if (window.JustAFishAppModules) resolve(window.JustAFishAppModules);
@@ -92,10 +106,14 @@ function ensureAppsInitialized() {
         throw error;
     });
 }
+/* PAGE:apps:END */
 
 function renderPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
     if (currentPageId) pageScrollPositions[currentPageId] = window.scrollY;
+    /* PAGE:apps:START */
+    if (pageId !== 'apps') closeToolFullscreen(false);
+    /* PAGE:apps:END */
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var page = $(pageId);
     if (!page) return;
@@ -111,6 +129,7 @@ function renderPage(pageId) {
         window.scrollTo(0, pageScrollPositions[pageId] || 0);
         updateBackToTopVisibility();
     });
+    /* PAGE:apps:START */
     if (pageId === 'apps') {
         ensureAppsInitialized().then(function(clock) {
             if (currentPageId === 'apps') clock.start();
@@ -118,6 +137,7 @@ function renderPage(pageId) {
     } else if (modernClock) {
         modernClock.stop();
     }
+    /* PAGE:apps:END */
 }
 
 function getPageFromHash() {
@@ -175,27 +195,72 @@ function updateThemeToggle(isDark) {
         toggle.setAttribute('aria-pressed', isDark.toString());
         toggle.title = label;
     }
-    document.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
-    document.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
+    var sunIcon = document.querySelector('.sun-icon');
+    var moonIcon = document.querySelector('.moon-icon');
+    if (sunIcon) sunIcon.style.display = isDark ? 'block' : 'none';
+    if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
 }
 
-window.toggleTheme = function() {
-    var html = document.documentElement;
-    var isDark = html.getAttribute('data-theme') === 'dark';
-    var nextIsDark = !isDark;
-    if (nextIsDark) html.setAttribute('data-theme', 'dark');
-    else html.removeAttribute('data-theme');
-    localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
-    updateThemeToggle(nextIsDark);
-};
+function getThemeTiming(now) {
+    var schedule = window.THEME_SCHEDULE || {};
+    var lightStartHour = Number(schedule.lightStartHour);
+    var darkStartHour = Number(schedule.darkStartHour);
+    lightStartHour = Number.isFinite(lightStartHour) ? lightStartHour : 7;
+    darkStartHour = Number.isFinite(darkStartHour) ? darkStartHour : 19;
 
-function initTheme() {
-    var saved = localStorage.getItem('theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var isDark = saved === 'dark' || (!saved && prefersDark);
+    var hour = now.getHours();
+    var boundary = new Date(now);
+    boundary.setMinutes(0, 0, 0);
+    if (hour < lightStartHour) {
+        boundary.setHours(lightStartHour);
+    } else if (hour < darkStartHour) {
+        boundary.setHours(darkStartHour);
+    } else {
+        boundary.setDate(boundary.getDate() + 1);
+        boundary.setHours(lightStartHour);
+    }
+    return {
+        isDark: hour < lightStartHour || hour >= darkStartHour,
+        boundary: boundary.getTime()
+    };
+}
+
+function applyTheme(isDark) {
     if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
     else document.documentElement.removeAttribute('data-theme');
     updateThemeToggle(isDark);
+}
+
+function syncTheme() {
+    var now = new Date();
+    var timing = getThemeTiming(now);
+    if (themeOverride && now.getTime() >= themeOverride.until) {
+        themeOverride = null;
+    }
+    applyTheme(themeOverride ? themeOverride.isDark : timing.isDark);
+
+    if (themeTimer) window.clearTimeout(themeTimer);
+    themeTimer = window.setTimeout(function() {
+        themeOverride = null;
+        syncTheme();
+    }, Math.max(1000, timing.boundary - now.getTime() + 250));
+}
+
+window.toggleTheme = function() {
+    var now = new Date();
+    themeOverride = {
+        isDark: document.documentElement.getAttribute('data-theme') !== 'dark',
+        until: getThemeTiming(now).boundary
+    };
+    syncTheme();
+};
+
+function initTheme() {
+    syncTheme();
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState !== 'visible') return;
+        syncTheme();
+    });
 }
 
 function initResumeAge() {
@@ -410,6 +475,7 @@ function initAnnouncements() {
     });
 }
 
+/* PAGE:apps:START */
 function initToolFullscreen() {
     var cards = Array.from(document.querySelectorAll('.tool-card'));
     var activeCard = null;
@@ -440,7 +506,7 @@ function initToolFullscreen() {
             .filter(function(element) { return !element.hidden && element.getClientRects().length > 0; });
     }
 
-    function closeFullscreen() {
+    function closeFullscreen(restoreFocus) {
         if (!activeCard) return;
         var card = activeCard;
         var button = card.querySelector('.tool-fullscreen-toggle');
@@ -455,7 +521,7 @@ function initToolFullscreen() {
         document.body.classList.remove('tool-fullscreen-open');
         restoreBackground();
         activeCard = null;
-        button.focus();
+        if (restoreFocus !== false) button.focus();
     }
 
     function openFullscreen(card) {
@@ -487,7 +553,7 @@ function initToolFullscreen() {
         button.setAttribute('aria-label', t('fullscreenView', { title: title }));
         button.setAttribute('aria-expanded', 'false');
         button.title = t('fullscreen');
-        button.innerHTML = '<svg class="tool-maximize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg><svg class="tool-minimize-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>';
+        button.innerHTML = iconMarkup('maximize', 'tool-maximize-icon') + iconMarkup('minimize', 'tool-minimize-icon');
         button.addEventListener('click', function() {
             if (activeCard === card) closeFullscreen();
             else openFullscreen(card);
@@ -521,7 +587,10 @@ function initToolFullscreen() {
             }
         }
     });
+
+    closeToolFullscreen = closeFullscreen;
 }
+/* PAGE:apps:END */
 
 window.toggleCategory = function(header) {
     var expanded = header.querySelector('.category-toggle').classList.toggle('expanded');
@@ -633,6 +702,7 @@ function initBookmarkSearch() {
     });
 }
 
+/* PAGE:apps:START */
 function initModernClock() {
     return window.JustAFishAppModules.initClock({
         faceId: 'analogFace',
@@ -682,6 +752,7 @@ function initModernSchulte() {
         exposeAs: 'initSchulte'
     });
 }
+/* PAGE:apps:END */
 
 initTheme();
 initResumeAge();

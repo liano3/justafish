@@ -1,4 +1,19 @@
-.schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); }
-.schulte-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; user-select: none; }
-.schulte-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+.schulte-grid-wrapper { position: relative; max-width: 280px; margin: 0 auto; }
+.schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 280px; margin: 0 auto; }
+.schulte-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--bg-secondary); font-size: 1.25rem; font-weight: 600; cursor: pointer; user-select: none; transition: color var(--transition), background-color var(--transition), border-color var(--transition), transform var(--transition); }
+.schulte-cell:hover { background: var(--bg-tertiary); }
+.schulte-cell.correct { border-color: var(--success); color: var(--success); background: color-mix(in srgb, var(--success) 16%, transparent); transform: scale(0.95); }
+.schulte-cell.wrong { border-color: var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); animation: schulteShake 0.3s ease; }
+.schulte-overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: white; background: rgba(15, 23, 42, 0.62); font-size: 1rem; font-weight: 600; cursor: pointer; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: opacity var(--transition); }
 .schulte-overlay.hidden { opacity: 0; pointer-events: none; }
+.schulte-info { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
+.schulte-stat { text-align: center; }
+.schulte-stat-value { color: var(--text); font-size: 1.5rem; font-weight: 700; }
+.schulte-stat-label { color: var(--text-muted); font-size: 0.8rem; }
+.schulte-controls { display: flex; justify-content: center; margin-top: 20px; }
+
+@keyframes schulteShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .schulte-cell { animation: none; transition: none; }
+}

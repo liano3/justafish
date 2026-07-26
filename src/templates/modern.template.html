@@ -28,9 +28,15 @@
     <meta name="twitter:description" content="{{SEO_DESCRIPTION}}">
     <meta name="twitter:image" content="{{SHARE_IMAGE}}">
     <script type="application/ld+json">{{STRUCTURED_DATA}}</script>
-    <style>
-/* {{INLINE_CSS}} */
-    </style>
+    <script>
+        (function() {
+            var hour = new Date().getHours();
+            if (hour < {{THEME_LIGHT_START_HOUR}} || hour >= {{THEME_DARK_START_HOUR}}) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="{{STYLESHEET_URL}}">
 </head>
 <body>
     <div class="app">
@@ -59,11 +65,11 @@
                     <a class="language-switch" href="{{LANG_SWITCH_URL}}" hreflang="{{LANG_SWITCH_HREFLANG}}" aria-label="{{T_SWITCH_LANGUAGE_ARIA}}" title="{{T_SWITCH_LANGUAGE_ARIA}}" onclick="switchLanguage(this); return false;">{{LANG_SWITCH_LABEL}}</a>
                     <!-- FEATURE:language:END -->
                     <button class="header-icon-action theme-toggle" type="button" onclick="toggleTheme()" aria-label="{{T_THEME_TO_DARK}}" aria-pressed="false" title="{{T_THEME_TO_DARK}}">
-                        <svg class="sun-icon" style="display:none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        <svg class="sun-icon" style="display:none" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#sun"></use></svg>
+                        <svg class="moon-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#moon"></use></svg>
                     </button>
                     <a class="header-icon-action github-project-link" href="https://github.com/liano3/justafish" target="_blank" rel="noopener noreferrer" aria-label="{{T_GITHUB_PROJECT_ARIA}}" title="{{T_GITHUB_PROJECT_ARIA}}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 7.15c.85 0 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z"></path></svg>
+                        <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#github"></use></svg>
                     </a>
                 </div>
             </div>
@@ -96,7 +102,7 @@
                             <div class="resume-heading">
                                 <h1 class="resume-name">{{PROFILE_NAME}}</h1>
                                 <button class="resume-pdf-download" id="resumePdfDownload" type="button" data-pdf-url="{{PDF_URL}}" data-pdf-filename="{{PDF_FILENAME}}" aria-describedby="resumeActionStatus">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#download"></use></svg>
                                     <span data-resume-pdf-label>{{T_DOWNLOAD_PDF}}</span>
                                 </button>
                             </div>
@@ -127,11 +133,11 @@
                     </div>
                     <div class="bookmark-search" role="search">
                         <div class="bookmark-search-field">
-                            <svg class="bookmark-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                            <svg class="bookmark-search-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#search"></use></svg>
                             <label class="sr-only" for="bookmarkSearch">{{T_BOOKMARK_SEARCH_LABEL}}</label>
                             <input id="bookmarkSearch" type="search" placeholder="{{T_BOOKMARK_SEARCH_PLACEHOLDER}}" autocomplete="off" spellcheck="false" aria-describedby="bookmarkSearchStatus">
                             <button class="bookmark-search-clear" id="bookmarkSearchClear" type="button" aria-label="{{T_BOOKMARK_CLEAR}}" title="{{T_BOOKMARK_CLEAR}}" hidden>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg>
                             </button>
                         </div>
                         <p class="bookmark-search-status" id="bookmarkSearchStatus" aria-live="polite">{{BOOKMARK_STATUS}}</p>
@@ -159,7 +165,7 @@
                         <div class="tool-card">
                             <div class="tool-header">
                                 <div class="tool-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#clock"></use></svg>
                                 </div>
                                 <h3 class="tool-title">{{T_CLOCK}}</h3>
                             </div>
@@ -182,7 +188,7 @@
                         <div class="tool-card">
                             <div class="tool-header">
                                 <div class="tool-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#clock"></use></svg>
                                 </div>
                                 <h3 class="tool-title">{{T_POMODORO}}</h3>
                             </div>
@@ -207,7 +213,7 @@
                                             <span>{{T_SOUND_REMINDER}}</span>
                                         </label>
                                         <button class="pomodoro-preview" id="pomodoroPreview" type="button" aria-label="{{T_PREVIEW_REMINDER}}" title="{{T_PREVIEW_REMINDER}}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+                                            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bell"></use></svg>
                                         </button>
                                     </div>
                                     <div class="pomodoro-settings">
@@ -232,7 +238,7 @@
                         <div class="tool-card">
                             <div class="tool-header">
                                 <div class="tool-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#table"></use></svg>
                                 </div>
                                 <h3 class="tool-title">{{T_SCHULTE}}</h3>
                             </div>
@@ -260,7 +266,7 @@
                         <div class="tool-card">
                             <div class="tool-header">
                                 <div class="tool-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#grid"></use></svg>
                                 </div>
                                 <h3 class="tool-title">2048</h3>
                             </div>
@@ -288,7 +294,7 @@
                                     </div>
                                     <div class="game2048-controls">
                                         <button type="button" class="pomodoro-btn pomodoro-btn-primary game2048-new-game" id="game2048Restart" data-2048-restart>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#rotate-ccw"></use></svg>
                                             {{T_NEW_GAME}}
                                         </button>
                                     </div>
@@ -306,25 +312,25 @@
         <nav class="mobile-nav">
             <!-- PAGE:home:START -->
             <button class="mobile-nav-link active" data-page="home" onclick="switchPage('home')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#home"></use></svg>
                 {{T_NAV_HOME}}
             </button>
             <!-- PAGE:home:END -->
             <!-- PAGE:resume:START -->
             <button class="mobile-nav-link" data-page="resume" onclick="switchPage('resume')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#file-text"></use></svg>
                 {{T_NAV_RESUME}}
             </button>
             <!-- PAGE:resume:END -->
             <!-- PAGE:bookmarks:START -->
             <button class="mobile-nav-link" data-page="bookmarks" onclick="switchPage('bookmarks')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bookmark"></use></svg>
                 {{T_NAV_BOOKMARKS}}
             </button>
             <!-- PAGE:bookmarks:END -->
             <!-- PAGE:apps:START -->
             <button class="mobile-nav-link" data-page="apps" onclick="switchPage('apps')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#grid"></use></svg>
                 {{T_NAV_APPS}}
             </button>
             <!-- PAGE:apps:END -->
@@ -336,27 +342,26 @@
             <circle class="back-to-top-track" cx="22" cy="22" r="19" pathLength="100"></circle>
             <circle class="back-to-top-value" data-back-to-top-progress cx="22" cy="22" r="19" pathLength="100"></circle>
         </svg>
-        <svg class="back-to-top-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg>
+        <svg class="back-to-top-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#arrow-up"></use></svg>
     </button>
 
     <!-- PAGE:apps:START -->
     <div class="pomodoro-toast" id="pomodoroToast" role="alert" aria-live="assertive" hidden>
         <div class="pomodoro-toast-icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bell"></use></svg>
         </div>
         <div class="pomodoro-toast-content">
             <strong id="pomodoroToastMessage">{{T_POMODORO_WORK_COMPLETE}}</strong>
             <span id="pomodoroToastDetail">{{T_POMODORO_AUTO_BREAK}}</span>
         </div>
         <button class="pomodoro-toast-close" id="pomodoroToastClose" type="button" aria-label="{{T_CLOSE_REMINDER}}" title="{{T_CLOSE_REMINDER}}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg>
         </button>
     </div>
     <!-- PAGE:apps:END -->
 
-    <script>
-/* {{INLINE_JS}} */
-    </script>
+    <script>{{RUNTIME_CONFIG}}</script>
+    <script src="{{MAIN_SCRIPT_URL}}" defer></script>
     {{VISITOR_COUNTER_SCRIPT}}
 </body>
 </html>

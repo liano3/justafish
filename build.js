@@ -1,10 +1,19 @@
 const fs = require('fs');
 const path = require('path');
-const { DEFAULT_CONFIG, ICONS, EXTERNAL_ICON } = require('./src/config/default');
+const crypto = require('crypto');
+const { DEFAULT_CONFIG } = require('./src/config/default');
 
 const PAGE_IDS = ['home', 'resume', 'bookmarks', 'apps'];
 const BUILD_FEATURE_IDS = ['language'];
 const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
+const THEME_LIGHT_START_HOUR = 7;
+const THEME_DARK_START_HOUR = 19;
+const PROFILE_ICON_IDS = {
+    blog: 'book-open',
+    github: 'github',
+    scholar: 'scholar',
+    email: 'mail'
+};
 
 const UI_TEXT = {
     zh: {
@@ -199,6 +208,11 @@ function safeUrl(value) {
     return '#';
 }
 
+function renderIcon(iconId, className = '') {
+    const classAttribute = className ? ` class="${className}"` : '';
+    return `<svg${classAttribute} aria-hidden="true" focusable="false"><use href="{{ICON_SPRITE_URL}}#${iconId}"></use></svg>`;
+}
+
 function normalizeSiteUrl(value) {
     const input = String(value || '').trim();
     try {
@@ -304,7 +318,8 @@ function createSeoData(profile, locale, text) {
 function renderProfileLinks(links) {
     return links.map((link, index) => {
         const isMail = String(link.url || '').startsWith('mailto:');
-        const icon = ICONS[link.icon] || '';
+        const iconId = PROFILE_ICON_IDS[link.icon];
+        const icon = iconId ? renderIcon(iconId) : '';
         const className = `hero-link ${index === 0 ? 'hero-link-primary' : 'hero-link-secondary'}`;
         return `<a href="${safeUrl(link.url)}" target="${isMail ? '_self' : '_blank'}"${isMail ? '' : ' rel="noopener noreferrer"'} class="${className}">
             ${icon}
@@ -331,14 +346,14 @@ function renderResumeContacts(profile, text) {
     const age = calculateAge(profile.birthday);
     if (age !== null) {
         contacts.push(`<span class="resume-contact">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    ${renderIcon('calendar')}
                                     <span id="resumeAge" data-birthday="${escapeHtml(profile.birthday)}">${escapeHtml(formatMessage(text.ageYears, { age }))}</span>
                                 </span>`);
     }
     const phone = String(profile.phone || '').trim();
     if (phone) {
         contacts.push(`<span class="resume-contact" aria-label="${escapeHtml(formatMessage(text.phoneAria, { phone }))}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.69 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.33 1.84.56 2.8.69A2 2 0 0 1 22 16.92z"></path></svg>
+                                    ${renderIcon('phone')}
                                     <span>${escapeHtml(phone)}</span>
                                 </span>`);
     }
@@ -346,12 +361,12 @@ function renderResumeContacts(profile, text) {
         const email = String(profile.email).trim();
         contacts.push(`<span class="resume-email-group">
                                     <a class="resume-contact" href="${safeUrl(`mailto:${email}`)}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
+                                        ${renderIcon('mail')}
                                         <span>${escapeHtml(email)}</span>
                                     </a>
                                     <button class="resume-copy-button" type="button" data-copy-email="${escapeHtml(email)}" aria-label="${escapeHtml(text.copyEmail)}" aria-describedby="resumeActionStatus" title="${escapeHtml(text.copyEmail)}">
-                                        <svg class="resume-copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                        <svg class="resume-copy-success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                                        ${renderIcon('copy', 'resume-copy-icon')}
+                                        ${renderIcon('check', 'resume-copy-success-icon')}
                                     </button>
                                 </span>`);
     }
@@ -423,7 +438,7 @@ function renderAnnouncementsSection(announcements, text) {
     if (!activeAnnouncements.length) return '';
     const items = activeAnnouncements.map((item, index) => {
         const link = item.link && item.link.label && item.link.url
-            ? `<a href="${safeUrl(item.link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.link.label)}${EXTERNAL_ICON}</a>`
+            ? `<a href="${safeUrl(item.link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.link.label)}${renderIcon('external-link')}</a>`
             : '';
         return `<div class="announcement-slide${index === 0 ? ' is-active' : ''}" data-announcement-slide data-expires-at="${escapeHtml(item.expiresAt || '')}" aria-hidden="${index === 0 ? 'false' : 'true'}">
                             <span class="announcement-icon" aria-hidden="true">${escapeHtml(item.icon || '📢')}</span>
@@ -494,7 +509,7 @@ function renderAwardsSection(awards, text) {
 function renderWorkLinks(links) {
     if (!Array.isArray(links) || !links.length) return '';
     return `<div class="work-links">${links.map(link => {
-        return `<a href="${safeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}${EXTERNAL_ICON}</a>`;
+        return `<a href="${safeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}${renderIcon('external-link')}</a>`;
     }).join('')}</div>`;
 }
 
@@ -548,12 +563,78 @@ function createPdfFilename(profile, locale) {
 }
 
 function applySourceFeatureVisibility(source, options) {
+    PAGE_IDS.forEach(pageId => {
+        if (options[pageId]) return;
+        const pageBlock = new RegExp(`[\\t ]*\\/\\* PAGE:${pageId}:START \\*\\/[\\s\\S]*?\\/\\* PAGE:${pageId}:END \\*\\/\\r?\\n?`, 'g');
+        source = source.replace(pageBlock, '');
+    });
     BUILD_FEATURE_IDS.forEach(featureId => {
         if (options[featureId]) return;
         const featureBlock = new RegExp(`[\\t ]*\\/\\* FEATURE:${featureId}:START \\*\\/[\\s\\S]*?\\/\\* FEATURE:${featureId}:END \\*\\/\\r?\\n?`, 'g');
         source = source.replace(featureBlock, '');
     });
-    return source.replace(/\/\* FEATURE:language:(?:START|END) \*\//g, '');
+    return source
+        .replace(/\/\* PAGE:(?:home|resume|bookmarks|apps):(?:START|END) \*\//g, '')
+        .replace(/\/\* FEATURE:language:(?:START|END) \*\//g, '');
+}
+
+function writeHashedAsset(assetsDir, baseName, extension, content) {
+    const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 10);
+    const fileName = `${baseName}.${hash}.${extension}`;
+    fs.writeFileSync(path.join(assetsDir, fileName), content);
+    return `assets/${fileName}`;
+}
+
+function buildFrontendAssets(options) {
+    const assetsDir = path.join(__dirname, 'dist/assets');
+    fs.mkdirSync(assetsDir, { recursive: true });
+
+    const cssFiles = [
+        'src/css/common.css',
+        'src/css/modern.css'
+    ];
+    if (options.apps) cssFiles.push(
+        'src/css/components/apps.css',
+        'src/css/components/clock.css',
+        'src/css/components/pomodoro.css',
+        'src/css/components/schulte.css',
+        'src/css/components/game2048.css'
+    );
+    const css = applySourceFeatureVisibility(readFiles(cssFiles), options);
+    const siteJs = applySourceFeatureVisibility(readFiles([
+        'src/js/common.js',
+        'src/js/modern/main.js'
+    ]), options);
+    const wrappedSiteJs = "(function(){\n'use strict';\n" + siteJs + "\n})();";
+    const iconSprite = fs.readFileSync(path.join(__dirname, 'src/assets/icons.svg'), 'utf8');
+
+    const manifest = {
+        stylesheet: writeHashedAsset(assetsDir, 'site', 'css', css),
+        mainScript: writeHashedAsset(assetsDir, 'site', 'js', wrappedSiteJs),
+        iconSprite: writeHashedAsset(assetsDir, 'icons', 'svg', iconSprite),
+        appsScript: ''
+    };
+
+    if (options.apps) {
+        const appsJs = readFiles([
+            'src/js/common.js',
+            'src/js/clock.js',
+            'src/js/pomodoro.js',
+            'src/js/schulte.js',
+            'src/js/vendor/2048-core.js',
+            'src/js/game2048.js'
+        ]);
+        const wrappedAppsJs = "(function(){\n'use strict';\n" + appsJs
+            + "\nwindow.JustAFishAppModules = { initClock: initClock, initPomodoro: initPomodoro, initSchulte: initSchulte, initGame2048: initGame2048 };\n})();";
+        manifest.appsScript = writeHashedAsset(assetsDir, 'apps', 'js', wrappedAppsJs);
+    }
+
+    return manifest;
+}
+
+function resolveBuiltAssetUrl(assetPath, locale) {
+    if (!assetPath) return '';
+    return `${locale === 'en' ? '../' : './'}${assetPath}`;
 }
 
 function applyBuildVisibility(html, options) {
@@ -572,50 +653,25 @@ function applyBuildVisibility(html, options) {
         .replace(/<!-- FEATURE:language:(?:START|END) -->/g, '');
 }
 
-function buildHomepage(config, seo, locale) {
+function buildHomepage(config, seo, locale, assetManifest) {
     const text = UI_TEXT[locale];
     const enabledPageIds = PAGE_IDS.filter(pageId => config.pages[pageId]);
     const defaultPageId = enabledPageIds[0];
-    const css = applySourceFeatureVisibility(readFiles([
-        'src/css/common.css',
-        'src/css/components/clock.css',
-        'src/css/components/pomodoro.css',
-        'src/css/components/schulte.css',
-        'src/css/components/game2048.css',
-        'src/css/modern.css'
-    ]), config.pages);
-
-    const js = applySourceFeatureVisibility(readFiles([
-        'src/js/common.js',
-        'src/js/modern/main.js'
-    ]), config.pages);
-
-    const appsJs = readFiles([
-        'src/js/common.js',
-        'src/js/clock.js',
-        'src/js/pomodoro.js',
-        'src/js/schulte.js',
-        'src/js/vendor/2048-core.js',
-        'src/js/game2048.js'
-    ]);
-
     const runtimeText = { ...text };
     if (!config.pages.language) delete runtimeText.SWITCH_LANGUAGE_ARIA;
     const pageI18n = JSON.stringify(runtimeText).replace(/</g, '\\u003c');
-    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.SITE_BASE_PATH = ${JSON.stringify(locale === 'en' ? '../' : './')};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\n`;
-    const wrappedJs = runtimeConfig + "(function(){\n'use strict';\n" + js + "\n})();";
-    const wrappedAppsJs = "(function(){\n'use strict';\n" + appsJs
-        + "\nwindow.JustAFishAppModules = { initClock: initClock, initPomodoro: initPomodoro, initSchulte: initSchulte, initGame2048: initGame2048 };\n})();";
-
-    if (config.pages.apps) {
-        const assetsDir = path.join(__dirname, 'dist/assets');
-        if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
-        fs.writeFileSync(path.join(assetsDir, 'apps.js'), wrappedAppsJs);
-    }
+    const stylesheetUrl = resolveBuiltAssetUrl(assetManifest.stylesheet, locale);
+    const mainScriptUrl = resolveBuiltAssetUrl(assetManifest.mainScript, locale);
+    const iconSpriteUrl = resolveBuiltAssetUrl(assetManifest.iconSprite, locale);
+    const appsScriptUrl = resolveBuiltAssetUrl(assetManifest.appsScript, locale);
+    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.SITE_BASE_PATH = ${JSON.stringify(locale === 'en' ? '../' : './')};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\nwindow.APPS_SCRIPT_URL = ${JSON.stringify(appsScriptUrl)};\nwindow.THEME_SCHEDULE = { lightStartHour: ${THEME_LIGHT_START_HOUR}, darkStartHour: ${THEME_DARK_START_HOUR} };\n`;
 
     let html = fs.readFileSync(path.join(__dirname, 'src/templates/modern.template.html'), 'utf8');
-    html = html.replace('/* {{INLINE_CSS}} */', css);
-    html = html.replace('/* {{INLINE_JS}} */', wrappedJs);
+    html = html.replace('{{RUNTIME_CONFIG}}', runtimeConfig);
+    html = html.replace(/{{STYLESHEET_URL}}/g, escapeHtml(stylesheetUrl));
+    html = html.replace(/{{MAIN_SCRIPT_URL}}/g, escapeHtml(mainScriptUrl));
+    html = html.replace(/{{THEME_LIGHT_START_HOUR}}/g, String(THEME_LIGHT_START_HOUR));
+    html = html.replace(/{{THEME_DARK_START_HOUR}}/g, String(THEME_DARK_START_HOUR));
 
     const avatarUrl = resolvePageAssetUrl(config.profile.avatar, locale);
     const avatarAlt = formatMessage(text.avatarAlt, { name: config.profile.name });
@@ -693,7 +749,7 @@ function buildHomepage(config, seo, locale) {
                 ? `<span class="bookmark-link-tags">${tags.map(tag => `<span data-bookmark-tag-value="${escapeHtml(tag.toLowerCase())}">${escapeHtml(tag)}</span>`).join('')}</span>`
                 : '';
             return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
-                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${EXTERNAL_ICON}</span>
+                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${renderIcon('external-link')}</span>
                             ${description ? `<span class="bookmark-link-description">${escapeHtml(description)}</span>` : ''}
                             ${tagItems}
                         </a>`;
@@ -705,7 +761,7 @@ function buildHomepage(config, seo, locale) {
                             <span>${escapeHtml(folder.name)}</span>
                             <span class="category-count">${folder.links.length}</span>
                         </span>
-                        <svg class="category-toggle ${idx === 0 ? 'expanded' : ''}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        ${renderIcon('chevron-down', `category-toggle ${idx === 0 ? 'expanded' : ''}`)}
                     </button>
                     <div class="bookmark-links ${idx === 0 ? 'show' : ''}" id="${groupId}">
                         ${links}
@@ -713,6 +769,7 @@ function buildHomepage(config, seo, locale) {
                 </div>`;
     }).join('\n                        ');
     html = html.replace('{{BOOKMARKS}}', bookmarks);
+    html = html.replace(/{{ICON_SPRITE_URL}}/g, escapeHtml(iconSpriteUrl));
     html = applyBuildVisibility(html, config.pages);
 
     const outputPath = locale === 'en'
@@ -827,8 +884,9 @@ function build() {
     const enSeo = pages.language
         ? createSeoData(enConfig.profile, 'en', UI_TEXT.en)
         : null;
-    buildHomepage(zhConfig, zhSeo, 'zh');
-    if (pages.language) buildHomepage(enConfig, enSeo, 'en');
+    const assetManifest = buildFrontendAssets(pages);
+    buildHomepage(zhConfig, zhSeo, 'zh', assetManifest);
+    if (pages.language) buildHomepage(enConfig, enSeo, 'en', assetManifest);
     writeSeoFiles(zhSeo, enSeo);
     copyStaticAssets(pages.language);
 
