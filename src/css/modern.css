@@ -361,7 +361,6 @@ a.resume-contact:hover { color: var(--primary); }
 }
 
 @media (max-width: 420px) {
-    .github-project-link { display: none; }
     .hero-link { flex: 1 1 132px; justify-content: center; }
 }
 
