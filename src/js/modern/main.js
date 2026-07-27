@@ -783,9 +783,11 @@ function initBookmarkChat() {
             });
         }).then(function(data) {
             reply.textContent = data.reply || t('AI_CHAT_ERROR');
+            messages.scrollTop = messages.scrollHeight;
             if (data.reply) history.push({ role: 'assistant', content: data.reply });
         }).catch(function() {
             reply.textContent = t('AI_CHAT_ERROR');
+            messages.scrollTop = messages.scrollHeight;
         }).finally(function() {
             isSending = false;
             sendButton.disabled = false;

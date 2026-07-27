@@ -300,7 +300,7 @@ a.resume-contact:hover { color: var(--primary); }
 .ai-chat-close:hover { color: var(--text); background: var(--bg-tertiary); }
 .ai-chat-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .ai-chat-close svg { width: 17px; height: 17px; }
-.ai-chat-messages { min-height: 180px; flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ai-chat-messages { min-height: 0; flex: 1 1 auto; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .ai-chat-message { max-width: 88%; padding: 9px 11px; border-radius: var(--radius-sm); color: var(--text); background: var(--bg-tertiary); font-size: 0.86rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ai-chat-message-user { align-self: flex-end; color: var(--on-primary); background: var(--primary); }
 .ai-chat-form { padding: 10px; display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid var(--border); }
