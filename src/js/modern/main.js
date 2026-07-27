@@ -4,6 +4,9 @@ var appsLoadPromise = null;
 var appsInitialized = false;
 var closeToolFullscreen = function() {};
 /* PAGE:apps:END */
+/* PAGE:bookmarks:START */
+var closeBookmarkChat = function() {};
+/* PAGE:bookmarks:END */
 var validPageIds = Array.isArray(window.ENABLED_PAGE_IDS) && window.ENABLED_PAGE_IDS.length
     ? window.ENABLED_PAGE_IDS.slice()
     : ['home', 'resume', 'bookmarks', 'apps'];
@@ -111,6 +114,9 @@ function ensureAppsInitialized() {
 function renderPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
     if (currentPageId) pageScrollPositions[currentPageId] = window.scrollY;
+    /* PAGE:bookmarks:START */
+    if (pageId !== 'bookmarks') closeBookmarkChat(false);
+    /* PAGE:bookmarks:END */
     /* PAGE:apps:START */
     if (pageId !== 'apps') closeToolFullscreen(false);
     /* PAGE:apps:END */
@@ -702,6 +708,93 @@ function initBookmarkSearch() {
     });
 }
 
+/* PAGE:bookmarks:START */
+function initBookmarkChat() {
+    var trigger = $('bookmarkSearchSecret');
+    var chat = $('aiChat');
+    var closeButton = $('aiChatClose');
+    var form = $('aiChatForm');
+    var input = $('aiChatInput');
+    var sendButton = $('aiChatSend');
+    var messages = $('aiChatMessages');
+    if (!trigger || !chat || !closeButton || !form || !input || !sendButton || !messages) return;
+
+    var clickCount = 0;
+    var clickTimer = null;
+    var history = [];
+    var isSending = false;
+
+    function addMessage(role, text) {
+        var message = document.createElement('div');
+        message.className = 'ai-chat-message ai-chat-message-' + role;
+        message.textContent = text;
+        messages.appendChild(message);
+        messages.scrollTop = messages.scrollHeight;
+        return message;
+    }
+
+    function openChat() {
+        chat.hidden = false;
+        if (!messages.children.length) addMessage('assistant', t('AI_CHAT_GREETING'));
+        input.focus();
+    }
+
+    function closeChat(restoreFocus) {
+        chat.hidden = true;
+        if (restoreFocus !== false) trigger.focus();
+    }
+
+    trigger.addEventListener('click', function() {
+        clickCount++;
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(function() { clickCount = 0; }, 1200);
+        if (clickCount >= 5) {
+            clickCount = 0;
+            openChat();
+        }
+    });
+    closeButton.addEventListener('click', closeChat);
+    chat.addEventListener('click', function(event) {
+        if (event.target === chat) closeChat();
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !chat.hidden) closeChat();
+    });
+    closeBookmarkChat = closeChat;
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var text = input.value.trim();
+        if (!text || isSending) return;
+        isSending = true;
+        sendButton.disabled = true;
+        input.value = '';
+        history.push({ role: 'user', content: text });
+        addMessage('user', text);
+        var reply = addMessage('assistant', t('AI_CHAT_WAIT'));
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: history })
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok) throw new Error(data.error || t('AI_CHAT_ERROR'));
+                return data;
+            });
+        }).then(function(data) {
+            reply.textContent = data.reply || t('AI_CHAT_ERROR');
+            if (data.reply) history.push({ role: 'assistant', content: data.reply });
+        }).catch(function() {
+            reply.textContent = t('AI_CHAT_ERROR');
+        }).finally(function() {
+            isSending = false;
+            sendButton.disabled = false;
+            input.focus();
+        });
+    });
+}
+/* PAGE:bookmarks:END */
+
 /* PAGE:apps:START */
 function initModernClock() {
     return window.JustAFishAppModules.initClock({
@@ -759,5 +852,8 @@ initResumeAge();
 initResumeActions();
 initAnnouncements();
 initBookmarkSearch();
+/* PAGE:bookmarks:START */
+initBookmarkChat();
+/* PAGE:bookmarks:END */
 initBackToTop();
 initPageRouting();

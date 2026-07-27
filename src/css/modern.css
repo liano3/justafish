@@ -239,7 +239,10 @@ a.resume-contact:hover { color: var(--primary); }
 
 .bookmark-search { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .bookmark-search-field { position: relative; width: min(100%, 560px); }
-.bookmark-search-icon { position: absolute; top: 50%; left: 14px; width: 18px; height: 18px; color: var(--text-muted); pointer-events: none; transform: translateY(-50%); }
+.bookmark-search-icon { position: absolute; top: 50%; left: 14px; width: 18px; height: 18px; padding: 0; border: none; color: var(--text-muted); background: transparent; cursor: pointer; transform: translateY(-50%); }
+.bookmark-search-icon:hover { color: var(--primary); }
+.bookmark-search-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.bookmark-search-icon svg { width: 100%; height: 100%; }
 .bookmark-search-field input { width: 100%; height: 42px; padding: 0 44px 0 42px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font: inherit; font-size: 0.88rem; outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
 .bookmark-search-field input::placeholder { color: var(--text-muted); }
 .bookmark-search-field input::-webkit-search-cancel-button { appearance: none; }
@@ -286,6 +289,26 @@ a.resume-contact:hover { color: var(--primary); }
 .bookmark-link-description { margin-top: 7px; display: -webkit-box; overflow: hidden; color: var(--text-secondary); font-size: 0.77rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .bookmark-link-tags { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
 .bookmark-link-tags > span { padding: 2px 6px; border-radius: 4px; color: var(--text-secondary); background: var(--bg-tertiary); font-size: 0.66rem; line-height: 1.4; }
+
+/* PAGE:bookmarks:START */
+.ai-chat[hidden] { display: none; }
+.ai-chat { position: fixed; inset: 0; z-index: 240; display: flex; align-items: flex-end; justify-content: flex-end; padding: 24px; background: rgba(15, 23, 42, 0.34); backdrop-filter: blur(4px); }
+.ai-chat-panel { width: min(420px, 100%); max-height: min(620px, calc(100vh - 48px)); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-lg); }
+.ai-chat-header { min-height: 54px; padding: 10px 14px 10px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.ai-chat-header h2 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.ai-chat-close { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); background: transparent; cursor: pointer; }
+.ai-chat-close:hover { color: var(--text); background: var(--bg-tertiary); }
+.ai-chat-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ai-chat-close svg { width: 17px; height: 17px; }
+.ai-chat-messages { min-height: 180px; flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ai-chat-message { max-width: 88%; padding: 9px 11px; border-radius: var(--radius-sm); color: var(--text); background: var(--bg-tertiary); font-size: 0.86rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-chat-message-user { align-self: flex-end; color: var(--on-primary); background: var(--primary); }
+.ai-chat-form { padding: 10px; display: flex; align-items: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+.ai-chat-form textarea { min-width: 0; min-height: 40px; max-height: 112px; flex: 1; resize: vertical; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font: inherit; font-size: 0.84rem; outline: none; }
+.ai-chat-form textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.ai-chat-send { min-height: 40px; padding: 0 13px; border: 1px solid var(--primary); border-radius: var(--radius-sm); color: var(--on-primary); background: var(--primary); font: inherit; font-size: 0.82rem; cursor: pointer; }
+.ai-chat-send:disabled { opacity: 0.55; cursor: wait; }
+/* PAGE:bookmarks:END */
 
 .footer { border-top: 1px solid var(--border); padding: 24px; text-align: center; color: var(--text-muted); background: var(--bg-secondary); font-size: 0.8rem; }
 .footer p { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
@@ -367,6 +390,11 @@ a.resume-contact:hover { color: var(--primary); }
 @media (max-width: 350px) {
     .logo-text { display: none; }
     .container { padding-right: 12px; padding-left: 12px; }
+}
+
+@media (max-width: 520px) {
+    .ai-chat { padding: 12px; }
+    .ai-chat-panel { max-height: calc(100svh - 24px); }
 }
 
 .mobile-nav {

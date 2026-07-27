@@ -133,7 +133,9 @@
                     </div>
                     <div class="bookmark-search" role="search">
                         <div class="bookmark-search-field">
-                            <svg class="bookmark-search-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#search"></use></svg>
+                            <button class="bookmark-search-icon" id="bookmarkSearchSecret" type="button" aria-label="{{T_BOOKMARK_SEARCH_LABEL}}" title="{{T_BOOKMARK_SEARCH_LABEL}}">
+                                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#search"></use></svg>
+                            </button>
                             <label class="sr-only" for="bookmarkSearch">{{T_BOOKMARK_SEARCH_LABEL}}</label>
                             <input id="bookmarkSearch" type="search" placeholder="{{T_BOOKMARK_SEARCH_PLACEHOLDER}}" autocomplete="off" spellcheck="false" aria-describedby="bookmarkSearchStatus">
                             <button class="bookmark-search-clear" id="bookmarkSearchClear" type="button" aria-label="{{T_BOOKMARK_CLEAR}}" title="{{T_BOOKMARK_CLEAR}}" hidden>
@@ -344,6 +346,24 @@
         </svg>
         <svg class="back-to-top-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#arrow-up"></use></svg>
     </button>
+
+    <!-- PAGE:bookmarks:START -->
+    <div class="ai-chat" id="aiChat" hidden>
+        <section class="ai-chat-panel" role="dialog" aria-modal="true" aria-labelledby="aiChatTitle">
+            <header class="ai-chat-header">
+                <h2 id="aiChatTitle">{{T_AI_CHAT_TITLE}}</h2>
+                <button class="ai-chat-close" id="aiChatClose" type="button" aria-label="{{T_AI_CHAT_CLOSE}}" title="{{T_AI_CHAT_CLOSE}}">
+                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg>
+                </button>
+            </header>
+            <div class="ai-chat-messages" id="aiChatMessages" aria-live="polite"></div>
+            <form class="ai-chat-form" id="aiChatForm">
+                <textarea id="aiChatInput" rows="1" maxlength="2000" placeholder="{{T_AI_CHAT_PLACEHOLDER}}"></textarea>
+                <button class="ai-chat-send" id="aiChatSend" type="submit">{{T_AI_CHAT_SEND}}</button>
+            </form>
+        </section>
+    </div>
+    <!-- PAGE:bookmarks:END -->
 
     <!-- PAGE:apps:START -->
     <div class="pomodoro-toast" id="pomodoroToast" role="alert" aria-live="assertive" hidden>
