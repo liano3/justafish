@@ -664,17 +664,15 @@ function initBookmarkSearch() {
 
 /* PAGE:bookmarks:START */
 function initBookmarkChat() {
-    var trigger = $('bookmarkSearchSecret');
+    var searchInput = $('bookmarkSearch');
     var chat = $('aiChat');
     var closeButton = $('aiChatClose');
     var form = $('aiChatForm');
     var input = $('aiChatInput');
     var sendButton = $('aiChatSend');
     var messages = $('aiChatMessages');
-    if (!trigger || !chat || !closeButton || !form || !input || !sendButton || !messages) return;
+    if (!searchInput || !chat || !closeButton || !form || !input || !sendButton || !messages) return;
 
-    var clickCount = 0;
-    var clickTimer = null;
     var history = [];
     var isSending = false;
 
@@ -695,17 +693,22 @@ function initBookmarkChat() {
 
     function closeChat(restoreFocus) {
         chat.hidden = true;
-        if (restoreFocus !== false) trigger.focus();
+        if (restoreFocus !== false) searchInput.focus();
     }
 
-    trigger.addEventListener('click', function() {
-        clickCount++;
-        clearTimeout(clickTimer);
-        clickTimer = setTimeout(function() { clickCount = 0; }, 1200);
-        if (clickCount >= 5) {
-            clickCount = 0;
+    searchInput.addEventListener('keydown', function(event) {
+        if (event.key !== 'Enter' || !searchInput.value.trim()) return;
+        event.preventDefault();
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: searchInput.value })
+        }).then(function(response) {
+            if (!response.ok) return;
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
             openChat();
-        }
+        }).catch(function() {});
     });
     closeButton.addEventListener('click', closeChat);
     chat.addEventListener('click', function(event) {

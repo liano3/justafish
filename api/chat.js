@@ -7,7 +7,8 @@ function getConfig() {
             apiKey: String(value.apiKey || ''),
             baseUrl: String(value.baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, ''),
             model: String(value.model || 'gpt-4o-mini'),
-            systemPrompt: String(value.systemPrompt || '').trim()
+            systemPrompt: String(value.systemPrompt || '').trim(),
+            password: String(value.password || '')
         };
     } catch (error) {
         return null;
@@ -25,6 +26,11 @@ module.exports = async function chat(req, res) {
         body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     } catch (error) {
         return res.status(400).json({ error: 'Invalid request' });
+    }
+
+    if (typeof body.password === 'string') {
+        const unlocked = Boolean(config.password && body.password === config.password);
+        return res.status(unlocked ? 200 : 404).json({ unlocked });
     }
 
     const messages = Array.isArray(body.messages)
