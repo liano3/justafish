@@ -16,8 +16,6 @@ var backToTopButton = null;
 var backToTopProgress = null;
 var backToTopTicking = false;
 var pageScrollPositions = {};
-var themeTimer = null;
-var themeOverride = null;
 
 /* PAGE:apps:START */
 function iconMarkup(iconId, className) {
@@ -207,66 +205,22 @@ function updateThemeToggle(isDark) {
     if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
 }
 
-function getThemeTiming(now) {
-    var schedule = window.THEME_SCHEDULE || {};
-    var lightStartHour = Number(schedule.lightStartHour);
-    var darkStartHour = Number(schedule.darkStartHour);
-    lightStartHour = Number.isFinite(lightStartHour) ? lightStartHour : 7;
-    darkStartHour = Number.isFinite(darkStartHour) ? darkStartHour : 19;
-
-    var hour = now.getHours();
-    var boundary = new Date(now);
-    boundary.setMinutes(0, 0, 0);
-    if (hour < lightStartHour) {
-        boundary.setHours(lightStartHour);
-    } else if (hour < darkStartHour) {
-        boundary.setHours(darkStartHour);
-    } else {
-        boundary.setDate(boundary.getDate() + 1);
-        boundary.setHours(lightStartHour);
-    }
-    return {
-        isDark: hour < lightStartHour || hour >= darkStartHour,
-        boundary: boundary.getTime()
-    };
-}
-
 function applyTheme(isDark) {
     if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
     else document.documentElement.removeAttribute('data-theme');
     updateThemeToggle(isDark);
 }
 
-function syncTheme() {
-    var now = new Date();
-    var timing = getThemeTiming(now);
-    if (themeOverride && now.getTime() >= themeOverride.until) {
-        themeOverride = null;
-    }
-    applyTheme(themeOverride ? themeOverride.isDark : timing.isDark);
-
-    if (themeTimer) window.clearTimeout(themeTimer);
-    themeTimer = window.setTimeout(function() {
-        themeOverride = null;
-        syncTheme();
-    }, Math.max(1000, timing.boundary - now.getTime() + 250));
-}
-
 window.toggleTheme = function() {
-    var now = new Date();
-    themeOverride = {
-        isDark: document.documentElement.getAttribute('data-theme') !== 'dark',
-        until: getThemeTiming(now).boundary
-    };
-    syncTheme();
+    var isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    applyTheme(isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
 };
 
 function initTheme() {
-    syncTheme();
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState !== 'visible') return;
-        syncTheme();
-    });
+    var saved = localStorage.getItem('theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved === 'dark' || (!saved && prefersDark));
 }
 
 function initResumeAge() {

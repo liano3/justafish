@@ -6,8 +6,6 @@ const { DEFAULT_CONFIG } = require('./src/config/default');
 const PAGE_IDS = ['home', 'resume', 'bookmarks', 'apps'];
 const BUILD_FEATURE_IDS = ['language'];
 const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
-const THEME_LIGHT_START_HOUR = 7;
-const THEME_DARK_START_HOUR = 19;
 const PROFILE_ICON_IDS = {
     blog: 'book-open',
     github: 'github',
@@ -668,14 +666,12 @@ function buildHomepage(config, seo, locale, assetManifest) {
     const mainScriptUrl = resolveBuiltAssetUrl(assetManifest.mainScript, locale);
     const iconSpriteUrl = resolveBuiltAssetUrl(assetManifest.iconSprite, locale);
     const appsScriptUrl = resolveBuiltAssetUrl(assetManifest.appsScript, locale);
-    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.SITE_BASE_PATH = ${JSON.stringify(locale === 'en' ? '../' : './')};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\nwindow.APPS_SCRIPT_URL = ${JSON.stringify(appsScriptUrl)};\nwindow.THEME_SCHEDULE = { lightStartHour: ${THEME_LIGHT_START_HOUR}, darkStartHour: ${THEME_DARK_START_HOUR} };\n`;
+    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.SITE_BASE_PATH = ${JSON.stringify(locale === 'en' ? '../' : './')};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\nwindow.APPS_SCRIPT_URL = ${JSON.stringify(appsScriptUrl)};\n`;
 
     let html = fs.readFileSync(path.join(__dirname, 'src/templates/modern.template.html'), 'utf8');
     html = html.replace('{{RUNTIME_CONFIG}}', runtimeConfig);
     html = html.replace(/{{STYLESHEET_URL}}/g, escapeHtml(stylesheetUrl));
     html = html.replace(/{{MAIN_SCRIPT_URL}}/g, escapeHtml(mainScriptUrl));
-    html = html.replace(/{{THEME_LIGHT_START_HOUR}}/g, String(THEME_LIGHT_START_HOUR));
-    html = html.replace(/{{THEME_DARK_START_HOUR}}/g, String(THEME_DARK_START_HOUR));
 
     const avatarUrl = resolvePageAssetUrl(config.profile.avatar, locale);
     const avatarAlt = formatMessage(text.avatarAlt, { name: config.profile.name });
