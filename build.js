@@ -6,6 +6,12 @@ const { DEFAULT_CONFIG } = require('./src/config/default');
 const PAGE_IDS = ['home', 'resume', 'bookmarks', 'apps'];
 const BUILD_FEATURE_IDS = ['language'];
 const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
+const APPS = [
+    { id: 'clock', icon: 'clock', title: 'CLOCK', description: 'CLOCK_DESCRIPTION', css: 'clock.css', js: ['clock.js'], runtime: ['dateLocale'] },
+    { id: 'pomodoro', icon: 'clock', title: 'POMODORO', description: 'POMODORO_DESCRIPTION', css: 'pomodoro.css', js: ['pomodoro.js'], runtime: ['pomodoroFocusRunning', 'pomodoroFocusReady', 'pomodoroBreakRunning', 'pomodoroBreakReady', 'pomodoroWorkComplete', 'pomodoroBreakComplete', 'pomodoroPreviewSoundOn', 'pomodoroPreviewSoundOff', 'pomodoroAutoBreak', 'pomodoroAutoFocus', 'pomodoroReminderTitle', 'continue', 'pause', 'start'] },
+    { id: 'schulte', icon: 'table', title: 'SCHULTE', description: 'SCHULTE_DESCRIPTION', css: 'schulte.css', js: ['schulte.js'], runtime: [] },
+    { id: '2048', icon: 'grid', title: 'GAME_2048', description: 'GAME_2048_DESCRIPTION', css: 'game2048.css', js: ['vendor/2048-core.js', 'game2048.js'], runtime: ['gameOver', 'gameWon'] }
+];
 const PROFILE_ICON_IDS = {
     blog: 'book-open',
     github: 'github',
@@ -20,7 +26,9 @@ const UI_TEXT = {
         DOWNLOAD_PDF: '下载 PDF', BOOKMARKS_TITLE: '我的书签', BOOKMARK_SEARCH_LABEL: '搜索书签',
         BOOKMARK_SEARCH_PLACEHOLDER: '搜索分类、名称、描述、标签或网址', BOOKMARK_CLEAR: '清空搜索', BOOKMARK_EMPTY: '没有匹配的书签',
         BOOKMARK_TAG_FILTER_ARIA: '按标签筛选书签', BOOKMARK_TAG_ALL: '全部',
-        APPS_TITLE: '实用工具与小游戏', APPS_LOADING: '正在加载应用', CLOCK: '时钟',
+        APPS_TITLE: '实用工具与小游戏', CLOCK: '时钟', GAME_2048: '2048', BACK_TO_APPS: '返回应用',
+        CLOCK_DESCRIPTION: '查看本地时间、日期和模拟时钟。', POMODORO_DESCRIPTION: '可调节专注与休息时长，支持声音提醒和统计。',
+        SCHULTE_DESCRIPTION: '按顺序寻找 1 至 25，训练注意力与视觉搜索。', GAME_2048_DESCRIPTION: '使用方向键或滑动合并数字，挑战 2048。',
         CLOCK_DATE_PLACEHOLDER: '2024年1月1日 星期一', POMODORO: '番茄钟', POMODORO_READY: '准备专注',
         START: '开始', RESET: '重置', SOUND_REMINDER: '声音提醒', PREVIEW_REMINDER: '试听提醒',
         FOCUS: '专注', MINUTES: '分钟', BREAK: '休息', COMPLETED_PREFIX: '完成', COMPLETED_SUFFIX: '次', TOTAL_PREFIX: '累计',
@@ -35,11 +43,10 @@ const UI_TEXT = {
         educationHeading: '教育经历', awardsHeading: '获奖经历', worksHeading: '项目与论文', paper: '论文', project: '项目',
         footerLastUpdated: '更新于 {date}', footerVisitors: '访问者',
         backToTopProgress: '返回顶部，已阅读 {progress}%', backToTopTitle: '返回顶部 · {progress}%',
-        appsLoadError: '应用加载失败，请刷新后重试', appsLoading: '正在加载应用', appsRegistrationError: '应用模块没有正确注册', appsBundleError: '应用代码加载失败',
         themeToLight: '切换到浅色模式', themeToDark: '切换到深色模式', copyNotAllowed: '浏览器未允许复制',
         pdfChecking: '检查中…', pdfCheckingStatus: '正在检查简历 PDF', pdfMissing: '简历 PDF 不存在', pdfDownloading: '开始下载', pdfDownloadingStatus: '简历 PDF 已开始下载',
         comingSoon: 'Coming soon...', downloadPdf: '下载 PDF', emailCopied: '邮箱地址已复制', copied: '已复制', emailCopiedStatus: '邮箱地址已复制：{email}',
-        copyEmailFailed: '复制失败，请手动选择邮箱地址', copyFailed: '复制失败', fullscreenView: '全屏查看{title}', fullscreen: '全屏查看', fullscreenExit: '退出{title}全屏', restore: '恢复',
+        copyEmailFailed: '复制失败，请手动选择邮箱地址', copyFailed: '复制失败',
         bookmarksFound: '找到 {count} 个书签', bookmarksTotal: '共 {count} 个书签', dateLocale: 'zh-CN',
         pomodoroFocusRunning: '专注中...', pomodoroFocusReady: '准备专注', pomodoroBreakRunning: '休息中...', pomodoroBreakReady: '准备休息',
         pomodoroWorkComplete: '专注完成，休息一下', pomodoroBreakComplete: '休息结束，开始专注', pomodoroPreviewSoundOn: '提醒声音正常，到点会自动提示',
@@ -52,7 +59,9 @@ const UI_TEXT = {
         DOWNLOAD_PDF: 'Download PDF', BOOKMARKS_TITLE: 'My Bookmarks', BOOKMARK_SEARCH_LABEL: 'Search bookmarks',
         BOOKMARK_SEARCH_PLACEHOLDER: 'Search categories, names, descriptions, tags, or URLs', BOOKMARK_CLEAR: 'Clear search', BOOKMARK_EMPTY: 'No matching bookmarks',
         BOOKMARK_TAG_FILTER_ARIA: 'Filter bookmarks by tag', BOOKMARK_TAG_ALL: 'All',
-        APPS_TITLE: 'Tools & Mini Games', APPS_LOADING: 'Loading apps', CLOCK: 'Clock',
+        APPS_TITLE: 'Tools & Mini Games', CLOCK: 'Clock', GAME_2048: '2048', BACK_TO_APPS: 'Back to apps',
+        CLOCK_DESCRIPTION: 'View the local time, date, and an analog clock.', POMODORO_DESCRIPTION: 'Set focus and break durations with reminders and session stats.',
+        SCHULTE_DESCRIPTION: 'Find 1 through 25 in order to train attention and visual search.', GAME_2048_DESCRIPTION: 'Use arrow keys or swipe to merge tiles and reach 2048.',
         CLOCK_DATE_PLACEHOLDER: 'Monday, January 1, 2024', POMODORO: 'Pomodoro Timer', POMODORO_READY: 'Ready to focus',
         START: 'Start', RESET: 'Reset', SOUND_REMINDER: 'Sound reminder', PREVIEW_REMINDER: 'Preview reminder',
         FOCUS: 'Focus', MINUTES: 'minutes', BREAK: 'Break', COMPLETED_PREFIX: 'Completed', COMPLETED_SUFFIX: 'sessions', TOTAL_PREFIX: 'Total',
@@ -67,11 +76,10 @@ const UI_TEXT = {
         educationHeading: 'Education', awardsHeading: 'Awards', worksHeading: 'Projects & Publications', paper: 'Paper', project: 'Project',
         footerLastUpdated: 'Last updated {date}', footerVisitors: 'Visitors',
         backToTopProgress: 'Back to top, {progress}% read', backToTopTitle: 'Back to top · {progress}%',
-        appsLoadError: 'Failed to load apps. Please refresh and try again.', appsLoading: 'Loading apps', appsRegistrationError: 'App modules were not registered correctly', appsBundleError: 'Failed to load app code',
         themeToLight: 'Switch to light mode', themeToDark: 'Switch to dark mode', copyNotAllowed: 'Clipboard access was not allowed',
         pdfChecking: 'Checking…', pdfCheckingStatus: 'Checking resume PDF', pdfMissing: 'Resume PDF is unavailable', pdfDownloading: 'Downloading', pdfDownloadingStatus: 'Resume PDF download started',
         comingSoon: 'Coming soon...', downloadPdf: 'Download PDF', emailCopied: 'Email copied', copied: 'Copied', emailCopiedStatus: 'Email copied: {email}',
-        copyEmailFailed: 'Copy failed. Please select the email address manually.', copyFailed: 'Copy failed', fullscreenView: 'View {title} in fullscreen', fullscreen: 'Fullscreen', fullscreenExit: 'Exit {title} fullscreen', restore: 'Restore',
+        copyEmailFailed: 'Copy failed. Please select the email address manually.', copyFailed: 'Copy failed',
         bookmarksFound: '{count} bookmarks found', bookmarksTotal: '{count} bookmarks', dateLocale: 'en-US',
         pomodoroFocusRunning: 'Focusing...', pomodoroFocusReady: 'Ready to focus', pomodoroBreakRunning: 'On a break...', pomodoroBreakReady: 'Ready for a break',
         pomodoroWorkComplete: 'Focus complete — take a break', pomodoroBreakComplete: 'Break complete — time to focus', pomodoroPreviewSoundOn: 'Sound is working and will play when time is up',
@@ -591,17 +599,7 @@ function buildFrontendAssets(options) {
     const assetsDir = path.join(__dirname, 'dist/assets');
     fs.mkdirSync(assetsDir, { recursive: true });
 
-    const cssFiles = [
-        'src/css/common.css',
-        'src/css/modern.css'
-    ];
-    if (options.apps) cssFiles.push(
-        'src/css/components/apps.css',
-        'src/css/components/clock.css',
-        'src/css/components/pomodoro.css',
-        'src/css/components/schulte.css',
-        'src/css/components/game2048.css'
-    );
+    const cssFiles = ['src/css/common.css', 'src/css/modern.css'];
     const css = applySourceFeatureVisibility(readFiles(cssFiles), options);
     const siteJs = applySourceFeatureVisibility(readFiles([
         'src/js/common.js',
@@ -614,21 +612,18 @@ function buildFrontendAssets(options) {
         stylesheet: writeHashedAsset(assetsDir, 'site', 'css', css),
         mainScript: writeHashedAsset(assetsDir, 'site', 'js', wrappedSiteJs),
         iconSprite: writeHashedAsset(assetsDir, 'icons', 'svg', iconSprite),
-        appsScript: ''
+        apps: {}
     };
 
     if (options.apps) {
-        const appsJs = readFiles([
-            'src/js/common.js',
-            'src/js/clock.js',
-            'src/js/pomodoro.js',
-            'src/js/schulte.js',
-            'src/js/vendor/2048-core.js',
-            'src/js/game2048.js'
-        ]);
-        const wrappedAppsJs = "(function(){\n'use strict';\n" + appsJs
-            + "\nwindow.JustAFishAppModules = { initClock: initClock, initPomodoro: initPomodoro, initSchulte: initSchulte, initGame2048: initGame2048 };\n})();";
-        manifest.appsScript = writeHashedAsset(assetsDir, 'apps', 'js', wrappedAppsJs);
+        APPS.forEach(app => {
+            const appCss = readFiles(['src/css/components/apps.css', `src/css/components/${app.css}`]);
+            const appJs = readFiles(['src/js/common.js', ...app.js.map(file => `src/js/${file}`), 'src/js/app-page.js']);
+            manifest.apps[app.id] = {
+                stylesheet: writeHashedAsset(assetsDir, `app-${app.id}`, 'css', appCss),
+                script: writeHashedAsset(assetsDir, `app-${app.id}`, 'js', `(function(){\n'use strict';\n${appJs}\n})();`)
+            };
+        });
     }
 
     return manifest;
@@ -637,6 +632,14 @@ function buildFrontendAssets(options) {
 function resolveBuiltAssetUrl(assetPath, locale) {
     if (!assetPath) return '';
     return `${locale === 'en' ? '../' : './'}${assetPath}`;
+}
+
+function renderAppDirectory(text) {
+    return APPS.map(app => `<a class="app-directory-link" href="./apps/${app.id}/">
+                        <span class="app-directory-icon">${renderIcon(app.icon)}</span>
+                        <span class="app-directory-copy"><strong>${escapeHtml(text[app.title])}</strong><span>${escapeHtml(text[app.description])}</span></span>
+                        ${renderIcon('chevron-left', 'app-directory-arrow')}
+                    </a>`).join('\n                    ');
 }
 
 function applyBuildVisibility(html, options) {
@@ -665,8 +668,7 @@ function buildHomepage(config, seo, locale, assetManifest) {
     const stylesheetUrl = resolveBuiltAssetUrl(assetManifest.stylesheet, locale);
     const mainScriptUrl = resolveBuiltAssetUrl(assetManifest.mainScript, locale);
     const iconSpriteUrl = resolveBuiltAssetUrl(assetManifest.iconSprite, locale);
-    const appsScriptUrl = resolveBuiltAssetUrl(assetManifest.appsScript, locale);
-    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.SITE_BASE_PATH = ${JSON.stringify(locale === 'en' ? '../' : './')};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\nwindow.APPS_SCRIPT_URL = ${JSON.stringify(appsScriptUrl)};\n`;
+    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\n`;
 
     let html = fs.readFileSync(path.join(__dirname, 'src/templates/modern.template.html'), 'utf8');
     html = html.replace('{{RUNTIME_CONFIG}}', runtimeConfig);
@@ -718,6 +720,7 @@ function buildHomepage(config, seo, locale, assetManifest) {
     html = html.replace('{{EDUCATION_SECTION}}', renderEducationSection(config.education, text));
     html = html.replace('{{AWARDS_SECTION}}', renderAwardsSection(config.awards, text));
     html = html.replace('{{WORKS_SECTION}}', renderWorksSection(config.works, text));
+    html = html.replace('{{APPS_DIRECTORY}}', renderAppDirectory(text));
 
     const bookmarkTotal = config.bookmarks.reduce((total, folder) => total + folder.links.length, 0);
     html = html.replace('{{BOOKMARK_STATUS}}', escapeHtml(formatMessage(text.bookmarksTotal, { count: bookmarkTotal })));
@@ -780,8 +783,55 @@ function buildHomepage(config, seo, locale, assetManifest) {
     console.log(`✅ ${locale === 'en' ? 'English' : 'Chinese'} homepage build completed!`);
 }
 
-function writeSeoFiles(zhSeo, enSeo) {
-    const sitemapEntries = [zhSeo, enSeo].filter(Boolean).map(seo => `    <url>
+function renderPomodoroOverlay() {
+    return `<div class="pomodoro-toast" id="pomodoroToast" role="alert" aria-live="assertive" hidden>
+        <div class="pomodoro-toast-icon" aria-hidden="true"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bell"></use></svg></div>
+        <div class="pomodoro-toast-content"><strong id="pomodoroToastMessage">{{T_POMODORO_WORK_COMPLETE}}</strong><span id="pomodoroToastDetail">{{T_POMODORO_AUTO_BREAK}}</span></div>
+        <button class="pomodoro-toast-close" id="pomodoroToastClose" type="button" aria-label="{{T_CLOSE_REMINDER}}" title="{{T_CLOSE_REMINDER}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg></button>
+    </div>`;
+}
+
+function buildAppPages(config, seo, locale, assetManifest) {
+    const text = UI_TEXT[locale];
+    const localeRoot = locale === 'en' ? '/en/' : '/';
+    const assetPrefix = locale === 'en' ? '../../../' : '../../';
+    const iconSpriteUrl = `${assetPrefix}${assetManifest.iconSprite}`;
+
+    return APPS.map(app => {
+        const pageUrl = new URL(`${locale === 'en' ? 'en/' : ''}apps/${app.id}/`, seo.rootSiteUrl).href;
+        const zhAppUrl = new URL(`apps/${app.id}/`, seo.rootSiteUrl).href;
+        const enAppUrl = new URL(`en/apps/${app.id}/`, seo.rootSiteUrl).href;
+        const runtimeText = Object.fromEntries(['themeToLight', 'themeToDark', ...app.runtime].map(key => [key, text[key]]));
+        const runtimeConfig = `window.PAGE_I18N = ${JSON.stringify(runtimeText)};\nwindow.APP_ID = ${JSON.stringify(app.id)};\n`;
+        let html = fs.readFileSync(path.join(__dirname, 'src/templates/app.template.html'), 'utf8');
+        const content = fs.readFileSync(path.join(__dirname, `src/templates/apps/${app.id}.html`), 'utf8').trim();
+
+        html = html.replace('{{APP_CONTENT}}', content);
+        html = html.replace('{{APP_OVERLAY}}', app.id === 'pomodoro' ? renderPomodoroOverlay() : '');
+        html = html.replace(/\{\{T_([A-Z0-9_]+)\}\}/g, (match, key) => Object.prototype.hasOwnProperty.call(text, key) ? escapeHtml(text[key]) : '');
+        const replacements = {
+            HTML_LANG: locale === 'en' ? 'en' : 'zh-CN', APP_TITLE: text[app.title], APP_DESCRIPTION: text[app.description],
+            SITE_NAME: config.profile.siteName, SITE_ICON: config.profile.siteIcon, SITE_FAVICON: createTextFavicon(config.profile.siteIcon), PROFILE_NAME: config.profile.name,
+            APP_URL: pageUrl, ZH_APP_URL: zhAppUrl, EN_APP_URL: enAppUrl, HOME_URL: localeRoot, RESUME_URL: `${localeRoot}#resume`, BOOKMARKS_URL: `${localeRoot}#bookmarks`, APPS_URL: `${localeRoot}#apps`,
+            LANG_SWITCH_URL: locale === 'en' ? `/apps/${app.id}/` : `/en/apps/${app.id}/`, LANG_SWITCH_HREFLANG: locale === 'en' ? 'zh-CN' : 'en', LANG_SWITCH_LABEL: locale === 'en' ? '中' : 'EN',
+            SITE_STYLESHEET_URL: `${assetPrefix}${assetManifest.stylesheet}`, APP_STYLESHEET_URL: `${assetPrefix}${assetManifest.apps[app.id].stylesheet}`,
+            ICON_SPRITE_URL: iconSpriteUrl, APP_SCRIPT_URL: `${assetPrefix}${assetManifest.apps[app.id].script}`, RUNTIME_CONFIG: runtimeConfig,
+            FOOTER: renderFooter(config.profile, seo, text), VISITOR_COUNTER_SCRIPT: renderVisitorCounterScript(config.profile)
+        };
+        Object.entries(replacements).forEach(([key, value]) => {
+            html = html.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+        });
+        html = applyBuildVisibility(html, config.pages);
+
+        const outputPath = path.join(__dirname, 'dist', locale === 'en' ? 'en' : '', 'apps', app.id, 'index.html');
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, html);
+        return { siteUrl: pageUrl, lastUpdated: seo.lastUpdated };
+    });
+}
+
+function writeSeoFiles(zhSeo, enSeo, appPages = []) {
+    const sitemapEntries = [zhSeo, enSeo, ...appPages].filter(Boolean).map(seo => `    <url>
         <loc>${escapeHtml(seo.siteUrl)}</loc>
         <lastmod>${seo.lastUpdated}</lastmod>
     </url>`).join('\n');
@@ -887,7 +937,10 @@ function build() {
     const assetManifest = buildFrontendAssets(pages);
     buildHomepage(zhConfig, zhSeo, 'zh', assetManifest);
     if (pages.language) buildHomepage(enConfig, enSeo, 'en', assetManifest);
-    writeSeoFiles(zhSeo, enSeo);
+    const appPages = pages.apps
+        ? [...buildAppPages(zhConfig, zhSeo, 'zh', assetManifest), ...(pages.language ? buildAppPages(enConfig, enSeo, 'en', assetManifest) : [])]
+        : [];
+    writeSeoFiles(zhSeo, enSeo, appPages);
     copyStaticAssets(pages.language);
 
     console.log('\n📊 Build Summary:');

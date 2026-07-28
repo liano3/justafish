@@ -1,0 +1,32 @@
+<div class="pomodoro-display">
+    <div class="pomodoro-progress">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle class="pomodoro-progress-bg" cx="90" cy="90" r="85"></circle>
+            <circle class="pomodoro-progress-bar" id="pomodoroProgress" cx="90" cy="90" r="85" stroke-dasharray="534" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="pomodoro-timer" id="pomodoroTimer">25:00</div>
+    </div>
+    <div class="pomodoro-status" id="pomodoroStatus">{{T_POMODORO_READY}}</div>
+    <div class="pomodoro-controls">
+        <button class="tool-btn tool-btn-primary" id="pomodoroStart">{{T_START}}</button>
+        <button class="tool-btn tool-btn-secondary" id="pomodoroReset">{{T_RESET}}</button>
+    </div>
+    <div class="pomodoro-reminder-controls">
+        <label class="pomodoro-sound-toggle" for="pomodoroSound">
+            <input type="checkbox" id="pomodoroSound" checked>
+            <span class="pomodoro-switch" aria-hidden="true"></span>
+            <span>{{T_SOUND_REMINDER}}</span>
+        </label>
+        <button class="pomodoro-preview" id="pomodoroPreview" type="button" aria-label="{{T_PREVIEW_REMINDER}}" title="{{T_PREVIEW_REMINDER}}">
+            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bell"></use></svg>
+        </button>
+    </div>
+    <div class="pomodoro-settings">
+        <div class="pomodoro-setting"><span>{{T_FOCUS}}</span><input type="number" id="pomodoroWork" value="25" min="1" max="60"><span>{{T_MINUTES}}</span></div>
+        <div class="pomodoro-setting"><span>{{T_BREAK}}</span><input type="number" id="pomodoroBreak" value="5" min="1" max="30"><span>{{T_MINUTES}}</span></div>
+    </div>
+    <div class="pomodoro-stats">
+        <span>{{T_COMPLETED_PREFIX}} <strong id="pomodoroCount">0</strong> {{T_COMPLETED_SUFFIX}}</span>
+        <span>{{T_TOTAL_PREFIX}} <strong id="pomodoroTotal">0</strong> {{T_MINUTES}}</span>
+    </div>
+</div>

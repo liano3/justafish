@@ -27,7 +27,7 @@ Game2048InputManager.prototype.listen = function() {
     document.addEventListener('keydown', function(event) {
         var appsPage = $('apps');
         var target = event.target;
-        if (!appsPage || !appsPage.classList.contains('active')) return;
+        if (appsPage && !appsPage.classList.contains('active')) return;
         if (!board.contains(target)) return;
         if (!Object.prototype.hasOwnProperty.call(keyMap, event.key)) return;
         event.preventDefault();

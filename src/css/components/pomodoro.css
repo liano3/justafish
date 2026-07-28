@@ -6,11 +6,6 @@
 .pomodoro-timer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 2.75rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .pomodoro-status { margin-top: 4px; color: var(--text-secondary); line-height: 1.4; }
 .pomodoro-controls { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
-.pomodoro-btn { min-height: 40px; padding: 9px 18px; border: none; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: color var(--transition), background-color var(--transition), border-color var(--transition); }
-.pomodoro-btn-primary { color: var(--on-primary); background: var(--primary); }
-.pomodoro-btn-primary:hover { background: var(--primary-dark); }
-.pomodoro-btn-secondary { border: 1px solid var(--border); color: var(--text); background: var(--bg-secondary); }
-.pomodoro-btn-secondary:hover { background: var(--bg-tertiary); }
 .pomodoro-settings { display: flex; justify-content: center; gap: 16px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
 .pomodoro-setting { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85rem; }
 .pomodoro-setting input { width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font-size: 0.85rem; text-align: center; }

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="{{HTML_LANG}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{APP_TITLE}} · {{SITE_NAME}}</title>
+    <meta name="description" content="{{APP_DESCRIPTION}}">
+    <meta name="author" content="{{PROFILE_NAME}}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{APP_URL}}">
+    <!-- FEATURE:language:START -->
+    <link rel="alternate" hreflang="zh-CN" href="{{ZH_APP_URL}}">
+    <link rel="alternate" hreflang="en" href="{{EN_APP_URL}}">
+    <link rel="alternate" hreflang="x-default" href="{{ZH_APP_URL}}">
+    <!-- FEATURE:language:END -->
+    <link rel="icon" href="{{SITE_FAVICON}}">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="{{SITE_STYLESHEET_URL}}">
+    <link rel="stylesheet" href="{{APP_STYLESHEET_URL}}">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-inner">
+                <a href="{{HOME_URL}}" class="logo">
+                    <span class="logo-icon">{{SITE_ICON}}</span>
+                    <span class="logo-text">{{SITE_NAME}}</span>
+                </a>
+                <nav class="nav">
+                    <a class="nav-link" href="{{HOME_URL}}">{{T_NAV_HOME}}</a>
+                    <a class="nav-link" href="{{RESUME_URL}}">{{T_NAV_RESUME}}</a>
+                    <a class="nav-link" href="{{BOOKMARKS_URL}}">{{T_NAV_BOOKMARKS}}</a>
+                    <a class="nav-link active" href="{{APPS_URL}}" aria-current="page">{{T_NAV_APPS}}</a>
+                </nav>
+                <div class="header-actions">
+                    <!-- FEATURE:language:START -->
+                    <a class="language-switch" href="{{LANG_SWITCH_URL}}" hreflang="{{LANG_SWITCH_HREFLANG}}" aria-label="{{T_SWITCH_LANGUAGE_ARIA}}" title="{{T_SWITCH_LANGUAGE_ARIA}}">{{LANG_SWITCH_LABEL}}</a>
+                    <!-- FEATURE:language:END -->
+                    <button class="header-icon-action theme-toggle" type="button" onclick="toggleTheme()" aria-label="{{T_THEME_TO_DARK}}" aria-pressed="false" title="{{T_THEME_TO_DARK}}">
+                        <svg class="sun-icon" style="display:none" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#sun"></use></svg>
+                        <svg class="moon-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#moon"></use></svg>
+                    </button>
+                    <a class="header-icon-action github-project-link" href="https://github.com/liano3/justafish" target="_blank" rel="noopener noreferrer" aria-label="{{T_GITHUB_PROJECT_ARIA}}" title="{{T_GITHUB_PROJECT_ARIA}}">
+                        <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#github"></use></svg>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-detail-main">
+            <div class="app-detail-container">
+                <div class="app-detail-heading">
+                    <a class="app-detail-back" href="{{APPS_URL}}" aria-label="{{T_BACK_TO_APPS}}" title="{{T_BACK_TO_APPS}}">
+                        <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#chevron-left"></use></svg>
+                    </a>
+                    <div class="app-detail-title">
+                        <h1>{{APP_TITLE}}</h1>
+                    </div>
+                </div>
+                <section class="tool-card" aria-label="{{APP_TITLE}}">
+                    <div class="tool-body">{{APP_CONTENT}}</div>
+                </section>
+            </div>
+        </main>
+
+        {{FOOTER}}
+        <nav class="mobile-nav">
+            <a class="mobile-nav-link" href="{{HOME_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#home"></use></svg>{{T_NAV_HOME}}</a>
+            <a class="mobile-nav-link" href="{{RESUME_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#file-text"></use></svg>{{T_NAV_RESUME}}</a>
+            <a class="mobile-nav-link" href="{{BOOKMARKS_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bookmark"></use></svg>{{T_NAV_BOOKMARKS}}</a>
+            <a class="mobile-nav-link active" href="{{APPS_URL}}" aria-current="page"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#grid"></use></svg>{{T_NAV_APPS}}</a>
+        </nav>
+    </div>
+
+    {{APP_OVERLAY}}
+    <script>{{RUNTIME_CONFIG}}</script>
+    <script src="{{APP_SCRIPT_URL}}" defer></script>
+    {{VISITOR_COUNTER_SCRIPT}}
+</body>
+</html>

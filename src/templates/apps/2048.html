@@ -1,0 +1,21 @@
+<div class="game2048">
+    <div class="game2048-stats">
+        <div class="game2048-stat"><div class="game2048-stat-value" id="game2048Score">0</div><div class="game2048-stat-label">{{T_CURRENT_SCORE}}</div></div>
+        <div class="game2048-stat"><div class="game2048-stat-value" id="game2048Best">0</div><div class="game2048-stat-label">{{T_BEST_SCORE}}</div></div>
+    </div>
+    <div class="game2048-board" id="game2048Board" role="application" aria-label="{{T_GAME_BOARD}}" tabindex="0">
+        <div class="game2048-grid" id="game2048Grid"></div>
+        <div class="game2048-message" id="game2048Message" aria-live="polite">
+            <div class="game2048-message-text" id="game2048MessageText"></div>
+            <div class="game2048-message-actions">
+                <button type="button" class="tool-btn tool-btn-secondary" data-2048-continue>{{T_CONTINUE}}</button>
+                <button type="button" class="tool-btn tool-btn-primary" data-2048-restart>{{T_PLAY_AGAIN}}</button>
+            </div>
+        </div>
+    </div>
+    <div class="game2048-controls">
+        <button type="button" class="tool-btn tool-btn-primary game2048-new-game" id="game2048Restart" data-2048-restart>
+            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#rotate-ccw"></use></svg>{{T_NEW_GAME}}
+        </button>
+    </div>
+</div>

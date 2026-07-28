@@ -288,6 +288,18 @@ a.resume-contact:hover { color: var(--primary); }
 .bookmark-link-tags { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
 .bookmark-link-tags > span { padding: 2px 6px; border-radius: 4px; color: var(--text-secondary); background: var(--bg-tertiary); font-size: 0.66rem; line-height: 1.4; }
 
+.app-directory { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.app-directory-link { min-height: 132px; padding: 18px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 18px; align-items: start; gap: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); text-decoration: none; transition: border-color var(--transition), background-color var(--transition), box-shadow var(--transition); }
+.app-directory-link:hover { border-color: var(--border-strong); background: var(--bg-secondary); box-shadow: var(--shadow-sm); }
+.app-directory-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.app-directory-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--primary-dark); background: var(--primary-soft); }
+[data-theme="dark"] .app-directory-icon { color: var(--primary); }
+.app-directory-icon svg { width: 21px; height: 21px; }
+.app-directory-copy { min-width: 0; }
+.app-directory-copy strong { display: block; font-size: 0.92rem; font-weight: 600; }
+.app-directory-copy span { display: block; margin-top: 7px; color: var(--text-secondary); font-size: 0.77rem; line-height: 1.55; }
+.app-directory-arrow { width: 17px; height: 17px; margin-top: 2px; color: var(--text-muted); transform: rotate(180deg); }
+
 /* PAGE:bookmarks:START */
 .ai-chat[hidden] { display: none; }
 .ai-chat { position: fixed; inset: 0; z-index: 240; display: flex; align-items: flex-end; justify-content: flex-end; padding: 24px; background: rgba(15, 23, 42, 0.34); backdrop-filter: blur(4px); }
@@ -361,6 +373,8 @@ a.resume-contact:hover { color: var(--primary); }
     .bookmark-link-description { margin-top: 6px; font-size: 0.7rem; }
     .bookmark-link-tags { padding-top: 9px; gap: 4px; }
     .bookmark-link-tags > span { padding: 2px 5px; font-size: 0.62rem; }
+    .app-directory { grid-template-columns: 1fr; gap: 8px; }
+    .app-directory-link { min-height: 112px; padding: 14px; }
     .resume-container { padding: 40px 16px 96px; }
     .resume-profile { grid-template-columns: 1fr; gap: 20px; padding-bottom: 36px; }
     .resume-profile-content { grid-row: 2; }

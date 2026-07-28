@@ -1,9 +1,3 @@
-/* PAGE:apps:START */
-var modernClock = null;
-var appsLoadPromise = null;
-var appsInitialized = false;
-var closeToolFullscreen = function() {};
-/* PAGE:apps:END */
 /* PAGE:bookmarks:START */
 var closeBookmarkChat = function() {};
 /* PAGE:bookmarks:END */
@@ -16,14 +10,6 @@ var backToTopButton = null;
 var backToTopProgress = null;
 var backToTopTicking = false;
 var pageScrollPositions = {};
-
-/* PAGE:apps:START */
-function iconMarkup(iconId, className) {
-    var classAttribute = className ? ' class="' + className + '"' : '';
-    return '<svg' + classAttribute + ' aria-hidden="true" focusable="false"><use href="'
-        + window.ICON_SPRITE_URL + '#' + iconId + '"></use></svg>';
-}
-/* PAGE:apps:END */
 
 function updateBackToTopVisibility() {
     if (!backToTopButton) return;
@@ -54,70 +40,12 @@ function initBackToTop() {
     updateBackToTopVisibility();
 }
 
-/* PAGE:apps:START */
-function setAppsLoadState(state) {
-    var status = $('appsLoadStatus');
-    var grid = $('appsGrid');
-    if (!status || !grid) return;
-    var isLoading = state === 'loading';
-    var hasError = state === 'error';
-    var message = status.querySelector('[data-apps-load-message]');
-    status.hidden = !isLoading && !hasError;
-    status.classList.toggle('is-error', hasError);
-    if (message) message.textContent = hasError ? t('appsLoadError') : t('appsLoading');
-    grid.classList.toggle('is-loading', isLoading);
-    grid.classList.toggle('has-load-error', hasError);
-    grid.setAttribute('aria-busy', isLoading.toString());
-}
-
-function loadAppsBundle() {
-    if (window.JustAFishAppModules) return Promise.resolve(window.JustAFishAppModules);
-    if (appsLoadPromise) return appsLoadPromise;
-
-    setAppsLoadState('loading');
-    appsLoadPromise = new Promise(function(resolve, reject) {
-        var script = document.createElement('script');
-        script.src = window.APPS_SCRIPT_URL || ((window.SITE_BASE_PATH || './') + 'assets/apps.js');
-        script.async = true;
-        script.onload = function() {
-            if (window.JustAFishAppModules) resolve(window.JustAFishAppModules);
-            else reject(new Error(t('appsRegistrationError')));
-        };
-        script.onerror = function() { reject(new Error(t('appsBundleError'))); };
-        document.head.appendChild(script);
-    });
-    return appsLoadPromise;
-}
-
-function ensureAppsInitialized() {
-    return loadAppsBundle().then(function() {
-        if (!appsInitialized) {
-            modernClock = initModernClock();
-            initModernPomodoro();
-            initModernSchulte();
-            window.JustAFishAppModules.initGame2048();
-            initToolFullscreen();
-            appsInitialized = true;
-        }
-        setAppsLoadState('ready');
-        return modernClock;
-    }).catch(function(error) {
-        appsLoadPromise = null;
-        setAppsLoadState('error');
-        throw error;
-    });
-}
-/* PAGE:apps:END */
-
 function renderPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1 || currentPageId === pageId) return;
     if (currentPageId) pageScrollPositions[currentPageId] = window.scrollY;
     /* PAGE:bookmarks:START */
     if (pageId !== 'bookmarks') closeBookmarkChat(false);
     /* PAGE:bookmarks:END */
-    /* PAGE:apps:START */
-    if (pageId !== 'apps') closeToolFullscreen(false);
-    /* PAGE:apps:END */
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var page = $(pageId);
     if (!page) return;
@@ -133,15 +61,6 @@ function renderPage(pageId) {
         window.scrollTo(0, pageScrollPositions[pageId] || 0);
         updateBackToTopVisibility();
     });
-    /* PAGE:apps:START */
-    if (pageId === 'apps') {
-        ensureAppsInitialized().then(function(clock) {
-            if (currentPageId === 'apps') clock.start();
-        }).catch(function() {});
-    } else if (modernClock) {
-        modernClock.stop();
-    }
-    /* PAGE:apps:END */
 }
 
 function getPageFromHash() {
@@ -435,123 +354,6 @@ function initAnnouncements() {
     });
 }
 
-/* PAGE:apps:START */
-function initToolFullscreen() {
-    var cards = Array.from(document.querySelectorAll('.tool-card'));
-    var activeCard = null;
-    var inertedElements = [];
-
-    function setBackgroundInert(card) {
-        var current = card;
-        while (current && current.parentElement) {
-            var parent = current.parentElement;
-            Array.from(parent.children).forEach(function(sibling) {
-                if (sibling !== current && !sibling.inert) {
-                    sibling.inert = true;
-                    inertedElements.push(sibling);
-                }
-            });
-            if (parent === document.body) break;
-            current = parent;
-        }
-    }
-
-    function restoreBackground() {
-        inertedElements.forEach(function(element) { element.inert = false; });
-        inertedElements = [];
-    }
-
-    function getFocusableElements(card) {
-        return Array.from(card.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
-            .filter(function(element) { return !element.hidden && element.getClientRects().length > 0; });
-    }
-
-    function closeFullscreen(restoreFocus) {
-        if (!activeCard) return;
-        var card = activeCard;
-        var button = card.querySelector('.tool-fullscreen-toggle');
-        var title = card.querySelector('.tool-title').textContent.trim();
-        card.classList.remove('is-fullscreen');
-        card.removeAttribute('role');
-        card.removeAttribute('aria-modal');
-        card.removeAttribute('aria-labelledby');
-        button.setAttribute('aria-expanded', 'false');
-        button.setAttribute('aria-label', t('fullscreenView', { title: title }));
-        button.title = t('fullscreen');
-        document.body.classList.remove('tool-fullscreen-open');
-        restoreBackground();
-        activeCard = null;
-        if (restoreFocus !== false) button.focus();
-    }
-
-    function openFullscreen(card) {
-        if (activeCard && activeCard !== card) closeFullscreen();
-        var button = card.querySelector('.tool-fullscreen-toggle');
-        var titleElement = card.querySelector('.tool-title');
-        var title = titleElement.textContent.trim();
-        card.classList.add('is-fullscreen');
-        card.setAttribute('role', 'dialog');
-        card.setAttribute('aria-modal', 'true');
-        card.setAttribute('aria-labelledby', titleElement.id);
-        button.setAttribute('aria-expanded', 'true');
-        button.setAttribute('aria-label', t('fullscreenExit', { title: title }));
-        button.title = t('restore');
-        document.body.classList.add('tool-fullscreen-open');
-        setBackgroundInert(card);
-        activeCard = card;
-        button.focus();
-    }
-
-    cards.forEach(function(card, index) {
-        var header = card.querySelector('.tool-header');
-        var titleElement = card.querySelector('.tool-title');
-        var title = titleElement.textContent.trim();
-        if (!titleElement.id) titleElement.id = 'toolTitle' + (index + 1);
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'tool-fullscreen-toggle';
-        button.setAttribute('aria-label', t('fullscreenView', { title: title }));
-        button.setAttribute('aria-expanded', 'false');
-        button.title = t('fullscreen');
-        button.innerHTML = iconMarkup('maximize', 'tool-maximize-icon') + iconMarkup('minimize', 'tool-minimize-icon');
-        button.addEventListener('click', function() {
-            if (activeCard === card) closeFullscreen();
-            else openFullscreen(card);
-        });
-        header.appendChild(button);
-    });
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && activeCard) {
-            event.preventDefault();
-            closeFullscreen();
-            return;
-        }
-        if (event.key === 'Tab' && activeCard) {
-            var focusable = getFocusableElements(activeCard);
-            if (!focusable.length) {
-                event.preventDefault();
-                return;
-            }
-            var first = focusable[0];
-            var last = focusable[focusable.length - 1];
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            } else if (!activeCard.contains(document.activeElement)) {
-                event.preventDefault();
-                first.focus();
-            }
-        }
-    });
-
-    closeToolFullscreen = closeFullscreen;
-}
-/* PAGE:apps:END */
-
 window.toggleCategory = function(header) {
     var expanded = header.querySelector('.category-toggle').classList.toggle('expanded');
     header.nextElementSibling.classList.toggle('show', expanded);
@@ -753,58 +555,6 @@ function initBookmarkChat() {
     });
 }
 /* PAGE:bookmarks:END */
-
-/* PAGE:apps:START */
-function initModernClock() {
-    return window.JustAFishAppModules.initClock({
-        faceId: 'analogFace',
-        hourId: 'analogHour',
-        minuteId: 'analogMinute',
-        secondId: 'analogSecond',
-        digitalClockId: 'digitalClock',
-        digitalDateId: 'digitalDate',
-        faceSize: 200,
-        showNumbers: true,
-        numberRadius: 73,
-        startImmediately: false
-    });
-}
-
-function initModernPomodoro() {
-    window.JustAFishAppModules.initPomodoro({
-        timerId: 'pomodoroTimer',
-        statusId: 'pomodoroStatus',
-        progressId: 'pomodoroProgress',
-        startBtnId: 'pomodoroStart',
-        resetBtnId: 'pomodoroReset',
-        countId: 'pomodoroCount',
-        totalId: 'pomodoroTotal',
-        workInputId: 'pomodoroWork',
-        breakInputId: 'pomodoroBreak',
-        soundToggleId: 'pomodoroSound',
-        previewBtnId: 'pomodoroPreview',
-        toastId: 'pomodoroToast',
-        toastMessageId: 'pomodoroToastMessage',
-        toastDetailId: 'pomodoroToastDetail',
-        toastCloseId: 'pomodoroToastClose',
-        circleRadius: 85,
-        exposeAs: 'pomodoro'
-    });
-}
-
-function initModernSchulte() {
-    window.JustAFishAppModules.initSchulte({
-        gridId: 'schulteGrid',
-        timeId: 'schulteTime',
-        bestId: 'schulteBest',
-        overlayId: 'schulteOverlay',
-        restartBtnId: 'schulteRestart',
-        usePerformanceNow: true,
-        bestPlaceholder: '-',
-        exposeAs: 'initSchulte'
-    });
-}
-/* PAGE:apps:END */
 
 initTheme();
 initResumeAge();
