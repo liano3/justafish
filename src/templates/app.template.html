@@ -29,15 +29,23 @@
     <div class="app">
         <header class="header">
             <div class="header-inner">
-                <a href="{{HOME_URL}}" class="logo">
+                <a href="{{DEFAULT_PAGE_URL}}" class="logo">
                     <span class="logo-icon">{{SITE_ICON}}</span>
                     <span class="logo-text">{{SITE_NAME}}</span>
                 </a>
                 <nav class="nav">
+                    <!-- PAGE:home:START -->
                     <a class="nav-link" href="{{HOME_URL}}">{{T_NAV_HOME}}</a>
+                    <!-- PAGE:home:END -->
+                    <!-- PAGE:resume:START -->
                     <a class="nav-link" href="{{RESUME_URL}}">{{T_NAV_RESUME}}</a>
+                    <!-- PAGE:resume:END -->
+                    <!-- PAGE:bookmarks:START -->
                     <a class="nav-link" href="{{BOOKMARKS_URL}}">{{T_NAV_BOOKMARKS}}</a>
+                    <!-- PAGE:bookmarks:END -->
+                    <!-- PAGE:apps:START -->
                     <a class="nav-link active" href="{{APPS_URL}}" aria-current="page">{{T_NAV_APPS}}</a>
+                    <!-- PAGE:apps:END -->
                 </nav>
                 <div class="header-actions">
                     <!-- FEATURE:language:START -->
@@ -72,10 +80,18 @@
 
         {{FOOTER}}
         <nav class="mobile-nav">
+            <!-- PAGE:home:START -->
             <a class="mobile-nav-link" href="{{HOME_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#home"></use></svg>{{T_NAV_HOME}}</a>
+            <!-- PAGE:home:END -->
+            <!-- PAGE:resume:START -->
             <a class="mobile-nav-link" href="{{RESUME_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#file-text"></use></svg>{{T_NAV_RESUME}}</a>
+            <!-- PAGE:resume:END -->
+            <!-- PAGE:bookmarks:START -->
             <a class="mobile-nav-link" href="{{BOOKMARKS_URL}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bookmark"></use></svg>{{T_NAV_BOOKMARKS}}</a>
+            <!-- PAGE:bookmarks:END -->
+            <!-- PAGE:apps:START -->
             <a class="mobile-nav-link active" href="{{APPS_URL}}" aria-current="page"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#grid"></use></svg>{{T_NAV_APPS}}</a>
+            <!-- PAGE:apps:END -->
         </nav>
     </div>
 

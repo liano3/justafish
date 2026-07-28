@@ -796,9 +796,11 @@ function buildAppPages(config, seo, locale, assetManifest) {
     const localeRoot = locale === 'en' ? '/en/' : '/';
     const assetPrefix = locale === 'en' ? '../../../' : '../../';
     const iconSpriteUrl = `${assetPrefix}${assetManifest.iconSprite}`;
+    const defaultPageId = PAGE_IDS.find(pageId => config.pages[pageId]);
+    const pageUrl = pageId => pageId === 'home' ? localeRoot : `${localeRoot}#${pageId}`;
 
     return APPS.map(app => {
-        const pageUrl = new URL(`${locale === 'en' ? 'en/' : ''}apps/${app.id}/`, seo.rootSiteUrl).href;
+        const appUrl = new URL(`${locale === 'en' ? 'en/' : ''}apps/${app.id}/`, seo.rootSiteUrl).href;
         const zhAppUrl = new URL(`apps/${app.id}/`, seo.rootSiteUrl).href;
         const enAppUrl = new URL(`en/apps/${app.id}/`, seo.rootSiteUrl).href;
         const runtimeText = Object.fromEntries(['themeToLight', 'themeToDark', ...app.runtime].map(key => [key, text[key]]));
@@ -810,9 +812,9 @@ function buildAppPages(config, seo, locale, assetManifest) {
         html = html.replace('{{APP_OVERLAY}}', app.id === 'pomodoro' ? renderPomodoroOverlay() : '');
         html = html.replace(/\{\{T_([A-Z0-9_]+)\}\}/g, (match, key) => Object.prototype.hasOwnProperty.call(text, key) ? escapeHtml(text[key]) : '');
         const replacements = {
-            HTML_LANG: locale === 'en' ? 'en' : 'zh-CN', APP_TITLE: text[app.title], APP_DESCRIPTION: text[app.description],
-            SITE_NAME: config.profile.siteName, SITE_ICON: config.profile.siteIcon, SITE_FAVICON: createTextFavicon(config.profile.siteIcon), PROFILE_NAME: config.profile.name,
-            APP_URL: pageUrl, ZH_APP_URL: zhAppUrl, EN_APP_URL: enAppUrl, HOME_URL: localeRoot, RESUME_URL: `${localeRoot}#resume`, BOOKMARKS_URL: `${localeRoot}#bookmarks`, APPS_URL: `${localeRoot}#apps`,
+            HTML_LANG: locale === 'en' ? 'en' : 'zh-CN', APP_TITLE: escapeHtml(text[app.title]), APP_DESCRIPTION: escapeHtml(text[app.description]),
+            SITE_NAME: escapeHtml(config.profile.siteName), SITE_ICON: escapeHtml(config.profile.siteIcon), SITE_FAVICON: createTextFavicon(config.profile.siteIcon), PROFILE_NAME: escapeHtml(config.profile.name),
+            APP_URL: appUrl, ZH_APP_URL: zhAppUrl, EN_APP_URL: enAppUrl, DEFAULT_PAGE_URL: pageUrl(defaultPageId), HOME_URL: pageUrl('home'), RESUME_URL: pageUrl('resume'), BOOKMARKS_URL: pageUrl('bookmarks'), APPS_URL: pageUrl('apps'),
             LANG_SWITCH_URL: locale === 'en' ? `/apps/${app.id}/` : `/en/apps/${app.id}/`, LANG_SWITCH_HREFLANG: locale === 'en' ? 'zh-CN' : 'en', LANG_SWITCH_LABEL: locale === 'en' ? '中' : 'EN',
             SITE_STYLESHEET_URL: `${assetPrefix}${assetManifest.stylesheet}`, APP_STYLESHEET_URL: `${assetPrefix}${assetManifest.apps[app.id].stylesheet}`,
             ICON_SPRITE_URL: iconSpriteUrl, APP_SCRIPT_URL: `${assetPrefix}${assetManifest.apps[app.id].script}`, RUNTIME_CONFIG: runtimeConfig,
@@ -826,7 +828,7 @@ function buildAppPages(config, seo, locale, assetManifest) {
         const outputPath = path.join(__dirname, 'dist', locale === 'en' ? 'en' : '', 'apps', app.id, 'index.html');
         fs.mkdirSync(path.dirname(outputPath), { recursive: true });
         fs.writeFileSync(outputPath, html);
-        return { siteUrl: pageUrl, lastUpdated: seo.lastUpdated };
+        return { siteUrl: appUrl, lastUpdated: seo.lastUpdated };
     });
 }
 
