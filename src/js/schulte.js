@@ -1,18 +1,15 @@
-function initSchulte(opts) {
-    var grid = $(opts.gridId);
-    var timeDisplay = $(opts.timeId);
-    var bestDisplay = $(opts.bestId);
-    var overlay = $(opts.overlayId);
-    var restartBtn = $(opts.restartBtnId);
+function initSchulte() {
+    var grid = $('schulteGrid');
+    var timeDisplay = $('schulteTime');
+    var bestDisplay = $('schulteBest');
+    var overlay = $('schulteOverlay');
+    var restartBtn = $('schulteRestart');
     var numbers = [], currentNum = 1, startTime = null, timerRAF = null, isRunning = false;
-    var bestTime = localStorage.getItem('schulteBest') ? parseFloat(localStorage.getItem('schulteBest')) : null;
-    var usePerformanceNow = opts.usePerformanceNow || false;
+    var bestTime = parseFloat(localStorage.getItem('schulteBest')) || null;
 
     function updateTimer() {
         if (isRunning) {
-            var elapsed = usePerformanceNow
-                ? (performance.now() - startTime) / 1000
-                : (Date.now() - startTime) / 1000;
+            var elapsed = (performance.now() - startTime) / 1000;
             timeDisplay.textContent = elapsed.toFixed(2);
             timerRAF = requestAnimationFrame(updateTimer);
         }
@@ -27,7 +24,7 @@ function initSchulte(opts) {
         numbers = shuffle(Array.from({length: 25}, function(_, i) { return i + 1; }));
         currentNum = 1; startTime = null; isRunning = false;
         timeDisplay.textContent = '0.00';
-        bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : (opts.bestPlaceholder || '--');
+        bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : '-';
         overlay.classList.remove('hidden');
         stopTimer();
         numbers.forEach(function(num) {
@@ -42,9 +39,7 @@ function initSchulte(opts) {
                     if (currentNum > 25) {
                         stopTimer();
                         isRunning = false;
-                        var elapsed = usePerformanceNow
-                            ? (performance.now() - startTime) / 1000
-                            : (Date.now() - startTime) / 1000;
+                        var elapsed = (performance.now() - startTime) / 1000;
                         timeDisplay.textContent = elapsed.toFixed(2);
                         if (!bestTime || elapsed < bestTime) {
                             bestTime = elapsed;
@@ -64,7 +59,7 @@ function initSchulte(opts) {
     overlay.addEventListener('click', function() {
         if (!isRunning) {
             isRunning = true;
-            startTime = usePerformanceNow ? performance.now() : Date.now();
+            startTime = performance.now();
             overlay.classList.add('hidden');
             timerRAF = requestAnimationFrame(updateTimer);
         }
@@ -77,12 +72,5 @@ function initSchulte(opts) {
         });
     }
 
-    // Expose for window-level access if needed
-    if (opts.exposeAs) {
-        window[opts.exposeAs] = createGrid;
-    }
-
     createGrid();
-
-    return { reset: createGrid };
 }

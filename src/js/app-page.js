@@ -22,11 +22,11 @@ window.toggleTheme = function() {
 
 function initApp() {
     if (window.APP_ID === 'clock') {
-        initClock({ faceId: 'analogFace', hourId: 'analogHour', minuteId: 'analogMinute', secondId: 'analogSecond', digitalClockId: 'digitalClock', digitalDateId: 'digitalDate', faceSize: 200, numberRadius: 73, startImmediately: true });
+        initClock();
     } else if (window.APP_ID === 'pomodoro') {
-        initPomodoro({ timerId: 'pomodoroTimer', statusId: 'pomodoroStatus', progressId: 'pomodoroProgress', startBtnId: 'pomodoroStart', resetBtnId: 'pomodoroReset', countId: 'pomodoroCount', totalId: 'pomodoroTotal', workInputId: 'pomodoroWork', breakInputId: 'pomodoroBreak', soundToggleId: 'pomodoroSound', previewBtnId: 'pomodoroPreview', toastId: 'pomodoroToast', toastMessageId: 'pomodoroToastMessage', toastDetailId: 'pomodoroToastDetail', toastCloseId: 'pomodoroToastClose', circleRadius: 85 });
+        initPomodoro();
     } else if (window.APP_ID === 'schulte') {
-        initSchulte({ gridId: 'schulteGrid', timeId: 'schulteTime', bestId: 'schulteBest', overlayId: 'schulteOverlay', restartBtnId: 'schulteRestart', usePerformanceNow: true, bestPlaceholder: '-' });
+        initSchulte();
     } else if (window.APP_ID === '2048') {
         initGame2048();
     }

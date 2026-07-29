@@ -1,21 +1,20 @@
-function initPomodoro(opts) {
-    var timerDisplay = $(opts.timerId);
-    var statusDisplay = $(opts.statusId);
-    var progressBar = $(opts.progressId);
-    var startBtn = $(opts.startBtnId);
-    var resetBtn = $(opts.resetBtnId);
-    var countDisplay = $(opts.countId);
-    var totalDisplay = $(opts.totalId);
-    var workInput = $(opts.workInputId);
-    var breakInput = $(opts.breakInputId);
-    var soundToggle = $(opts.soundToggleId);
-    var previewBtn = $(opts.previewBtnId);
-    var toast = $(opts.toastId);
-    var toastMessage = $(opts.toastMessageId);
-    var toastDetail = $(opts.toastDetailId);
-    var toastClose = $(opts.toastCloseId);
-    var circleRadius = opts.circleRadius || 90;
-    var circumference = 2 * Math.PI * circleRadius;
+function initPomodoro() {
+    var timerDisplay = $('pomodoroTimer');
+    var statusDisplay = $('pomodoroStatus');
+    var progressBar = $('pomodoroProgress');
+    var startBtn = $('pomodoroStart');
+    var resetBtn = $('pomodoroReset');
+    var countDisplay = $('pomodoroCount');
+    var totalDisplay = $('pomodoroTotal');
+    var workInput = $('pomodoroWork');
+    var breakInput = $('pomodoroBreak');
+    var soundToggle = $('pomodoroSound');
+    var previewBtn = $('pomodoroPreview');
+    var toast = $('pomodoroToast');
+    var toastMessage = $('pomodoroToastMessage');
+    var toastDetail = $('pomodoroToastDetail');
+    var toastClose = $('pomodoroToastClose');
+    var circumference = 2 * Math.PI * 85;
     var originalTitle = document.title;
 
     var isRunning = false;
@@ -252,40 +251,30 @@ function initPomodoro(opts) {
     updateDisplay();
     updateStatus();
 
-    if (opts.bindEvents !== false) {
-        startBtn.addEventListener('click', start);
-        resetBtn.addEventListener('click', reset);
-        previewBtn.addEventListener('click', function() { preview(); });
-        toastClose.addEventListener('click', hideToast);
-        soundToggle.addEventListener('change', function() {
-            localStorage.setItem('pomodoroSoundEnabled', soundToggle.checked.toString());
-            if (soundToggle.checked) unlockAudio();
-        });
-        workInput.addEventListener('change', function() {
-            if (!isRunning && isWork) {
-                totalTime = readMinutes(workInput, 25) * 60;
-                timeLeft = totalTime;
-                updateDisplay();
-            }
-        });
-        breakInput.addEventListener('change', function() {
-            if (!isRunning && !isWork) {
-                totalTime = readMinutes(breakInput, 5) * 60;
-                timeLeft = totalTime;
-                updateDisplay();
-            }
-        });
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) restoreTitle();
-        });
-        window.addEventListener('focus', restoreTitle);
-    }
-
-    if (opts.exposeAs) {
-        window[opts.exposeAs + 'Toggle'] = start;
-        window[opts.exposeAs + 'Reset'] = reset;
-        window[opts.exposeAs + 'Preview'] = preview;
-    }
-
-    return { start: start, reset: reset, preview: preview };
+    startBtn.addEventListener('click', start);
+    resetBtn.addEventListener('click', reset);
+    previewBtn.addEventListener('click', function() { preview(); });
+    toastClose.addEventListener('click', hideToast);
+    soundToggle.addEventListener('change', function() {
+        localStorage.setItem('pomodoroSoundEnabled', soundToggle.checked.toString());
+        if (soundToggle.checked) unlockAudio();
+    });
+    workInput.addEventListener('change', function() {
+        if (!isRunning && isWork) {
+            totalTime = readMinutes(workInput, 25) * 60;
+            timeLeft = totalTime;
+            updateDisplay();
+        }
+    });
+    breakInput.addEventListener('change', function() {
+        if (!isRunning && !isWork) {
+            totalTime = readMinutes(breakInput, 5) * 60;
+            timeLeft = totalTime;
+            updateDisplay();
+        }
+    });
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) restoreTitle();
+    });
+    window.addEventListener('focus', restoreTitle);
 }

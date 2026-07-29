@@ -468,14 +468,16 @@ function initBookmarkSearch() {
 function initBookmarkChat() {
     var searchInput = $('bookmarkSearch');
     var chat = $('aiChat');
+    var title = $('aiChatTitle');
     var closeButton = $('aiChatClose');
     var form = $('aiChatForm');
     var input = $('aiChatInput');
     var sendButton = $('aiChatSend');
     var messages = $('aiChatMessages');
-    if (!searchInput || !chat || !closeButton || !form || !input || !sendButton || !messages) return;
+    if (!searchInput || !chat || !title || !closeButton || !form || !input || !sendButton || !messages) return;
 
     var history = [];
+    var password = '';
     var isSending = false;
 
     function addMessage(role, text) {
@@ -487,9 +489,13 @@ function initBookmarkChat() {
         return message;
     }
 
-    function openChat() {
+    function openChat(settings) {
+        password = searchInput.value;
+        history = [];
+        messages.textContent = '';
+        title.textContent = settings.title || t('AI_CHAT_TITLE');
         chat.hidden = false;
-        if (!messages.children.length) addMessage('assistant', t('AI_CHAT_GREETING'));
+        addMessage('assistant', settings.greeting || t('AI_CHAT_GREETING'));
         input.focus();
     }
 
@@ -506,10 +512,13 @@ function initBookmarkChat() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: searchInput.value })
         }).then(function(response) {
-            if (!response.ok) return;
+            if (!response.ok) return null;
+            return response.json();
+        }).then(function(settings) {
+            if (!settings) return;
+            openChat(settings);
             searchInput.value = '';
             searchInput.dispatchEvent(new Event('input'));
-            openChat();
         }).catch(function() {});
     });
     closeButton.addEventListener('click', closeChat);
@@ -534,7 +543,7 @@ function initBookmarkChat() {
         fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: history })
+            body: JSON.stringify({ password: password, messages: history.slice(-40) })
         }).then(function(response) {
             return response.json().catch(function() { return {}; }).then(function(data) {
                 if (!response.ok) throw new Error(data.error || t('AI_CHAT_ERROR'));
@@ -543,7 +552,10 @@ function initBookmarkChat() {
         }).then(function(data) {
             reply.textContent = data.reply || t('AI_CHAT_ERROR');
             messages.scrollTop = messages.scrollHeight;
-            if (data.reply) history.push({ role: 'assistant', content: data.reply });
+            if (data.reply) {
+                history.push({ role: 'assistant', content: data.reply });
+                history = history.slice(-40);
+            }
         }).catch(function() {
             reply.textContent = t('AI_CHAT_ERROR');
             messages.scrollTop = messages.scrollHeight;

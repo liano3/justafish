@@ -6,10 +6,18 @@ function getConfig() {
         return {
             apiKey: String(value.apiKey || ''),
             baseUrl: String(value.baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, ''),
-            model: String(value.model || 'gpt-4o-mini'),
-            systemPrompt: String(value.systemPrompt || '').trim(),
-            password: String(value.password || '')
+            model: String(value.model || 'gpt-4o-mini')
         };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getEgg(password) {
+    try {
+        const eggs = JSON.parse(process.env.EASTER_EGGS || '{}');
+        const egg = Object.prototype.hasOwnProperty.call(eggs, password) && eggs[password];
+        return egg && typeof egg === 'object' ? egg : null;
     } catch (error) {
         return null;
     }
@@ -28,18 +36,19 @@ module.exports = async function chat(req, res) {
         return res.status(400).json({ error: 'Invalid request' });
     }
 
-    if (typeof body.password === 'string') {
-        const unlocked = Boolean(config.password && body.password === config.password);
-        return res.status(unlocked ? 200 : 404).json({ unlocked });
-    }
+    const egg = typeof body.password === 'string' && getEgg(body.password);
+    if (!Array.isArray(body.messages)) return egg
+        ? res.status(200).json({ unlocked: true, title: String(egg.title || ''), greeting: String(egg.greeting || '') })
+        : res.status(404).json({ unlocked: false });
+    if (!egg) return res.status(404).json({ error: 'Not found' });
 
-    const messages = Array.isArray(body.messages)
-        ? body.messages.filter(item => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
-            .slice(-40).map(item => ({ role: item.role, content: item.content.slice(0, 2000) }))
-        : [];
+    const messages = body.messages.filter(item => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
+        .slice(-40).map(item => ({ role: item.role, content: item.content.slice(0, 2000) }));
     if (!messages.length) return res.status(400).json({ error: 'Message is required' });
-    const requestMessages = config.systemPrompt
-        ? [{ role: 'system', content: config.systemPrompt }, ...messages]
+    const greeting = String(egg.greeting || '').trim();
+    const prompt = [String(egg.prompt || '').trim(), greeting && `已向用户展示的开场白：${greeting}`].filter(Boolean).join('\n\n');
+    const requestMessages = prompt
+        ? [{ role: 'system', content: prompt }, ...messages]
         : messages;
 
     try {

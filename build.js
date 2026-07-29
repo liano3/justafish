@@ -6,6 +6,7 @@ const { DEFAULT_CONFIG } = require('./src/config/default');
 const PAGE_IDS = ['home', 'resume', 'bookmarks', 'apps'];
 const BUILD_FEATURE_IDS = ['language'];
 const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
+const MAIN_RUNTIME_TEXT_KEYS = ['AI_CHAT_ERROR', 'AI_CHAT_GREETING', 'AI_CHAT_TITLE', 'AI_CHAT_WAIT', 'ageYears', 'announcementIndex', 'backToTopProgress', 'backToTopTitle', 'bookmarksFound', 'bookmarksTotal', 'comingSoon', 'copied', 'copyEmail', 'copyEmailFailed', 'copyFailed', 'copyNotAllowed', 'downloadPdf', 'emailCopied', 'emailCopiedStatus', 'pdfChecking', 'pdfCheckingStatus', 'pdfDownloading', 'pdfDownloadingStatus', 'pdfMissing', 'themeToDark', 'themeToLight'];
 const APPS = [
     { id: 'clock', icon: 'clock', title: 'CLOCK', description: 'CLOCK_DESCRIPTION', css: 'clock.css', js: ['clock.js'], runtime: ['dateLocale'] },
     { id: 'pomodoro', icon: 'clock', title: 'POMODORO', description: 'POMODORO_DESCRIPTION', css: 'pomodoro.css', js: ['pomodoro.js'], runtime: ['pomodoroFocusRunning', 'pomodoroFocusReady', 'pomodoroBreakRunning', 'pomodoroBreakReady', 'pomodoroWorkComplete', 'pomodoroBreakComplete', 'pomodoroPreviewSoundOn', 'pomodoroPreviewSoundOff', 'pomodoroAutoBreak', 'pomodoroAutoFocus', 'pomodoroReminderTitle', 'continue', 'pause', 'start'] },
@@ -662,8 +663,7 @@ function buildHomepage(config, seo, locale, assetManifest) {
     const text = UI_TEXT[locale];
     const enabledPageIds = PAGE_IDS.filter(pageId => config.pages[pageId]);
     const defaultPageId = enabledPageIds[0];
-    const runtimeText = { ...text };
-    if (!config.pages.language) delete runtimeText.SWITCH_LANGUAGE_ARIA;
+    const runtimeText = Object.fromEntries(MAIN_RUNTIME_TEXT_KEYS.map(key => [key, text[key]]));
     const pageI18n = JSON.stringify(runtimeText).replace(/</g, '\\u003c');
     const stylesheetUrl = resolveBuiltAssetUrl(assetManifest.stylesheet, locale);
     const mainScriptUrl = resolveBuiltAssetUrl(assetManifest.mainScript, locale);
