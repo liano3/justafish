@@ -1,6 +1,11 @@
 <div class="random-picker">
     <div class="random-picker-field">
-        <span id="randomPickerOptionsLabel">{{T_RANDOM_OPTIONS}}</span>
+        <div class="random-picker-field-heading">
+            <span id="randomPickerOptionsLabel">{{T_RANDOM_OPTIONS}}</span>
+            <button id="randomPickerAddOption" type="button" aria-label="{{T_RANDOM_ADD_OPTION}}" title="{{T_RANDOM_ADD_OPTION}}">
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#plus"></use></svg>
+            </button>
+        </div>
         <div class="random-picker-options-editor" id="randomPickerOptions" role="group" aria-labelledby="randomPickerOptionsLabel" data-placeholder="{{T_RANDOM_OPTIONS_PLACEHOLDER}}"></div>
     </div>
     <div class="random-picker-controls">

@@ -1,5 +1,6 @@
 function initRandomPicker() {
     var optionsEditor = $('randomPickerOptions');
+    var addOptionButton = $('randomPickerAddOption');
     var countInput = $('randomPickerCount');
     var deduplicateInput = $('randomPickerDeduplicate');
     var removeInput = $('randomPickerRemove');
@@ -35,6 +36,13 @@ function initRandomPicker() {
         localStorage.setItem('randomPickerRemove', removeInput.checked.toString());
     }
 
+    function insertRowAfter(row) {
+        var nextRow = createRow('');
+        row.after(nextRow);
+        updateRowLabels();
+        nextRow.querySelector('input').focus();
+    }
+
     function createRow(value) {
         var row = document.createElement('div');
         row.className = 'random-picker-option';
@@ -43,6 +51,7 @@ function initRandomPicker() {
         input.type = 'text';
         input.value = value || '';
         input.autocomplete = 'off';
+        input.enterKeyHint = 'next';
 
         input.addEventListener('input', saveOptions);
         input.addEventListener('keydown', function(event) {
@@ -50,10 +59,9 @@ function initRandomPicker() {
             var rowIndex = rows.indexOf(row);
             if (event.key === 'Enter') {
                 event.preventDefault();
-                var nextRow = createRow('');
-                row.after(nextRow);
-                updateRowLabels();
-                nextRow.querySelector('input').focus();
+                input._randomPickerEnterHandled = true;
+                insertRowAfter(row);
+                setTimeout(function() { input._randomPickerEnterHandled = false; }, 0);
                 return;
             }
             if (event.key === 'Backspace' && !input.value && rows.length > 1) {
@@ -74,26 +82,46 @@ function initRandomPicker() {
                 rows[rowIndex + 1].querySelector('input').focus();
             }
         });
+        input.addEventListener('beforeinput', function(event) {
+            if (event.inputType === 'insertLineBreak' || event.inputType === 'insertParagraph') {
+                event.preventDefault();
+                if (!input._randomPickerEnterHandled) insertRowAfter(row);
+                return;
+            }
+            if (event.inputType !== 'insertFromPaste') return;
+            handlePastedText(input, row, event.data || event.dataTransfer, event);
+        });
         input.addEventListener('paste', function(event) {
-            var text = event.clipboardData && event.clipboardData.getData('text');
-            if (!text || !/\r?\n/.test(text)) return;
-            event.preventDefault();
-            var values = text.split(/\r?\n/).map(function(item) { return item.trim(); }).filter(Boolean);
-            if (!values.length) return;
-            input.value = values.shift();
-            var insertAfter = row;
-            values.forEach(function(item) {
-                var nextRow = createRow(item);
-                insertAfter.after(nextRow);
-                insertAfter = nextRow;
-            });
-            updateRowLabels();
-            saveOptions();
-            insertAfter.querySelector('input').focus();
+            handlePastedText(input, row, event.clipboardData, event);
         });
 
         row.appendChild(input);
         return row;
+    }
+
+    function handlePastedText(input, row, source, event) {
+        if (input._randomPickerPasteHandled) return;
+        var text = typeof source === 'string' ? source : source && typeof source.getData === 'function' ? source.getData('text') : '';
+        if (!text || !/\r?\n/.test(text)) return;
+        event.preventDefault();
+        input._randomPickerPasteHandled = true;
+        setTimeout(function() { input._randomPickerPasteHandled = false; }, 0);
+        insertPastedRows(input, row, text);
+    }
+
+    function insertPastedRows(input, row, text) {
+        var values = text.split(/\r?\n/).map(function(item) { return item.trim(); }).filter(Boolean);
+        if (!values.length) return;
+        input.value = values.shift();
+        var insertAfter = row;
+        values.forEach(function(item) {
+            var nextRow = createRow(item);
+            insertAfter.after(nextRow);
+            insertAfter = nextRow;
+        });
+        updateRowLabels();
+        saveOptions();
+        insertAfter.querySelector('input').focus();
     }
 
     function renderRows(values) {
@@ -141,6 +169,7 @@ function initRandomPicker() {
     }
 
     function setInputsDisabled(disabled) {
+        addOptionButton.disabled = disabled;
         optionRows().forEach(function(row) {
             row.querySelector('input').disabled = disabled;
         });
@@ -283,6 +312,9 @@ function initRandomPicker() {
     }
     deduplicateInput.addEventListener('change', saveOptions);
     removeInput.addEventListener('change', saveOptions);
+    addOptionButton.addEventListener('click', function() {
+        insertRowAfter(optionRows()[optionRows().length - 1]);
+    });
     drawButton.addEventListener('click', draw);
     resetButton.addEventListener('click', reset);
     renderHistory();
