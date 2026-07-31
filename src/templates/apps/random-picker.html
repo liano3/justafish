@@ -1,0 +1,33 @@
+<div class="random-picker">
+    <div class="random-picker-field">
+        <span id="randomPickerOptionsLabel">{{T_RANDOM_OPTIONS}}</span>
+        <div class="random-picker-options-editor" id="randomPickerOptions" role="group" aria-labelledby="randomPickerOptionsLabel" data-placeholder="{{T_RANDOM_OPTIONS_PLACEHOLDER}}"></div>
+    </div>
+    <div class="random-picker-controls">
+        <label class="random-picker-count" for="randomPickerCount">
+            <span>{{T_RANDOM_DRAW_COUNT}}</span>
+            <input id="randomPickerCount" type="number" min="1" max="10" value="1">
+        </label>
+        <label class="random-picker-remove" for="randomPickerDeduplicate">
+            <input type="checkbox" id="randomPickerDeduplicate" checked>
+            <span>{{T_RANDOM_DEDUPLICATE}}</span>
+        </label>
+        <label class="random-picker-remove" for="randomPickerRemove">
+            <input type="checkbox" id="randomPickerRemove">
+            <span>{{T_RANDOM_REMOVE_DRAWN}}</span>
+        </label>
+    </div>
+    <div class="random-picker-actions">
+        <button class="tool-btn tool-btn-primary" id="randomPickerDraw" type="button">{{T_RANDOM_DRAW}}</button>
+        <button class="tool-btn tool-btn-secondary" id="randomPickerReset" type="button">{{T_RANDOM_RESET}}</button>
+    </div>
+    <p class="random-picker-message" id="randomPickerMessage" role="status" aria-live="polite"></p>
+    <section class="random-picker-output" aria-labelledby="randomPickerResultTitle">
+        <h2 id="randomPickerResultTitle">{{T_RANDOM_RESULT}}</h2>
+        <div class="random-picker-result" id="randomPickerResult">—</div>
+    </section>
+    <section class="random-picker-history" aria-labelledby="randomPickerHistoryTitle">
+        <h2 id="randomPickerHistoryTitle">{{T_RANDOM_HISTORY}}</h2>
+        <ol id="randomPickerHistory"></ol>
+    </section>
+</div>

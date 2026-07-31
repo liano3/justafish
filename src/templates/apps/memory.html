@@ -1,0 +1,18 @@
+<div class="memory-game" data-icon-sprite="{{ICON_SPRITE_URL}}">
+    <div class="memory-stats">
+        <div class="memory-stat"><strong id="memoryMoves">0</strong><span>{{T_MEMORY_MOVES}}</span></div>
+        <div class="memory-stat"><strong id="memoryTime">00:00</strong><span>{{T_MEMORY_TIME}}</span></div>
+        <div class="memory-stat"><strong id="memoryBest">—</strong><span>{{T_MEMORY_BEST}}</span></div>
+    </div>
+    <div class="memory-toolbar">
+        <div class="memory-difficulty" aria-label="{{T_MEMORY_DIFFICULTY}}">
+            <button type="button" data-memory-size="4" aria-pressed="true">{{T_MEMORY_EASY}}</button>
+            <button type="button" data-memory-size="6" aria-pressed="false">{{T_MEMORY_HARD}}</button>
+        </div>
+        <button type="button" class="tool-btn tool-btn-secondary memory-restart" id="memoryRestart">
+            <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#rotate-ccw"></use></svg>{{T_MEMORY_NEW_GAME}}
+        </button>
+    </div>
+    <p class="memory-status" id="memoryStatus" role="status" aria-live="polite"></p>
+    <div class="memory-board" id="memoryBoard" role="grid" aria-label="{{T_MEMORY_BOARD}}"></div>
+</div>

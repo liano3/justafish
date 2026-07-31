@@ -1,4 +1,6 @@
 function initPomodoro() {
+    var currentTimeDisplay = $('pomodoroCurrentTime');
+    var currentDateDisplay = $('pomodoroCurrentDate');
     var timerDisplay = $('pomodoroTimer');
     var statusDisplay = $('pomodoroStatus');
     var progressBar = $('pomodoroProgress');
@@ -30,6 +32,20 @@ function initPomodoro() {
     var audioContext = null;
     var completedCount = parseInt(localStorage.getItem('pomodoroCount') || '0');
     var totalMinutes = parseInt(localStorage.getItem('pomodoroTotal') || '0');
+
+    function updateCurrentDateTime() {
+        var now = new Date();
+        currentTimeDisplay.textContent = [now.getHours(), now.getMinutes(), now.getSeconds()]
+            .map(function(value) { return String(value).padStart(2, '0'); })
+            .join(':');
+        currentTimeDisplay.dateTime = now.toISOString();
+        currentDateDisplay.textContent = new Intl.DateTimeFormat(t('dateLocale'), {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        }).format(now);
+    }
 
     function readMinutes(input, fallback) {
         var parsed = parseInt(input.value);
@@ -248,6 +264,8 @@ function initPomodoro() {
     countDisplay.textContent = completedCount;
     totalDisplay.textContent = totalMinutes;
     soundToggle.checked = localStorage.getItem('pomodoroSoundEnabled') !== 'false';
+    updateCurrentDateTime();
+    setInterval(updateCurrentDateTime, 1000);
     updateDisplay();
     updateStatus();
 

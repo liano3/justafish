@@ -1,0 +1,28 @@
+<div class="countdown-app" data-icon-sprite="{{ICON_SPRITE_URL}}">
+    <form class="countdown-form" id="countdownForm">
+        <label class="countdown-field countdown-name" for="countdownName">
+            <span>{{T_COUNTDOWN_EVENT_NAME}}</span>
+            <input id="countdownName" type="text" maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
+        </label>
+        <label class="countdown-field" for="countdownDate">
+            <span>{{T_COUNTDOWN_DATE}}</span>
+            <input id="countdownDate" type="date">
+        </label>
+        <div class="countdown-form-actions">
+            <button class="tool-btn tool-btn-primary" type="submit">{{T_COUNTDOWN_ADD}}</button>
+        </div>
+        <p class="countdown-message" id="countdownMessage" role="status" aria-live="polite"></p>
+    </form>
+    <div class="countdown-events">
+        <div class="countdown-columns">
+            <section class="countdown-group countdown-group-future" aria-labelledby="countdownListTitle">
+                <h2 id="countdownListTitle">{{T_COUNTDOWN_LIST}}</h2>
+                <div class="countdown-list" id="countdownList"></div>
+            </section>
+            <section class="countdown-group countdown-group-anniversary" aria-labelledby="anniversaryListTitle">
+                <h2 id="anniversaryListTitle">{{T_ANNIVERSARY_LIST}}</h2>
+                <div class="countdown-list" id="anniversaryList"></div>
+            </section>
+        </div>
+    </div>
+</div>

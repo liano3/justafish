@@ -1,4 +1,7 @@
 .pomodoro-display { text-align: center; }
+.pomodoro-clock { margin-bottom: 20px; }
+.pomodoro-current-time { display: block; color: var(--text); font-size: 2rem; font-weight: 650; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.pomodoro-current-date { min-height: 1.4em; margin-top: 4px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4; }
 .pomodoro-progress { position: relative; width: 180px; height: 180px; margin: 0 auto 12px; }
 .pomodoro-progress svg { transform: rotate(-90deg); }
 .pomodoro-progress-bg { fill: none; stroke: var(--bg-tertiary); stroke-width: 8; }

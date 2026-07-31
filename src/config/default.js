@@ -42,7 +42,7 @@ const DEFAULT_CONFIG = {
         },
         {
             icon: '🧩',
-            content: '应用页面提供时钟、番茄钟、舒尔特方格和 2048。',
+            content: '应用页面提供番茄钟、随机选择、日期记录和多款注意力小游戏。',
             link: null,
             expiresAt: ''
         }

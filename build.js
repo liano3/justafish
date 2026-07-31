@@ -8,8 +8,10 @@ const BUILD_FEATURE_IDS = ['language'];
 const BUILD_OPTION_IDS = [...PAGE_IDS, ...BUILD_FEATURE_IDS];
 const MAIN_RUNTIME_TEXT_KEYS = ['AI_CHAT_ERROR', 'AI_CHAT_GREETING', 'AI_CHAT_TITLE', 'AI_CHAT_WAIT', 'ageYears', 'announcementIndex', 'backToTopProgress', 'backToTopTitle', 'bookmarksFound', 'bookmarksTotal', 'comingSoon', 'copied', 'copyEmail', 'copyEmailFailed', 'copyFailed', 'copyNotAllowed', 'downloadPdf', 'emailCopied', 'emailCopiedStatus', 'pdfChecking', 'pdfCheckingStatus', 'pdfDownloading', 'pdfDownloadingStatus', 'pdfMissing', 'themeToDark', 'themeToLight'];
 const APPS = [
-    { id: 'clock', icon: 'clock', title: 'CLOCK', description: 'CLOCK_DESCRIPTION', css: 'clock.css', js: ['clock.js'], runtime: ['dateLocale'] },
-    { id: 'pomodoro', icon: 'clock', title: 'POMODORO', description: 'POMODORO_DESCRIPTION', css: 'pomodoro.css', js: ['pomodoro.js'], runtime: ['pomodoroFocusRunning', 'pomodoroFocusReady', 'pomodoroBreakRunning', 'pomodoroBreakReady', 'pomodoroWorkComplete', 'pomodoroBreakComplete', 'pomodoroPreviewSoundOn', 'pomodoroPreviewSoundOff', 'pomodoroAutoBreak', 'pomodoroAutoFocus', 'pomodoroReminderTitle', 'continue', 'pause', 'start'] },
+    { id: 'pomodoro', icon: 'clock', title: 'POMODORO', description: 'POMODORO_DESCRIPTION', css: 'pomodoro.css', js: ['pomodoro.js'], runtime: ['dateLocale', 'pomodoroFocusRunning', 'pomodoroFocusReady', 'pomodoroBreakRunning', 'pomodoroBreakReady', 'pomodoroWorkComplete', 'pomodoroBreakComplete', 'pomodoroPreviewSoundOn', 'pomodoroPreviewSoundOff', 'pomodoroAutoBreak', 'pomodoroAutoFocus', 'pomodoroReminderTitle', 'continue', 'pause', 'start'] },
+    { id: 'random-picker', icon: 'rotate-ccw', title: 'RANDOM_PICKER', description: 'RANDOM_PICKER_DESCRIPTION', css: 'random-picker.css', js: ['random-picker.js'], runtime: ['randomPickerEmpty', 'randomPickerCount', 'randomPickerHistoryEmpty', 'randomPickerDrawing', 'randomPickerDone'] },
+    { id: 'countdown', icon: 'calendar', title: 'COUNTDOWN', description: 'COUNTDOWN_DESCRIPTION', css: 'countdown.css', js: ['countdown.js'], runtime: ['dateLocale', 'countdownToday', 'countdownFuture', 'countdownPast', 'countdownEmpty', 'anniversaryEmpty', 'countdownInvalid', 'countdownDeleteLabel'] },
+    { id: 'memory', icon: 'grid', title: 'MEMORY_GAME', description: 'MEMORY_GAME_DESCRIPTION', css: 'memory.css', js: ['memory.js'], runtime: ['memoryCardHidden', 'memoryCardRevealed', 'memoryCardMatched', 'memoryComplete', 'memoryReady'] },
     { id: 'schulte', icon: 'table', title: 'SCHULTE', description: 'SCHULTE_DESCRIPTION', css: 'schulte.css', js: ['schulte.js'], runtime: [] },
     { id: '2048', icon: 'grid', title: 'GAME_2048', description: 'GAME_2048_DESCRIPTION', css: 'game2048.css', js: ['vendor/2048-core.js', 'game2048.js'], runtime: ['gameOver', 'gameWon'] }
 ];
@@ -27,14 +29,18 @@ const UI_TEXT = {
         DOWNLOAD_PDF: '下载 PDF', BOOKMARKS_TITLE: '我的书签', BOOKMARK_SEARCH_LABEL: '搜索书签',
         BOOKMARK_SEARCH_PLACEHOLDER: '搜索分类、名称、描述、标签或网址', BOOKMARK_CLEAR: '清空搜索', BOOKMARK_EMPTY: '没有匹配的书签',
         BOOKMARK_TAG_FILTER_ARIA: '按标签筛选书签', BOOKMARK_TAG_ALL: '全部',
-        APPS_TITLE: '实用工具与小游戏', CLOCK: '时钟', GAME_2048: '2048', BACK_TO_APPS: '返回应用',
-        CLOCK_DESCRIPTION: '查看本地时间、日期和模拟时钟。', POMODORO_DESCRIPTION: '可调节专注与休息时长，支持声音提醒和统计。',
+        APPS_TITLE: '实用工具与小游戏', GAME_2048: '2048', BACK_TO_APPS: '返回应用', RANDOM_PICKER: '随机选择器', COUNTDOWN: '倒计时与纪念日', MEMORY_GAME: '记忆翻牌',
+        POMODORO_DESCRIPTION: '查看当前时间与日期，调节专注和休息时长，并使用提醒与统计。',
+        RANDOM_PICKER_DESCRIPTION: '从自定义候选项中随机抽取结果，支持多选、移除和历史记录。', COUNTDOWN_DESCRIPTION: '记录重要日期，自动区分未来的倒计时与已经发生的纪念日。', MEMORY_GAME_DESCRIPTION: '翻开并配对图标卡片，挑战更少步数和更短用时。',
         SCHULTE_DESCRIPTION: '按顺序寻找 1 至 25，训练注意力与视觉搜索。', GAME_2048_DESCRIPTION: '使用方向键或滑动合并数字，挑战 2048。',
-        CLOCK_DATE_PLACEHOLDER: '2024年1月1日 星期一', POMODORO: '番茄钟', POMODORO_READY: '准备专注',
+        POMODORO: '番茄钟', POMODORO_READY: '准备专注',
         START: '开始', RESET: '重置', SOUND_REMINDER: '声音提醒', PREVIEW_REMINDER: '试听提醒',
         FOCUS: '专注', MINUTES: '分钟', BREAK: '休息', COMPLETED_PREFIX: '完成', COMPLETED_SUFFIX: '次', TOTAL_PREFIX: '累计',
         SCHULTE: '舒尔特方格', CURRENT_TIME: '当前用时(秒)', BEST_SCORE: '最佳记录', CLICK_TO_START: '点击开始', RESTART: '重新开始',
         CURRENT_SCORE: '当前分数', GAME_BOARD: '2048 棋盘', CONTINUE: '继续', PLAY_AGAIN: '再来一局', NEW_GAME: '新游戏',
+        RANDOM_OPTIONS: '候选项', RANDOM_OPTIONS_PLACEHOLDER: '每行输入一个候选项', RANDOM_DRAW_COUNT: '抽取数量', RANDOM_DEDUPLICATE: '候选项去重', RANDOM_REMOVE_DRAWN: '抽取后移除', RANDOM_DRAW: '开始抽取', RANDOM_RESET: '清空', RANDOM_RESULT: '抽取结果', RANDOM_HISTORY: '最近结果',
+        COUNTDOWN_EVENT_NAME: '事件名称', COUNTDOWN_EVENT_PLACEHOLDER: '例如：项目截止日期', COUNTDOWN_DATE: '日期', COUNTDOWN_ADD: '添加事件', COUNTDOWN_LIST: '倒计时', ANNIVERSARY_LIST: '纪念日',
+        MEMORY_MOVES: '步数', MEMORY_TIME: '用时', MEMORY_BEST: '最佳', MEMORY_DIFFICULTY: '难度', MEMORY_EASY: '4 × 4', MEMORY_HARD: '6 × 6', MEMORY_BOARD: '记忆翻牌棋盘', MEMORY_NEW_GAME: '重新开始',
         BACK_TO_TOP: '返回顶部', POMODORO_WORK_COMPLETE: '专注完成，休息一下', POMODORO_AUTO_BREAK: '已自动进入休息计时', CLOSE_REMINDER: '关闭提醒',
         avatarAlt: '{name}的头像', seoDescription: '{identity}的个人主页，{title}。{introduction}', seoKeywords: ['个人主页', '学术主页'],
         ageYears: '{age} 岁', phoneAria: '电话 {phone}', copyEmail: '复制邮箱地址', researchInterests: '研究兴趣',
@@ -52,7 +58,10 @@ const UI_TEXT = {
         pomodoroFocusRunning: '专注中...', pomodoroFocusReady: '准备专注', pomodoroBreakRunning: '休息中...', pomodoroBreakReady: '准备休息',
         pomodoroWorkComplete: '专注完成，休息一下', pomodoroBreakComplete: '休息结束，开始专注', pomodoroPreviewSoundOn: '提醒声音正常，到点会自动提示',
         pomodoroPreviewSoundOff: '声音已关闭，到点仍会显示页面提醒', pomodoroAutoBreak: '已自动进入休息计时', pomodoroAutoFocus: '已自动开始下一轮专注',
-        pomodoroReminderTitle: '提醒：{message}', continue: '继续', pause: '暂停', start: '开始', gameOver: '游戏结束', gameWon: '达到 2048'
+        pomodoroReminderTitle: '提醒：{message}', continue: '继续', pause: '暂停', start: '开始', gameOver: '游戏结束', gameWon: '达到 2048',
+        randomPickerEmpty: '请至少输入一个候选项', randomPickerCount: '可抽取数量最多为 {count}', randomPickerHistoryEmpty: '还没有抽取记录', randomPickerDrawing: '抽取中...', randomPickerDone: '抽取完成',
+        countdownToday: '就是今天', countdownFuture: '还有 {days} 天', countdownPast: '已过去 {days} 天', countdownEmpty: '还没有倒计时', anniversaryEmpty: '还没有纪念日', countdownInvalid: '请填写事件名称和日期', countdownDeleteLabel: '删除 {name}',
+        memoryCardHidden: '未翻开的卡片', memoryCardRevealed: '已翻开的卡片', memoryCardMatched: '已配对的卡片', memoryComplete: '完成！用了 {moves} 步，耗时 {time}', memoryReady: '翻开任意卡片开始'
     },
     en: {
         NAV_HOME: 'Home', NAV_RESUME: 'Resume', NAV_BOOKMARKS: 'Bookmarks', NAV_APPS: 'Apps',
@@ -60,14 +69,18 @@ const UI_TEXT = {
         DOWNLOAD_PDF: 'Download PDF', BOOKMARKS_TITLE: 'My Bookmarks', BOOKMARK_SEARCH_LABEL: 'Search bookmarks',
         BOOKMARK_SEARCH_PLACEHOLDER: 'Search categories, names, descriptions, tags, or URLs', BOOKMARK_CLEAR: 'Clear search', BOOKMARK_EMPTY: 'No matching bookmarks',
         BOOKMARK_TAG_FILTER_ARIA: 'Filter bookmarks by tag', BOOKMARK_TAG_ALL: 'All',
-        APPS_TITLE: 'Tools & Mini Games', CLOCK: 'Clock', GAME_2048: '2048', BACK_TO_APPS: 'Back to apps',
-        CLOCK_DESCRIPTION: 'View the local time, date, and an analog clock.', POMODORO_DESCRIPTION: 'Set focus and break durations with reminders and session stats.',
+        APPS_TITLE: 'Tools & Mini Games', GAME_2048: '2048', BACK_TO_APPS: 'Back to apps', RANDOM_PICKER: 'Random Picker', COUNTDOWN: 'Countdown & Anniversaries', MEMORY_GAME: 'Memory Match',
+        POMODORO_DESCRIPTION: 'See the current time and date, set focus and break durations, and use reminders and session stats.',
+        RANDOM_PICKER_DESCRIPTION: 'Draw random results from your own list with multiple picks, removal, and history.', COUNTDOWN_DESCRIPTION: 'Save important dates and automatically separate future countdowns from past anniversaries.', MEMORY_GAME_DESCRIPTION: 'Flip and match icon cards while aiming for fewer moves and a faster time.',
         SCHULTE_DESCRIPTION: 'Find 1 through 25 in order to train attention and visual search.', GAME_2048_DESCRIPTION: 'Use arrow keys or swipe to merge tiles and reach 2048.',
-        CLOCK_DATE_PLACEHOLDER: 'Monday, January 1, 2024', POMODORO: 'Pomodoro Timer', POMODORO_READY: 'Ready to focus',
+        POMODORO: 'Pomodoro Timer', POMODORO_READY: 'Ready to focus',
         START: 'Start', RESET: 'Reset', SOUND_REMINDER: 'Sound reminder', PREVIEW_REMINDER: 'Preview reminder',
         FOCUS: 'Focus', MINUTES: 'minutes', BREAK: 'Break', COMPLETED_PREFIX: 'Completed', COMPLETED_SUFFIX: 'sessions', TOTAL_PREFIX: 'Total',
         SCHULTE: 'Schulte Grid', CURRENT_TIME: 'Current time (s)', BEST_SCORE: 'Best', CLICK_TO_START: 'Click to start', RESTART: 'Restart',
         CURRENT_SCORE: 'Score', GAME_BOARD: '2048 board', CONTINUE: 'Continue', PLAY_AGAIN: 'Play again', NEW_GAME: 'New game',
+        RANDOM_OPTIONS: 'Options', RANDOM_OPTIONS_PLACEHOLDER: 'Enter one option per line', RANDOM_DRAW_COUNT: 'Number to draw', RANDOM_DEDUPLICATE: 'Remove duplicates', RANDOM_REMOVE_DRAWN: 'Remove after drawing', RANDOM_DRAW: 'Draw', RANDOM_RESET: 'Clear', RANDOM_RESULT: 'Result', RANDOM_HISTORY: 'Recent results',
+        COUNTDOWN_EVENT_NAME: 'Event name', COUNTDOWN_EVENT_PLACEHOLDER: 'For example: Project deadline', COUNTDOWN_DATE: 'Date', COUNTDOWN_ADD: 'Add event', COUNTDOWN_LIST: 'Countdowns', ANNIVERSARY_LIST: 'Anniversaries',
+        MEMORY_MOVES: 'Moves', MEMORY_TIME: 'Time', MEMORY_BEST: 'Best', MEMORY_DIFFICULTY: 'Difficulty', MEMORY_EASY: '4 × 4', MEMORY_HARD: '6 × 6', MEMORY_BOARD: 'Memory match board', MEMORY_NEW_GAME: 'Restart',
         BACK_TO_TOP: 'Back to top', POMODORO_WORK_COMPLETE: 'Focus complete — take a break', POMODORO_AUTO_BREAK: 'Break timer started automatically', CLOSE_REMINDER: 'Close reminder',
         avatarAlt: '{name}\'s avatar', seoDescription: '{identity}\'s personal website. {title}. {introduction}', seoKeywords: ['personal website', 'academic homepage'],
         ageYears: 'Age {age}', phoneAria: 'Phone {phone}', copyEmail: 'Copy email address', researchInterests: 'Research interests',
@@ -85,7 +98,10 @@ const UI_TEXT = {
         pomodoroFocusRunning: 'Focusing...', pomodoroFocusReady: 'Ready to focus', pomodoroBreakRunning: 'On a break...', pomodoroBreakReady: 'Ready for a break',
         pomodoroWorkComplete: 'Focus complete — take a break', pomodoroBreakComplete: 'Break complete — time to focus', pomodoroPreviewSoundOn: 'Sound is working and will play when time is up',
         pomodoroPreviewSoundOff: 'Sound is off; an on-page reminder will still appear', pomodoroAutoBreak: 'Break timer started automatically', pomodoroAutoFocus: 'Next focus session started automatically',
-        pomodoroReminderTitle: 'Reminder: {message}', continue: 'Continue', pause: 'Pause', start: 'Start', gameOver: 'Game over', gameWon: 'You reached 2048'
+        pomodoroReminderTitle: 'Reminder: {message}', continue: 'Continue', pause: 'Pause', start: 'Start', gameOver: 'Game over', gameWon: 'You reached 2048',
+        randomPickerEmpty: 'Enter at least one option', randomPickerCount: 'You can draw at most {count}', randomPickerHistoryEmpty: 'No draws yet', randomPickerDrawing: 'Drawing...', randomPickerDone: 'Draw complete',
+        countdownToday: 'Today', countdownFuture: '{days} days to go', countdownPast: '{days} days ago', countdownEmpty: 'No countdowns yet', anniversaryEmpty: 'No anniversaries yet', countdownInvalid: 'Enter an event name and date', countdownDeleteLabel: 'Delete {name}',
+        memoryCardHidden: 'Hidden card', memoryCardRevealed: 'Revealed card', memoryCardMatched: 'Matched card', memoryComplete: 'Complete! {moves} moves in {time}', memoryReady: 'Flip any card to begin'
     }
 };
 
