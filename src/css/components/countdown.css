@@ -15,7 +15,7 @@
 .countdown-item-copy { min-width: 0; }
 .countdown-item-copy h3 { overflow: hidden; color: var(--text); font-size: 0.92rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .countdown-item-meta { margin-top: 3px; color: var(--text-muted); font-size: 0.76rem; }
-.countdown-remaining { grid-column: 1; grid-row: 2; font-size: 0.88rem; font-weight: 650; white-space: nowrap; }
+.countdown-remaining { grid-column: 1; grid-row: 2; font-size: 0.88rem; font-weight: 650; line-height: 1.4; }
 .countdown-group-future .countdown-remaining { color: var(--primary-dark); }
 .countdown-group-anniversary .countdown-remaining { color: var(--danger); }
 [data-theme="dark"] .countdown-group-future .countdown-remaining { color: var(--primary); }

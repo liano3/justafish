@@ -10,7 +10,7 @@ const MAIN_RUNTIME_TEXT_KEYS = ['AI_CHAT_ERROR', 'AI_CHAT_GREETING', 'AI_CHAT_TI
 const APPS = [
     { id: 'pomodoro', icon: 'clock', title: 'POMODORO', description: 'POMODORO_DESCRIPTION', css: 'pomodoro.css', js: ['pomodoro.js'], runtime: ['dateLocale', 'pomodoroFocusRunning', 'pomodoroFocusReady', 'pomodoroBreakRunning', 'pomodoroBreakReady', 'pomodoroWorkComplete', 'pomodoroBreakComplete', 'pomodoroPreviewSoundOn', 'pomodoroPreviewSoundOff', 'pomodoroAutoBreak', 'pomodoroAutoFocus', 'pomodoroReminderTitle', 'continue', 'pause', 'start'] },
     { id: 'random-picker', icon: 'rotate-ccw', title: 'RANDOM_PICKER', description: 'RANDOM_PICKER_DESCRIPTION', css: 'random-picker.css', js: ['random-picker.js'], runtime: ['randomPickerEmpty', 'randomPickerCount', 'randomPickerHistoryEmpty', 'randomPickerDrawing', 'randomPickerDone'] },
-    { id: 'countdown', icon: 'calendar', title: 'COUNTDOWN', description: 'COUNTDOWN_DESCRIPTION', css: 'countdown.css', js: ['countdown.js'], runtime: ['dateLocale', 'countdownToday', 'countdownFuture', 'countdownPast', 'countdownEmpty', 'anniversaryEmpty', 'countdownInvalid', 'countdownDeleteLabel'] },
+    { id: 'countdown', icon: 'calendar', title: 'COUNTDOWN', description: 'COUNTDOWN_DESCRIPTION', css: 'countdown.css', js: ['countdown.js'], runtime: ['dateLocale', 'countdownToday', 'countdownFuture', 'countdownPast', 'countdownDurationYear', 'countdownDurationMonth', 'countdownDurationDay', 'countdownEmpty', 'anniversaryEmpty', 'countdownInvalid', 'countdownDeleteLabel'] },
     { id: 'memory', icon: 'grid', title: 'MEMORY_GAME', description: 'MEMORY_GAME_DESCRIPTION', css: 'memory.css', js: ['memory.js'], runtime: ['memoryCardHidden', 'memoryCardRevealed', 'memoryCardMatched', 'memoryComplete', 'memoryReady'] },
     { id: 'schulte', icon: 'table', title: 'SCHULTE', description: 'SCHULTE_DESCRIPTION', css: 'schulte.css', js: ['schulte.js'], runtime: [] },
     { id: '2048', icon: 'grid', title: 'GAME_2048', description: 'GAME_2048_DESCRIPTION', css: 'game2048.css', js: ['vendor/2048-core.js', 'game2048.js'], runtime: ['gameOver', 'gameWon'] }
@@ -60,7 +60,7 @@ const UI_TEXT = {
         pomodoroPreviewSoundOff: '声音已关闭，到点仍会显示页面提醒', pomodoroAutoBreak: '已自动进入休息计时', pomodoroAutoFocus: '已自动开始下一轮专注',
         pomodoroReminderTitle: '提醒：{message}', continue: '继续', pause: '暂停', start: '开始', gameOver: '游戏结束', gameWon: '达到 2048',
         randomPickerEmpty: '请至少输入一个候选项', randomPickerCount: '可抽取数量最多为 {count}', randomPickerHistoryEmpty: '还没有抽取记录', randomPickerDrawing: '抽取中...', randomPickerDone: '抽取完成',
-        countdownToday: '就是今天', countdownFuture: '还有 {days} 天', countdownPast: '已过去 {days} 天', countdownEmpty: '还没有倒计时', anniversaryEmpty: '还没有纪念日', countdownInvalid: '请填写事件名称和日期', countdownDeleteLabel: '删除 {name}',
+        countdownToday: '就是今天', countdownFuture: '还有 {days} 天', countdownPast: '已过去 {days} 天', countdownDurationYear: '{count}年', countdownDurationMonth: '{count}个月', countdownDurationDay: '{count}天', countdownEmpty: '还没有倒计时', anniversaryEmpty: '还没有纪念日', countdownInvalid: '请填写事件名称和日期', countdownDeleteLabel: '删除 {name}',
         memoryCardHidden: '未翻开的卡片', memoryCardRevealed: '已翻开的卡片', memoryCardMatched: '已配对的卡片', memoryComplete: '完成！用了 {moves} 步，耗时 {time}', memoryReady: '翻开任意卡片开始'
     },
     en: {
@@ -100,7 +100,7 @@ const UI_TEXT = {
         pomodoroPreviewSoundOff: 'Sound is off; an on-page reminder will still appear', pomodoroAutoBreak: 'Break timer started automatically', pomodoroAutoFocus: 'Next focus session started automatically',
         pomodoroReminderTitle: 'Reminder: {message}', continue: 'Continue', pause: 'Pause', start: 'Start', gameOver: 'Game over', gameWon: 'You reached 2048',
         randomPickerEmpty: 'Enter at least one option', randomPickerCount: 'You can draw at most {count}', randomPickerHistoryEmpty: 'No draws yet', randomPickerDrawing: 'Drawing...', randomPickerDone: 'Draw complete',
-        countdownToday: 'Today', countdownFuture: '{days} days to go', countdownPast: '{days} days ago', countdownEmpty: 'No countdowns yet', anniversaryEmpty: 'No anniversaries yet', countdownInvalid: 'Enter an event name and date', countdownDeleteLabel: 'Delete {name}',
+        countdownToday: 'Today', countdownFuture: '{days} days to go', countdownPast: '{days} days ago', countdownDurationYear: '{count}y', countdownDurationMonth: '{count}mo', countdownDurationDay: '{count}d', countdownEmpty: 'No countdowns yet', anniversaryEmpty: 'No anniversaries yet', countdownInvalid: 'Enter an event name and date', countdownDeleteLabel: 'Delete {name}',
         memoryCardHidden: 'Hidden card', memoryCardRevealed: 'Revealed card', memoryCardMatched: 'Matched card', memoryComplete: 'Complete! {moves} moves in {time}', memoryReady: 'Flip any card to begin'
     }
 };

@@ -26,6 +26,36 @@ function initCountdown() {
         return Math.round((date.getTime() - today.getTime()) / 86400000);
     }
 
+    function addMonthsClamped(date, months) {
+        var target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+        var lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+        target.setDate(Math.min(date.getDate(), lastDay));
+        return target;
+    }
+
+    function calendarDuration(start, end) {
+        var months = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
+        if (addMonthsClamped(start, months) > end) months -= 1;
+        var cursor = addMonthsClamped(start, months);
+        return {
+            years: Math.floor(months / 12),
+            months: months % 12,
+            days: differenceInDays(end, cursor)
+        };
+    }
+
+    function durationLabel(date, today, days) {
+        var duration = calendarDuration(days > 0 ? today : date, days > 0 ? date : today);
+        if (!duration.years && !duration.months) return '';
+        var parts = [];
+        if (duration.years) parts.push(t('countdownDurationYear', { count: duration.years }));
+        if (duration.months) parts.push(t('countdownDurationMonth', { count: duration.months }));
+        if (duration.days) parts.push(t('countdownDurationDay', { count: duration.days }));
+        var isChinese = t('dateLocale').startsWith('zh');
+        var detail = parts.join(isChinese ? '' : ' ');
+        return isChinese ? '（' + detail + '）' : ' (' + detail + ')';
+    }
+
     function save() {
         localStorage.setItem(storageKey, JSON.stringify(events));
     }
@@ -65,7 +95,7 @@ function initCountdown() {
         remaining.className = 'countdown-remaining';
         remaining.textContent = days === 0
             ? t('countdownToday')
-            : (days > 0 ? t('countdownFuture', { days: days }) : t('countdownPast', { days: Math.abs(days) }));
+            : (days > 0 ? t('countdownFuture', { days: days }) : t('countdownPast', { days: Math.abs(days) })) + durationLabel(date, today, days);
 
         var remove = document.createElement('button');
         remove.className = 'countdown-delete';
