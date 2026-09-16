@@ -55,6 +55,7 @@ function initRandomPicker() {
 
         input.addEventListener('input', saveOptions);
         input.addEventListener('keydown', function(event) {
+            if (event.isComposing || event.keyCode === 229) return;
             var rows = optionRows();
             var rowIndex = rows.indexOf(row);
             if (event.key === 'Enter') {
@@ -66,7 +67,7 @@ function initRandomPicker() {
             }
             if (event.key === 'Backspace' && !input.value && rows.length > 1) {
                 event.preventDefault();
-                var previousInput = rows[Math.max(0, rowIndex - 1)].querySelector('input');
+                var previousInput = rows[rowIndex > 0 ? rowIndex - 1 : 1].querySelector('input');
                 row.remove();
                 updateRowLabels();
                 saveOptions();
@@ -83,6 +84,7 @@ function initRandomPicker() {
             }
         });
         input.addEventListener('beforeinput', function(event) {
+            if (event.isComposing) return;
             if (event.inputType === 'insertLineBreak' || event.inputType === 'insertParagraph') {
                 event.preventDefault();
                 if (!input._randomPickerEnterHandled) insertRowAfter(row);

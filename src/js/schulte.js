@@ -25,16 +25,19 @@ function initSchulte() {
         currentNum = 1; startTime = null; isRunning = false;
         timeDisplay.textContent = '0.00';
         bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : '-';
-        overlay.classList.remove('hidden');
+        overlay.hidden = false;
         stopTimer();
         numbers.forEach(function(num) {
-            var cell = document.createElement('div');
+            var cell = document.createElement('button');
+            cell.type = 'button';
+            cell.disabled = true;
             cell.className = 'schulte-cell';
             cell.textContent = num;
-            cell.addEventListener('click', function() {
+            cell.addEventListener('click', function(event) {
                 if (!isRunning) return;
                 if (num === currentNum) {
                     cell.classList.add('correct');
+                    cell.disabled = true;
                     currentNum++;
                     if (currentNum > 25) {
                         stopTimer();
@@ -46,6 +49,12 @@ function initSchulte() {
                             localStorage.setItem('schulteBest', bestTime.toString());
                             bestDisplay.textContent = bestTime.toFixed(2) + 's';
                         }
+                    }
+                    if (event.detail === 0) {
+                        var cells = Array.from(grid.children);
+                        var index = cells.indexOf(cell);
+                        var next = cells.slice(index + 1).concat(cells.slice(0, index)).find(function(item) { return !item.disabled; });
+                        (next || restartBtn).focus();
                     }
                 } else {
                     cell.classList.add('wrong');
@@ -60,7 +69,9 @@ function initSchulte() {
         if (!isRunning) {
             isRunning = true;
             startTime = performance.now();
-            overlay.classList.add('hidden');
+            overlay.hidden = true;
+            Array.from(grid.children).forEach(function(cell) { cell.disabled = false; });
+            grid.firstElementChild.focus();
             timerRAF = requestAnimationFrame(updateTimer);
         }
     });
@@ -69,6 +80,7 @@ function initSchulte() {
         restartBtn.addEventListener('click', function(e) {
             if (e) e.stopPropagation();
             createGrid();
+            overlay.focus();
         });
     }
 

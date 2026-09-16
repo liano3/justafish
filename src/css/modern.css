@@ -236,6 +236,7 @@ a.resume-contact:hover { color: var(--primary); }
 
 .section-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; letter-spacing: 0; }
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.section-header .section-title { margin-bottom: 0; }
 
 .bookmark-search { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .bookmark-search-field { position: relative; width: min(100%, 560px); }
@@ -289,7 +290,7 @@ a.resume-contact:hover { color: var(--primary); }
 .bookmark-link-tags > span { padding: 2px 6px; border-radius: 4px; color: var(--text-secondary); background: var(--bg-tertiary); font-size: 0.66rem; line-height: 1.4; }
 
 .app-directory { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.app-directory-link { min-height: 132px; padding: 18px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 18px; align-items: start; gap: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); text-decoration: none; transition: border-color var(--transition), background-color var(--transition), box-shadow var(--transition); }
+.app-directory-link { min-height: 100px; padding: 16px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 18px; align-items: start; gap: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); text-decoration: none; transition: border-color var(--transition), background-color var(--transition), box-shadow var(--transition); }
 .app-directory-link:hover { border-color: var(--border-strong); background: var(--bg-secondary); box-shadow: var(--shadow-sm); }
 .app-directory-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .app-directory-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--primary-dark); background: var(--primary-soft); }
@@ -370,11 +371,12 @@ a.resume-contact:hover { color: var(--primary); }
     .bookmark-links { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; }
     .bookmark-link { min-height: 126px; padding: 11px; }
     .bookmark-link-heading { gap: 7px; font-size: 0.82rem; }
-    .bookmark-link-description { margin-top: 6px; font-size: 0.7rem; }
+    .bookmark-link-description { margin-top: 6px; font-size: 0.8rem; }
     .bookmark-link-tags { padding-top: 9px; gap: 4px; }
-    .bookmark-link-tags > span { padding: 2px 5px; font-size: 0.62rem; }
+    .bookmark-link-tags > span { padding: 0; color: var(--text-muted); background: transparent; font-size: 0.75rem; }
+    .bookmark-link-tags > span + span::before { content: '/'; margin-right: 4px; color: var(--border-strong); }
     .app-directory { grid-template-columns: 1fr; gap: 8px; }
-    .app-directory-link { min-height: 112px; padding: 14px; }
+    .app-directory-link { min-height: 96px; padding: 14px; gap: 12px; }
     .resume-container { padding: 40px 16px 96px; }
     .resume-profile { grid-template-columns: 1fr; gap: 20px; padding-bottom: 36px; }
     .resume-profile-content { grid-row: 2; }

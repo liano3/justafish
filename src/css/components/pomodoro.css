@@ -9,11 +9,12 @@
 .pomodoro-timer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 2.75rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .pomodoro-status { margin-top: 4px; color: var(--text-secondary); line-height: 1.4; }
 .pomodoro-controls { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
-.pomodoro-settings { display: flex; justify-content: center; gap: 16px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.pomodoro-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 16px; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--border); }
 .pomodoro-setting { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85rem; }
 .pomodoro-setting input { width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font-size: 0.85rem; text-align: center; }
 .pomodoro-setting input:focus { border-color: var(--primary); outline: none; }
-.pomodoro-stats { display: flex; justify-content: center; gap: 32px; margin-top: 8px; color: var(--text-secondary); font-size: 0.85rem; }
+.pomodoro-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; margin-top: 12px; color: var(--text-secondary); font-size: 0.85rem; }
+.pomodoro-stats > span { white-space: nowrap; }
 .pomodoro-stats strong { color: var(--primary); font-size: 1rem; }
 .pomodoro-reminder-controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; color: var(--text-secondary); font-size: 0.8rem; }
 .pomodoro-sound-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }

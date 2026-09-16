@@ -35,17 +35,22 @@ Game2048InputManager.prototype.listen = function() {
     });
 
     document.querySelectorAll('[data-2048-restart]').forEach(function(button) {
-        button.addEventListener('click', function() { self.emit('restart'); });
+        button.addEventListener('click', function() {
+            self.emit('restart');
+            board.focus({ preventScroll: true });
+        });
     });
 
-    var keepPlayingButton = $('[data-2048-continue]');
+    var keepPlayingButton = document.querySelector('[data-2048-continue]');
     if (keepPlayingButton) {
         keepPlayingButton.addEventListener('click', function() {
             self.emit('keepPlaying');
+            board.focus({ preventScroll: true });
         });
     }
 
     board.addEventListener('pointerdown', function(event) {
+        if (event.target.closest('button')) return;
         if (event.pointerType === 'mouse' && event.button !== 0) return;
         self.pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
         board.focus({ preventScroll: true });
@@ -106,7 +111,7 @@ function Game2048Actuator() {
     this.best = $('game2048Best');
     this.message = $('game2048Message');
     this.messageText = $('game2048MessageText');
-    this.keepPlayingButton = $('[data-2048-continue]');
+    this.keepPlayingButton = document.querySelector('[data-2048-continue]');
     this.createCells();
 }
 

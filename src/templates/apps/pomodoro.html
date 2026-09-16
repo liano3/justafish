@@ -26,8 +26,8 @@
         </button>
     </div>
     <div class="pomodoro-settings">
-        <div class="pomodoro-setting"><span>{{T_FOCUS}}</span><input type="number" id="pomodoroWork" value="25" min="1" max="60"><span>{{T_MINUTES}}</span></div>
-        <div class="pomodoro-setting"><span>{{T_BREAK}}</span><input type="number" id="pomodoroBreak" value="5" min="1" max="30"><span>{{T_MINUTES}}</span></div>
+        <label class="pomodoro-setting" for="pomodoroWork"><span>{{T_FOCUS}}</span><input type="number" id="pomodoroWork" value="25" min="1" max="60"><span>{{T_MINUTES}}</span></label>
+        <label class="pomodoro-setting" for="pomodoroBreak"><span>{{T_BREAK}}</span><input type="number" id="pomodoroBreak" value="5" min="1" max="30"><span>{{T_MINUTES}}</span></label>
     </div>
     <div class="pomodoro-stats">
         <span>{{T_COMPLETED_PREFIX}} <strong id="pomodoroCount">0</strong> {{T_COMPLETED_SUFFIX}}</span>

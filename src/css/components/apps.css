@@ -10,6 +10,9 @@
 .tool-card { min-height: 540px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
 .tool-body { min-height: 0; flex: 1; padding: 28px; display: flex; flex-direction: column; justify-content: center; }
 .tool-body > * { width: 100%; }
+.tool-card-flat { min-height: 0; border: none; border-radius: 0; overflow: visible; background: transparent; }
+.tool-card-flat .tool-body { padding: 4px 0 0; justify-content: flex-start; }
+.tool-card-flat .countdown-app, .tool-card-flat .random-picker { max-width: none; }
 .tool-btn { min-height: 40px; padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .tool-btn-primary { border-color: var(--primary); color: var(--on-primary); background: var(--primary); }
 .tool-btn-primary:hover { background: var(--primary-dark); }
@@ -21,5 +24,6 @@
     .app-detail-heading { margin-bottom: 16px; }
     .app-detail-title h1 { font-size: 1.1rem; }
     .tool-card { min-height: 520px; }
+    .tool-card-flat { min-height: 0; }
     .tool-body { padding: 20px 14px; }
 }

@@ -28,52 +28,12 @@
     <meta name="twitter:description" content="{{SEO_DESCRIPTION}}">
     <meta name="twitter:image" content="{{SHARE_IMAGE}}">
     <script type="application/ld+json">{{STRUCTURED_DATA}}</script>
-    <script>
-        (function() {
-            var saved = localStorage.getItem('theme');
-            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        })();
-    </script>
+    {{THEME_BOOTSTRAP}}
     <link rel="stylesheet" href="{{STYLESHEET_URL}}">
 </head>
 <body>
     <div class="app">
-        <header class="header">
-            <div class="header-inner">
-                <a href="{{DEFAULT_PAGE_HREF}}" class="logo" onclick="switchPage('{{DEFAULT_PAGE_ID}}'); return false;">
-                    <span class="logo-icon">{{SITE_ICON}}</span>
-                    <span class="logo-text">{{SITE_NAME}}</span>
-                </a>
-                <nav class="nav">
-                    <!-- PAGE:home:START -->
-                    <button class="nav-link active" data-page="home" onclick="switchPage('home')">{{T_NAV_HOME}}</button>
-                    <!-- PAGE:home:END -->
-                    <!-- PAGE:resume:START -->
-                    <button class="nav-link" data-page="resume" onclick="switchPage('resume')">{{T_NAV_RESUME}}</button>
-                    <!-- PAGE:resume:END -->
-                    <!-- PAGE:bookmarks:START -->
-                    <button class="nav-link" data-page="bookmarks" onclick="switchPage('bookmarks')">{{T_NAV_BOOKMARKS}}</button>
-                    <!-- PAGE:bookmarks:END -->
-                    <!-- PAGE:apps:START -->
-                    <button class="nav-link" data-page="apps" onclick="switchPage('apps')">{{T_NAV_APPS}}</button>
-                    <!-- PAGE:apps:END -->
-                </nav>
-                <div class="header-actions">
-                    <!-- FEATURE:language:START -->
-                    <a class="language-switch" href="{{LANG_SWITCH_URL}}" hreflang="{{LANG_SWITCH_HREFLANG}}" aria-label="{{T_SWITCH_LANGUAGE_ARIA}}" title="{{T_SWITCH_LANGUAGE_ARIA}}" onclick="switchLanguage(this); return false;">{{LANG_SWITCH_LABEL}}</a>
-                    <!-- FEATURE:language:END -->
-                    <button class="header-icon-action theme-toggle" type="button" onclick="toggleTheme()" aria-label="{{T_THEME_TO_DARK}}" aria-pressed="false" title="{{T_THEME_TO_DARK}}">
-                        <svg class="sun-icon" style="display:none" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#sun"></use></svg>
-                        <svg class="moon-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#moon"></use></svg>
-                    </button>
-                    <a class="header-icon-action github-project-link" href="https://github.com/liano3/justafish" target="_blank" rel="noopener noreferrer" aria-label="{{T_GITHUB_PROJECT_ARIA}}" title="{{T_GITHUB_PROJECT_ARIA}}">
-                        <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#github"></use></svg>
-                    </a>
-                </div>
-            </div>
-        </header>
+        {{HEADER}}
 
         <main class="main">
             <!-- PAGE:home:START -->
@@ -167,32 +127,7 @@
 
         {{FOOTER}}
 
-        <nav class="mobile-nav">
-            <!-- PAGE:home:START -->
-            <button class="mobile-nav-link active" data-page="home" onclick="switchPage('home')">
-                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#home"></use></svg>
-                {{T_NAV_HOME}}
-            </button>
-            <!-- PAGE:home:END -->
-            <!-- PAGE:resume:START -->
-            <button class="mobile-nav-link" data-page="resume" onclick="switchPage('resume')">
-                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#file-text"></use></svg>
-                {{T_NAV_RESUME}}
-            </button>
-            <!-- PAGE:resume:END -->
-            <!-- PAGE:bookmarks:START -->
-            <button class="mobile-nav-link" data-page="bookmarks" onclick="switchPage('bookmarks')">
-                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bookmark"></use></svg>
-                {{T_NAV_BOOKMARKS}}
-            </button>
-            <!-- PAGE:bookmarks:END -->
-            <!-- PAGE:apps:START -->
-            <button class="mobile-nav-link" data-page="apps" onclick="switchPage('apps')">
-                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#grid"></use></svg>
-                {{T_NAV_APPS}}
-            </button>
-            <!-- PAGE:apps:END -->
-        </nav>
+        {{MOBILE_NAVIGATION}}
     </div>
 
     <button class="back-to-top" id="backToTop" type="button" aria-label="{{T_BACK_TO_TOP}}" title="{{T_BACK_TO_TOP}}" hidden>

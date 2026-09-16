@@ -26,7 +26,10 @@ PROFILE_JSON='{"name":"Alex Chen","email":"alex@example.com","domain":"example.c
 
 ```text
 src/config/default.js       默认配置与图标
+src/config/apps.js          工具目录与资源清单
+src/build/                  配置读取、双语文案、资源构建与页面渲染
 src/templates/              HTML 模板
+src/templates/partials/     共用导航与主题初始化模板
 src/css/                    页面和组件样式
 src/js/                     页面交互与应用模块
 build.js                    静态构建脚本
@@ -35,6 +38,11 @@ vercel.json                 Vercel 构建配置
 ```
 
 修改源码后运行 `npm run build`。Vercel 部署时直接导入仓库并按需添加环境变量即可。
+
+运行 `npm test` 检查接口校验、双语构建和页面开关，不调用真实 AI 服务。
+浏览器回归脚本位于 `tests/browser-check.js`，使用 Playwright CLI 的 `run-code --filename` 执行；运行前先启动 `npm run preview`，在独立浏览器会话打开 `http://localhost:8080/`。脚本会重置该测试会话的本地工具数据，使用模拟聊天响应。
+
+番茄钟会保存时长、暂停状态和截止时间，刷新或返回页面可继续使用；离开期间按时间推进专注和休息阶段。声音与页面提醒需要页面打开才能触发。
 
 ## 配置
 

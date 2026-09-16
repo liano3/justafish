@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Just A Fish - Personal Homepage",
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "build": "node build.js",
     "preview": "node build.js && cd dist && python3 -m http.server 8080"
   },

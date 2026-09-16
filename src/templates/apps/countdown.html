@@ -9,6 +9,10 @@
             <input id="countdownDate" type="date">
         </label>
         <div class="countdown-form-actions">
+            <label class="countdown-convert-option" for="countdownAutoConvert">
+                <input id="countdownAutoConvert" type="checkbox">
+                <span>{{T_COUNTDOWN_AUTO_CONVERT}}</span>
+            </label>
             <button class="tool-btn tool-btn-primary" type="submit">{{T_COUNTDOWN_ADD}}</button>
         </div>
         <p class="countdown-message" id="countdownMessage" role="status" aria-live="polite"></p>

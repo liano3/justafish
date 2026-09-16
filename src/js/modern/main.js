@@ -105,41 +105,24 @@ window.switchLanguage = function(link) {
 /* FEATURE:language:END */
 
 function initPageRouting() {
+    document.querySelectorAll('a[data-page]').forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            window.switchPage(link.dataset.page);
+        });
+    });
+    /* FEATURE:language:START */
+    var languageLink = document.querySelector('.language-switch');
+    if (languageLink) languageLink.addEventListener('click', function(event) {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        window.switchLanguage(languageLink);
+    });
+    /* FEATURE:language:END */
     syncPageFromLocation();
     window.addEventListener('popstate', syncPageFromLocation);
     window.addEventListener('hashchange', syncPageFromLocation);
-}
-
-function updateThemeToggle(isDark) {
-    var toggle = document.querySelector('.theme-toggle');
-    var label = isDark ? t('themeToLight') : t('themeToDark');
-    if (toggle) {
-        toggle.setAttribute('aria-label', label);
-        toggle.setAttribute('aria-pressed', isDark.toString());
-        toggle.title = label;
-    }
-    var sunIcon = document.querySelector('.sun-icon');
-    var moonIcon = document.querySelector('.moon-icon');
-    if (sunIcon) sunIcon.style.display = isDark ? 'block' : 'none';
-    if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
-}
-
-function applyTheme(isDark) {
-    if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
-    else document.documentElement.removeAttribute('data-theme');
-    updateThemeToggle(isDark);
-}
-
-window.toggleTheme = function() {
-    var isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
-    applyTheme(isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-};
-
-function initTheme() {
-    var saved = localStorage.getItem('theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(saved === 'dark' || (!saved && prefersDark));
 }
 
 function initResumeAge() {
@@ -479,6 +462,8 @@ function initBookmarkChat() {
     var history = [];
     var password = '';
     var isSending = false;
+    var unlockRequestId = 0;
+    var chatSession = 0;
 
     function addMessage(role, text) {
         var message = document.createElement('div');
@@ -489,8 +474,12 @@ function initBookmarkChat() {
         return message;
     }
 
-    function openChat(settings) {
-        password = searchInput.value;
+    function openChat(settings, submittedPassword) {
+        chatSession++;
+        password = submittedPassword;
+        isSending = false;
+        sendButton.disabled = false;
+        input.value = '';
         history = [];
         messages.textContent = '';
         title.textContent = settings.title || t('AI_CHAT_TITLE');
@@ -500,25 +489,30 @@ function initBookmarkChat() {
     }
 
     function closeChat(restoreFocus) {
+        unlockRequestId++;
         chat.hidden = true;
         if (restoreFocus !== false) searchInput.focus();
     }
 
     searchInput.addEventListener('keydown', function(event) {
-        if (event.key !== 'Enter' || !searchInput.value.trim()) return;
+        if (event.isComposing || event.keyCode === 229 || event.key !== 'Enter' || !searchInput.value.trim()) return;
         event.preventDefault();
+        var submittedPassword = searchInput.value;
+        var requestId = ++unlockRequestId;
         fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: searchInput.value })
+            body: JSON.stringify({ password: submittedPassword })
         }).then(function(response) {
             if (!response.ok) return null;
             return response.json();
         }).then(function(settings) {
-            if (!settings) return;
-            openChat(settings);
-            searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
+            if (!settings || requestId !== unlockRequestId) return;
+            openChat(settings, submittedPassword);
+            if (searchInput.value === submittedPassword) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
         }).catch(function() {});
     });
     closeButton.addEventListener('click', closeChat);
@@ -534,6 +528,7 @@ function initBookmarkChat() {
         event.preventDefault();
         var text = input.value.trim();
         if (!text || isSending) return;
+        var session = chatSession;
         isSending = true;
         sendButton.disabled = true;
         input.value = '';
@@ -550,6 +545,7 @@ function initBookmarkChat() {
                 return data;
             });
         }).then(function(data) {
+            if (session !== chatSession) return;
             reply.textContent = data.reply || t('AI_CHAT_ERROR');
             messages.scrollTop = messages.scrollHeight;
             if (data.reply) {
@@ -557,12 +553,14 @@ function initBookmarkChat() {
                 history = history.slice(-40);
             }
         }).catch(function() {
+            if (session !== chatSession) return;
             reply.textContent = t('AI_CHAT_ERROR');
             messages.scrollTop = messages.scrollHeight;
         }).finally(function() {
+            if (session !== chatSession) return;
             isSending = false;
             sendButton.disabled = false;
-            input.focus();
+            if (!chat.hidden) input.focus();
         });
     });
 }

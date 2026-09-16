@@ -2,6 +2,7 @@ function initCountdown() {
     var form = $('countdownForm');
     var nameInput = $('countdownName');
     var dateInput = $('countdownDate');
+    var autoConvertInput = $('countdownAutoConvert');
     var message = $('countdownMessage');
     var countdownList = $('countdownList');
     var anniversaryList = $('anniversaryList');
@@ -31,6 +32,13 @@ function initCountdown() {
         var lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
         target.setDate(Math.min(date.getDate(), lastDay));
         return target;
+    }
+
+    function daysUntilAnniversary(date, today) {
+        var months = (today.getFullYear() - date.getFullYear()) * 12;
+        var next = addMonthsClamped(date, months);
+        if (next < today) next = addMonthsClamped(date, months + 12);
+        return differenceInDays(next, today);
     }
 
     function calendarDuration(start, end) {
@@ -108,6 +116,15 @@ function initCountdown() {
         item.appendChild(copy);
         item.appendChild(remaining);
         item.appendChild(remove);
+        if (event.kind === 'anniversary') {
+            var nextDays = daysUntilAnniversary(date, today);
+            var next = document.createElement('div');
+            next.className = 'countdown-next';
+            next.textContent = nextDays === 0
+                ? t('anniversaryToday')
+                : t('anniversaryNext', { days: nextDays });
+            item.appendChild(next);
+        }
         return item;
     }
 
@@ -127,11 +144,15 @@ function initCountdown() {
 
     function render() {
         var today = startOfToday();
-        var previousCount = events.length;
+        var changed = false;
         events = events.filter(function(event) {
-            return event.kind !== 'countdown' || parseLocalDate(event.date) > today;
+            if (event.kind !== 'countdown' || parseLocalDate(event.date) >= today) return true;
+            changed = true;
+            if (!event.autoConvert) return false;
+            event.kind = 'anniversary';
+            return true;
         });
-        if (events.length !== previousCount) save();
+        if (changed) save();
 
         renderGroup(countdownList, events.filter(function(event) {
             return event.kind === 'countdown';
@@ -155,7 +176,8 @@ function initCountdown() {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
             name: name,
             date: dateInput.value,
-            kind: date > startOfToday() ? 'countdown' : 'anniversary'
+            kind: date >= startOfToday() ? 'countdown' : 'anniversary',
+            autoConvert: autoConvertInput.checked
         });
         save();
         form.reset();
@@ -173,7 +195,7 @@ function initCountdown() {
                     && parseLocalDate(event.date)
                     && (event.kind === 'countdown' || event.kind === 'anniversary');
             }).map(function(event) {
-                return { id: event.id, name: event.name, date: event.date, kind: event.kind };
+                return { id: event.id, name: event.name, date: event.date, kind: event.kind, autoConvert: event.autoConvert === true };
             });
         }
     } catch (error) {

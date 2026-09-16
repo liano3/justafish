@@ -25,13 +25,51 @@ function initPomodoro() {
     var totalTime = 25 * 60;
     var deadline = 0;
     var displayInterval = null;
-    var completionTimeout = null;
     var toastTimer = null;
     var toastTransitionTimer = null;
     var titleTimer = null;
     var audioContext = null;
     var completedCount = parseInt(localStorage.getItem('pomodoroCount') || '0');
     var totalMinutes = parseInt(localStorage.getItem('pomodoroTotal') || '0');
+    var stateKey = 'pomodoroState';
+
+    function saveState() {
+        localStorage.setItem(stateKey, JSON.stringify({
+            isRunning: isRunning, isWork: isWork, timeLeft: timeLeft,
+            totalTime: totalTime, deadline: deadline,
+            workMinutes: readMinutes(workInput, 25), breakMinutes: readMinutes(breakInput, 5)
+        }));
+    }
+
+    function restoreState() {
+        clearTimerHandles();
+        try {
+            var state = JSON.parse(localStorage.getItem(stateKey) || 'null');
+            if (!state || typeof state.isRunning !== 'boolean' || typeof state.isWork !== 'boolean'
+                || !Number.isFinite(state.totalTime) || state.totalTime < 60 || state.totalTime > 3600
+                || !Number.isFinite(state.timeLeft) || state.timeLeft < 0 || state.timeLeft > state.totalTime
+                || (state.isRunning && (!Number.isFinite(state.deadline) || state.deadline <= 0))) return;
+            workInput.value = state.workMinutes;
+            breakInput.value = state.breakMinutes;
+            readMinutes(workInput, 25);
+            readMinutes(breakInput, 5);
+            isRunning = state.isRunning;
+            isWork = state.isWork;
+            timeLeft = state.timeLeft;
+            totalTime = state.totalTime;
+            deadline = state.deadline;
+            completedCount = parseInt(localStorage.getItem('pomodoroCount')) || 0;
+            totalMinutes = parseInt(localStorage.getItem('pomodoroTotal')) || 0;
+            if (isRunning) {
+                syncTimer();
+                displayInterval = setInterval(syncTimer, 250);
+            }
+            updateDisplay();
+            updateStatus();
+        } catch (error) {
+            localStorage.removeItem(stateKey);
+        }
+    }
 
     function updateCurrentDateTime() {
         var now = new Date();
@@ -64,6 +102,9 @@ function initPomodoro() {
     }
 
     function updateStatus() {
+        startBtn.textContent = isRunning ? t('pause') : (timeLeft < totalTime ? t('continue') : t('start'));
+        countDisplay.textContent = completedCount;
+        totalDisplay.textContent = totalMinutes;
         statusDisplay.textContent = isWork
             ? (isRunning ? t('pomodoroFocusRunning') : t('pomodoroFocusReady'))
             : (isRunning ? t('pomodoroBreakRunning') : t('pomodoroBreakReady'));
@@ -125,6 +166,7 @@ function initPomodoro() {
 
     function playChime() {
         if (!soundToggle.checked) return;
+        if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
         var context = getAudioContext();
         if (!context) return;
         if (context.state === 'suspended') {
@@ -153,7 +195,9 @@ function initPomodoro() {
 
         playChime();
         showToast(message, detail);
-        if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
+        if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) {
+            navigator.vibrate([180, 100, 180]);
+        }
         if (document.hidden) {
             document.title = t('pomodoroReminderTitle', { message: message });
             if (titleTimer) clearTimeout(titleTimer);
@@ -163,9 +207,7 @@ function initPomodoro() {
 
     function clearTimerHandles() {
         if (displayInterval) clearInterval(displayInterval);
-        if (completionTimeout) clearTimeout(completionTimeout);
         displayInterval = null;
-        completionTimeout = null;
     }
 
     function remainingSeconds() {
@@ -180,39 +222,41 @@ function initPomodoro() {
             timeLeft = totalTime;
             completedCount++;
             totalMinutes += completedMinutes;
-            localStorage.setItem('pomodoroCount', completedCount.toString());
-            localStorage.setItem('pomodoroTotal', totalMinutes.toString());
-            countDisplay.textContent = completedCount;
-            totalDisplay.textContent = totalMinutes;
         } else {
             isWork = true;
             totalTime = readMinutes(workInput, 25) * 60;
             timeLeft = totalTime;
         }
-        updateDisplay();
-        updateStatus();
-    }
-
-    function completePeriod() {
-        if (!isRunning) return;
-        clearTimerHandles();
-        timeLeft = 0;
-        updateDisplay();
-        var completedWork = isWork;
-        switchMode();
-        triggerReminder(completedWork, false);
-        scheduleTimer();
     }
 
     function syncTimer() {
-        var nextTimeLeft = remainingSeconds();
-        if (nextTimeLeft <= 0) {
-            completePeriod();
-            return;
+        if (!isRunning) return;
+        var now = Date.now();
+        var completed = false;
+        while (deadline <= now) {
+            switchMode();
+            deadline += totalTime * 1000;
+            completed = true;
+            // Skip whole focus/break cycles when restoring after a long absence.
+            var cycle = (readMinutes(workInput, 25) + readMinutes(breakInput, 5)) * 60000;
+            var cycles = Math.max(0, Math.floor((now - deadline) / cycle));
+            if (cycles) {
+                deadline += cycles * cycle;
+                completedCount += cycles;
+                totalMinutes += cycles * readMinutes(workInput, 25);
+            }
         }
-        if (nextTimeLeft !== timeLeft) {
+        var nextTimeLeft = remainingSeconds();
+        if (completed || nextTimeLeft !== timeLeft) {
             timeLeft = nextTimeLeft;
             updateDisplay();
+        }
+        if (completed) {
+            localStorage.setItem('pomodoroCount', String(completedCount));
+            localStorage.setItem('pomodoroTotal', String(totalMinutes));
+            saveState();
+            updateStatus();
+            triggerReminder(!isWork, false);
         }
     }
 
@@ -220,26 +264,21 @@ function initPomodoro() {
         clearTimerHandles();
         deadline = Date.now() + timeLeft * 1000;
         displayInterval = setInterval(syncTimer, 250);
-        completionTimeout = setTimeout(completePeriod, timeLeft * 1000);
     }
 
     function start() {
         if (isRunning) {
+            syncTimer();
             timeLeft = remainingSeconds();
-            if (timeLeft <= 0) {
-                completePeriod();
-                return;
-            }
             isRunning = false;
             clearTimerHandles();
-            startBtn.textContent = t('continue');
             updateDisplay();
         } else {
             isRunning = true;
-            startBtn.textContent = t('pause');
             unlockAudio();
             scheduleTimer();
         }
+        saveState();
         updateStatus();
     }
 
@@ -249,7 +288,7 @@ function initPomodoro() {
         isWork = true;
         totalTime = readMinutes(workInput, 25) * 60;
         timeLeft = totalTime;
-        startBtn.textContent = t('start');
+        saveState();
         updateDisplay();
         updateStatus();
     }
@@ -264,6 +303,7 @@ function initPomodoro() {
     countDisplay.textContent = completedCount;
     totalDisplay.textContent = totalMinutes;
     soundToggle.checked = localStorage.getItem('pomodoroSoundEnabled') !== 'false';
+    restoreState();
     updateCurrentDateTime();
     setInterval(updateCurrentDateTime, 1000);
     updateDisplay();
@@ -278,21 +318,38 @@ function initPomodoro() {
         if (soundToggle.checked) unlockAudio();
     });
     workInput.addEventListener('change', function() {
+        if (isRunning) syncTimer();
+        readMinutes(workInput, 25);
         if (!isRunning && isWork) {
             totalTime = readMinutes(workInput, 25) * 60;
             timeLeft = totalTime;
             updateDisplay();
         }
+        saveState();
+        updateStatus();
     });
     breakInput.addEventListener('change', function() {
+        if (isRunning) syncTimer();
+        readMinutes(breakInput, 5);
         if (!isRunning && !isWork) {
             totalTime = readMinutes(breakInput, 5) * 60;
             timeLeft = totalTime;
             updateDisplay();
         }
+        saveState();
+        updateStatus();
     });
     document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) restoreTitle();
+        if (!document.hidden) {
+            restoreTitle();
+            syncTimer();
+        }
     });
     window.addEventListener('focus', restoreTitle);
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) restoreState();
+    });
+    window.addEventListener('storage', function(event) {
+        if (event.key === stateKey) restoreState();
+    });
 }

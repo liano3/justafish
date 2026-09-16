@@ -31,8 +31,11 @@ module.exports = async function chat(req, res) {
 
     let body;
     try {
-        body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     } catch (error) {
+        return res.status(400).json({ error: 'Invalid request' });
+    }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
         return res.status(400).json({ error: 'Invalid request' });
     }
 

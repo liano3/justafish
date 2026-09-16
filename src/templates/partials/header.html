@@ -1,0 +1,21 @@
+<header class="header">
+    <div class="header-inner">
+        <a href="{{DEFAULT_PAGE_URL}}" class="logo" data-page="{{DEFAULT_PAGE_ID}}">
+            <span class="logo-icon">{{SITE_ICON}}</span>
+            <span class="logo-text">{{SITE_NAME}}</span>
+        </a>
+        <nav class="nav">{{DESKTOP_NAV}}</nav>
+        <div class="header-actions">
+            <!-- FEATURE:language:START -->
+            <a class="language-switch" href="{{LANG_SWITCH_URL}}" hreflang="{{LANG_SWITCH_HREFLANG}}" aria-label="{{T_SWITCH_LANGUAGE_ARIA}}" title="{{T_SWITCH_LANGUAGE_ARIA}}">{{LANG_SWITCH_LABEL}}</a>
+            <!-- FEATURE:language:END -->
+            <button class="header-icon-action theme-toggle" type="button" onclick="toggleTheme()" aria-label="{{T_THEME_TO_DARK}}" aria-pressed="false" title="{{T_THEME_TO_DARK}}">
+                <svg class="sun-icon" style="display:none" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#sun"></use></svg>
+                <svg class="moon-icon" aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#moon"></use></svg>
+            </button>
+            <a class="header-icon-action github-project-link" href="https://github.com/liano3/justafish" target="_blank" rel="noopener noreferrer" aria-label="{{T_GITHUB_PROJECT_ARIA}}" title="{{T_GITHUB_PROJECT_ARIA}}">
+                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#github"></use></svg>
+            </a>
+        </div>
+    </div>
+</header>
