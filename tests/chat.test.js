@@ -13,7 +13,7 @@ test('chat validates requests and forwards only supported messages', async t => 
     });
     const requests = [];
     t.mock.method(global, 'fetch', async (url, options) => {
-        requests.push({ url, body: JSON.parse(options.body) });
+        requests.push({ url, body: JSON.parse(options.body), signal: options.signal });
         return { ok: true, json: async () => ({ choices: [{ message: { content: ' Test reply ' } }] }) };
     });
     const request = async (body, method = 'POST') => {
@@ -39,4 +39,10 @@ test('chat validates requests and forwards only supported messages', async t => 
     assert.equal(res.headers['Cache-Control'], 'no-store');
     assert.deepEqual(requests[0].body.messages.map(item => item.role), ['system', 'user']);
     assert.equal(requests[0].body.messages[1].content, 'Hi');
+    assert.ok(requests[0].signal instanceof AbortSignal);
+    assert.equal(requests[0].signal.aborted, false);
+    t.mock.method(global, 'fetch', async () => { throw new DOMException('Timed out', 'TimeoutError'); });
+    const failed = await request({ password: 'test', messages: [{ role: 'user', content: 'Hi' }] });
+    assert.equal(failed.statusCode, 502);
+    assert.equal(failed.body.error, 'AI request failed');
 });

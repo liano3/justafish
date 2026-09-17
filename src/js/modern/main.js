@@ -1,9 +1,7 @@
 /* PAGE:bookmarks:START */
 var closeBookmarkChat = function() {};
 /* PAGE:bookmarks:END */
-var validPageIds = Array.isArray(window.ENABLED_PAGE_IDS) && window.ENABLED_PAGE_IDS.length
-    ? window.ENABLED_PAGE_IDS.slice()
-    : ['home', 'resume', 'bookmarks', 'apps'];
+var validPageIds = window.ENABLED_PAGE_IDS;
 var defaultPageId = validPageIds[0];
 var currentPageId = null;
 var backToTopButton = null;
@@ -87,7 +85,7 @@ function syncPageFromLocation() {
     renderPage(pageId);
 }
 
-window.switchPage = function(pageId) {
+function switchPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1) return;
     var nextUrl = getPageUrl(pageId);
     var currentUrl = window.location.pathname + window.location.search + window.location.hash;
@@ -98,7 +96,7 @@ window.switchPage = function(pageId) {
 };
 
 /* FEATURE:language:START */
-window.switchLanguage = function(link) {
+function switchLanguage(link) {
     var target = link.getAttribute('href') || '/';
     window.location.href = target + (window.location.hash || '');
 };
@@ -109,7 +107,7 @@ function initPageRouting() {
         link.addEventListener('click', function(event) {
             if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault();
-            window.switchPage(link.dataset.page);
+            switchPage(link.dataset.page);
         });
     });
     /* FEATURE:language:START */
@@ -117,7 +115,7 @@ function initPageRouting() {
     if (languageLink) languageLink.addEventListener('click', function(event) {
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        window.switchLanguage(languageLink);
+        switchLanguage(languageLink);
     });
     /* FEATURE:language:END */
     syncPageFromLocation();
@@ -125,6 +123,7 @@ function initPageRouting() {
     window.addEventListener('hashchange', syncPageFromLocation);
 }
 
+/* PAGE:resume:START */
 function initResumeAge() {
     var ageDisplay = $('resumeAge');
     if (!ageDisplay) return;
@@ -141,78 +140,15 @@ function setResumeActionStatus(message) {
     if (status) status.textContent = message;
 }
 
-function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-        return navigator.clipboard.writeText(text);
-    }
-
-    return new Promise(function(resolve, reject) {
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'fixed';
-        textarea.style.top = '0';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        textarea.setSelectionRange(0, textarea.value.length);
-        var copied = false;
-        try {
-            copied = document.execCommand('copy');
-        } catch (error) {
-            copied = false;
-        }
-        textarea.remove();
-        if (copied) resolve();
-        else reject(new Error(t('copyNotAllowed')));
-    });
-}
-
-function downloadPreparedResume(button) {
-    var label = button.querySelector('[data-resume-pdf-label]');
-    var url = button.dataset.pdfUrl || '/resume.pdf';
-    var filename = button.dataset.pdfFilename || 'resume.pdf';
-    button.disabled = true;
-    button.classList.remove('is-unavailable');
-    if (label) label.textContent = t('pdfChecking');
-    setResumeActionStatus(t('pdfCheckingStatus'));
-
-    return fetch(url, { method: 'HEAD', cache: 'no-store' }).then(function(response) {
-        var contentType = response.headers.get('content-type') || '';
-        if (!response.ok || contentType.toLowerCase().indexOf('application/pdf') === -1) {
-            throw new Error(t('pdfMissing'));
-        }
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.hidden = true;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        if (label) label.textContent = t('pdfDownloading');
-        setResumeActionStatus(t('pdfDownloadingStatus'));
-    }).catch(function() {
-        button.classList.add('is-unavailable');
-        if (label) label.textContent = t('comingSoon');
-        setResumeActionStatus(t('comingSoon'));
-    }).finally(function() {
-        button.disabled = false;
-        setTimeout(function() {
-            button.classList.remove('is-unavailable');
-            if (label) label.textContent = t('downloadPdf');
-        }, 2200);
-    });
-}
-
 function initResumeActions() {
     var copyButton = document.querySelector('[data-copy-email]');
-    var pdfButton = $('resumePdfDownload');
     var copyResetTimer = null;
 
     if (copyButton) {
-        copyButton.addEventListener('click', function() {
+        copyButton.addEventListener('click', async function() {
             var email = copyButton.dataset.copyEmail || '';
-            copyText(email).then(function() {
+            try {
+                await navigator.clipboard.writeText(email);
                 clearTimeout(copyResetTimer);
                 copyButton.classList.add('is-copied');
                 copyButton.setAttribute('aria-label', t('emailCopied'));
@@ -223,21 +159,19 @@ function initResumeActions() {
                     copyButton.setAttribute('aria-label', t('copyEmail'));
                     copyButton.title = t('copyEmail');
                 }, 1800);
-            }).catch(function() {
+            } catch {
                 setResumeActionStatus(t('copyEmailFailed'));
                 copyButton.setAttribute('aria-label', t('copyEmailFailed'));
                 copyButton.title = t('copyFailed');
-            });
+            }
         });
     }
 
-    if (pdfButton) {
-        pdfButton.addEventListener('click', function() {
-            if (!pdfButton.disabled) downloadPreparedResume(pdfButton);
-        });
-    }
 }
 
+/* PAGE:resume:END */
+
+/* PAGE:home:START */
 function initAnnouncements() {
     var banner = $('announcementBanner');
     if (!banner) return;
@@ -247,10 +181,7 @@ function initAnnouncements() {
     slides = slides.filter(function(slide, index) {
         var expiresAt = slide.dataset.expiresAt;
         if (!expiresAt) return true;
-        var expiresTimestamp = /^\d{4}-\d{2}-\d{2}$/.test(expiresAt)
-            ? new Date(expiresAt + 'T23:59:59').getTime()
-            : Date.parse(expiresAt);
-        var expired = Number.isFinite(expiresTimestamp) && expiresTimestamp < Date.now();
+        var expired = new Date(expiresAt + 'T23:59:59').getTime() < Date.now();
         if (expired) {
             slide.remove();
             if (originalDots[index]) originalDots[index].remove();
@@ -337,7 +268,10 @@ function initAnnouncements() {
     });
 }
 
-window.toggleCategory = function(header) {
+/* PAGE:home:END */
+
+/* PAGE:bookmarks:START */
+function toggleCategory(header) {
     var expanded = header.querySelector('.category-toggle').classList.toggle('expanded');
     header.nextElementSibling.classList.toggle('show', expanded);
     header.setAttribute('aria-expanded', expanded.toString());
@@ -351,8 +285,13 @@ function initBookmarkSearch() {
     var categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
     var tagButtons = Array.from(document.querySelectorAll('[data-bookmark-tag]'));
     var activeTag = '';
+    categories.forEach(category => category.querySelector('.category-header').addEventListener('click', () => toggleCategory(category.querySelector('.category-header'))));
     if (!input || !clearButton || !status || !emptyState || !categories.length) return;
 
+    const index = new Map(categories.map(category => [category, Array.from(category.querySelectorAll('.bookmark-link')).map(node => ({
+        node, text: (node.textContent + ' ' + node.dataset.bookmarkUrl).toLowerCase(),
+        tags: new Set(Array.from(node.querySelectorAll('[data-bookmark-tag-value]'), tag => tag.dataset.bookmarkTagValue))
+    }))]));
     var totalCount = categories.reduce(function(total, category) {
         return total + category.querySelectorAll('.bookmark-link').length;
     }, 0);
@@ -390,19 +329,12 @@ function initBookmarkSearch() {
         categories.forEach(function(category) {
             var categoryName = (category.dataset.bookmarkCategory || '').toLowerCase();
             var categoryMatches = Boolean(query) && categoryName.indexOf(query) !== -1;
-            var links = Array.from(category.querySelectorAll('.bookmark-link'));
+            var links = index.get(category);
             var categoryCount = 0;
 
             links.forEach(function(link) {
-                var searchText = link.textContent.toLowerCase();
-                var url = (link.dataset.bookmarkUrl || '').toLowerCase();
-                var queryMatches = !query || categoryMatches || searchText.indexOf(query) !== -1
-                    || url.indexOf(query) !== -1;
-                var tagMatches = !activeTag || Array.from(link.querySelectorAll('[data-bookmark-tag-value]')).some(function(tag) {
-                    return tag.dataset.bookmarkTagValue === activeTag;
-                });
-                var matches = queryMatches && tagMatches;
-                link.hidden = !matches;
+                var matches = (!query || categoryMatches || link.text.includes(query)) && (!activeTag || link.tags.has(activeTag));
+                link.node.hidden = !matches;
                 if (matches) categoryCount++;
             });
 
@@ -447,7 +379,6 @@ function initBookmarkSearch() {
     });
 }
 
-/* PAGE:bookmarks:START */
 function initBookmarkChat() {
     var searchInput = $('bookmarkSearch');
     var chat = $('aiChat');
@@ -483,31 +414,33 @@ function initBookmarkChat() {
         history = [];
         messages.textContent = '';
         title.textContent = settings.title || t('AI_CHAT_TITLE');
-        chat.hidden = false;
+        if (!chat.open) chat.showModal();
         addMessage('assistant', settings.greeting || t('AI_CHAT_GREETING'));
         input.focus();
     }
 
     function closeChat(restoreFocus) {
         unlockRequestId++;
-        chat.hidden = true;
+        chatSession++;
+        if (chat.open) chat.close();
         if (restoreFocus !== false) searchInput.focus();
     }
 
     searchInput.addEventListener('keydown', function(event) {
-        if (event.isComposing || event.keyCode === 229 || event.key !== 'Enter' || !searchInput.value.trim()) return;
+        if (event.isComposing || event.key !== 'Enter' || !searchInput.value.trim()) return;
         event.preventDefault();
         var submittedPassword = searchInput.value;
         var requestId = ++unlockRequestId;
         fetch('/api/chat', {
             method: 'POST',
+            signal: AbortSignal.timeout(30000),
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: submittedPassword })
         }).then(function(response) {
             if (!response.ok) return null;
             return response.json();
         }).then(function(settings) {
-            if (!settings || requestId !== unlockRequestId) return;
+            if (!settings?.unlocked || requestId !== unlockRequestId) return;
             openChat(settings, submittedPassword);
             if (searchInput.value === submittedPassword) {
                 searchInput.value = '';
@@ -515,63 +448,64 @@ function initBookmarkChat() {
             }
         }).catch(function() {});
     });
-    closeButton.addEventListener('click', closeChat);
+    closeButton.addEventListener('click', () => closeChat());
     chat.addEventListener('click', function(event) {
-        if (event.target === chat) closeChat();
+        if (event.target !== chat) return;
+        const bounds = chat.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeChat();
     });
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && !chat.hidden) closeChat();
-    });
+    chat.addEventListener('cancel', event => { event.preventDefault(); closeChat(); });
     closeBookmarkChat = closeChat;
 
-    form.addEventListener('submit', function(event) {
+    form.addEventListener('submit', async function(event) {
         event.preventDefault();
         var text = input.value.trim();
         if (!text || isSending) return;
         var session = chatSession;
-        isSending = true;
-        sendButton.disabled = true;
         input.value = '';
-        history.push({ role: 'user', content: text });
         addMessage('user', text);
         var reply = addMessage('assistant', t('AI_CHAT_WAIT'));
-        fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password, messages: history.slice(-40) })
-        }).then(function(response) {
-            return response.json().catch(function() { return {}; }).then(function(data) {
-                if (!response.ok) throw new Error(data.error || t('AI_CHAT_ERROR'));
-                return data;
+        isSending = true;
+        sendButton.disabled = true;
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                signal: AbortSignal.timeout(30000),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password, messages: [...history, { role: 'user', content: text }].slice(-40) })
             });
-        }).then(function(data) {
+            if (!response.ok) throw new Error('Chat request failed');
+            const data = await response.json();
+            if (!data.reply) throw new Error('Empty reply');
             if (session !== chatSession) return;
-            reply.textContent = data.reply || t('AI_CHAT_ERROR');
-            messages.scrollTop = messages.scrollHeight;
-            if (data.reply) {
-                history.push({ role: 'assistant', content: data.reply });
-                history = history.slice(-40);
-            }
-        }).catch(function() {
+            reply.textContent = data.reply;
+            history = [...history, { role: 'user', content: text }, { role: 'assistant', content: data.reply }].slice(-40);
+        } catch {
             if (session !== chatSession) return;
             reply.textContent = t('AI_CHAT_ERROR');
-            messages.scrollTop = messages.scrollHeight;
-        }).finally(function() {
-            if (session !== chatSession) return;
-            isSending = false;
-            sendButton.disabled = false;
-            if (!chat.hidden) input.focus();
-        });
+            if (!input.value) input.value = text;
+        } finally {
+            if (session === chatSession) {
+                isSending = false;
+                sendButton.disabled = false;
+                messages.scrollTop = messages.scrollHeight;
+                if (chat.open) input.focus();
+            }
+        }
     });
 }
 /* PAGE:bookmarks:END */
 
 initTheme();
+/* PAGE:resume:START */
 initResumeAge();
 initResumeActions();
+/* PAGE:resume:END */
+/* PAGE:home:START */
 initAnnouncements();
-initBookmarkSearch();
+/* PAGE:home:END */
 /* PAGE:bookmarks:START */
+initBookmarkSearch();
 initBookmarkChat();
 /* PAGE:bookmarks:END */
 initBackToTop();

@@ -11,7 +11,7 @@ function applyTheme(isDark) {
     toggle.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
 }
 
-window.toggleTheme = function() {
+function toggleTheme() {
     var isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
     applyTheme(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -19,4 +19,5 @@ window.toggleTheme = function() {
 
 function initTheme() {
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark');
+    document.querySelector('.theme-toggle')?.addEventListener('click', toggleTheme);
 }

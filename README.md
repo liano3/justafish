@@ -4,7 +4,7 @@
 
 ## 快速开始
 
-项目无第三方 npm 依赖，只需 Node.js；本地预览还需要 Python 3。
+项目无第三方 npm 依赖，只需 Node.js 22 或更新版本；本地预览还需要 Python 3。
 
 ```bash
 npm run build
@@ -20,49 +20,58 @@ PAGES_JSON='{"home":true,"resume":true,"bookmarks":true,"apps":true,"language":t
 PROFILE_JSON='{"name":"Alex Chen","email":"alex@example.com","domain":"example.com"}'
 ```
 
-配置优先级为系统环境变量、`.env.local`、`src/config/default.js`。JSON 无效时构建会输出警告并回退。
+配置优先级为系统环境变量、`.env.local`、`src/config/default.js`。配置按下方字段格式填写；无效 JSON 直接终止构建，不做自动修复或逐字段类型兼容。
+
+JSON 内容含英文单引号时，`.env.local` 的值使用反引号包裹，避免截断。
 
 ## 项目结构
 
 ```text
-src/config/default.js       默认配置与图标
-src/config/apps.js          工具目录与资源清单
-src/build/                  配置读取、双语文案、资源构建与页面渲染
-src/templates/              HTML 模板
-src/templates/partials/     共用导航与主题初始化模板
-src/css/                    页面和组件样式
-src/js/                     页面交互与应用模块
+src/config/default.js       默认示例配置
+src/config/apps.js          工具目录、资源与初始化入口
+src/build/                  配置读取、双语文案、资源构建和页面渲染
+src/templates/              HTML 模板及公共片段
+src/css/common.css          公共控件样式
+src/css/modern.css          页面布局与主题
+src/css/components/         各工具样式
+src/js/                     共用逻辑、页面交互与工具模块
 build.js                    静态构建脚本
+tests/                      单元测试与浏览器回归
 dist/                       构建输出（Git 忽略）
 vercel.json                 Vercel 构建配置
 ```
 
 修改源码后运行 `npm run build`。Vercel 部署时直接导入仓库并按需添加环境变量即可。
 
-运行 `npm test` 检查接口校验、双语构建和页面开关，不调用真实 AI 服务。
-浏览器回归脚本位于 `tests/browser-check.js`，使用 Playwright CLI 的 `run-code --filename` 执行；运行前先启动 `npm run preview`，在独立浏览器会话打开 `http://localhost:8080/`。脚本会重置该测试会话的本地工具数据，使用模拟聊天响应。
+运行 `npm test` 检查配置、API、双语构建和页面开关。浏览器回归先运行 `npm run preview`，再在另一终端执行 `npm run test:browser`；可用 `TEST_BASE_URL` 指定其他预览地址。测试通过 Playwright CLI 创建隔离会话，使用模拟聊天响应，不调用真实 AI 服务。
 
-番茄钟会保存时长、暂停状态和截止时间，刷新或返回页面可继续使用；离开期间按时间推进专注和休息阶段。声音与页面提醒需要页面打开才能触发。
+页面关闭后，其对应 JS/CSS 不进入构建；工具详情页只加载公共样式与自身资源。新增工具在 `src/config/apps.js` 中声明入口。面向现代浏览器，工具直接使用 localStorage 保存数据，不维护备用存储或旧版本存档迁移。邮箱复制需要 HTTPS 或 localhost。
 
 ## 配置
 
-所有配置均为 JSON。英文对象只覆盖填写的字段，英文数组未设置或无效时继承中文数据。
+所有配置均为 JSON。英文对象只覆盖填写的字段，英文数组未设置时继承中文数据。
 
 | 变量 | 类型 | 内容 |
 | --- | --- | --- |
 | `PAGES_JSON` | 对象 | 页面和双语构建开关 |
 | `PROFILE_JSON` | 对象 | 个人信息、外部链接和页脚 |
 | `ANNOUNCEMENTS_JSON` | 数组 | 首页公告 |
-| `EDUCATION_JSON` | 数组 | 教育经历 |
+| `EDUCATION_JSON` | 数组 | 教育经历；可选 `descriptionUrl` 为描述添加醒目的外链 |
+| `STUDENT_WORK_JSON` | 数组 | 学生工作（`title`、`subtitle`、`date`、`description`） |
 | `AWARDS_JSON` | 数组 | 获奖经历 |
-| `WORKS_JSON` | 数组 | 项目与论文 |
+| `PAPERS_JSON` | 数组 | 论文 |
+| `PROJECTS_JSON` | 数组 | 项目 |
 | `BOOKMARKS` | 数组 | 收藏夹分组、描述和标签 |
 | `PROFILE_EN_JSON` | 对象 | 英文个人信息 |
 | `ANNOUNCEMENTS_EN_JSON` | 数组 | 英文公告 |
 | `EDUCATION_EN_JSON` | 数组 | 英文教育经历 |
+| `STUDENT_WORK_EN_JSON` | 数组 | 英文学生工作 |
 | `AWARDS_EN_JSON` | 数组 | 英文获奖经历 |
-| `WORKS_EN_JSON` | 数组 | 英文项目与论文 |
+| `PAPERS_EN_JSON` | 数组 | 英文论文 |
+| `PROJECTS_EN_JSON` | 数组 | 英文项目 |
 | `BOOKMARKS_EN` | 数组 | 英文收藏夹 |
+| `AI_CONFIG` | 对象 | 服务端 AI 配置：`apiKey`、`baseUrl`、`model` |
+| `EASTER_EGGS` | 对象 | 口令到 `title`、`greeting`、`prompt` 的映射，仅服务端读取 |
 
 ### 页面与语言
 
@@ -103,24 +112,33 @@ vercel.json                 Vercel 构建配置
 - `showVisitorCount` 启用不蒜子匿名 UV 统计；关闭后不加载其脚本。
 - SEO、分享信息和结构化数据会自动生成，也可用 `seoDescription`、`shareImage` 覆盖。
 
+作者高亮由 `PROFILE_JSON.authorNames` 配置（例如 `["Alex Chen", "A. Chen"]`），默认也匹配 `name`。`author` 用中英文逗号或分号分隔，按完整姓名匹配。
+
 ### 内容数组
 
 | 配置 | 字段 |
 | --- | --- |
-| 公告 | `icon`、`content`、`link`、`expiresAt` |
-| 教育 | `school`、`degree`、`major`、`start`、`end`、`description` |
-| 奖项 | `title`、`issuer`、`date`、`description` |
-| 项目 | `tag: "project"`、`title`、`organization`、`period`、`description`、`keywords`、`links` |
-| 论文 | `tag: "paper"`、`title`、`publication`、`authors`、`description`、`keywords`、`links` |
+| 公告 | `icon`、`content`、`link`（`label`、`url`）、`expiresAt` |
+| 教育、学生工作、奖项 | `title`、`subtitle`、`date`、`description`；可选 `descriptionUrl` 为描述添加链接 |
+| 论文、项目 | `title`、`author`、`description`、`tag`（字符串数组）、`result`、`url` |
 
 公告的 `icon`、`link` 和 `expiresAt` 可省略；`expiresAt` 使用 `YYYY-MM-DD`，过期公告会自动隐藏。没有有效公告时不生成公告栏。
 
-项目与论文示例：
+空内容数组不显示对应简历区块；论文和项目分别由 `PAPERS_JSON`、`PROJECTS_JSON` 配置；英文配置分别为 `PAPERS_EN_JSON`、`PROJECTS_EN_JSON`。
+
+论文和项目共用以下结构。`author` 为作者或所属团队，`result` 为发表信息、项目成果或时间，`url` 为主要链接；链接显示在条目顶部。
 
 ```json
 [
-  {"tag":"project","title":"项目名称","organization":"所属单位","period":"2025 - 2026","description":"项目简介","keywords":["JavaScript"],"links":[{"label":"GitHub","url":"https://github.com/example/project"}]},
-  {"tag":"paper","title":"Paper Title","publication":"ACL 2026","authors":"Author One, Author Two","description":"论文简介","keywords":["LLM"],"links":[{"label":"论文","url":"https://example.com/paper"}]}
+  {"title":"Paper Title","author":"Author One, Author Two","description":"论文简介","tag":["LLM"],"result":"ACL 2026","url":"https://example.com/paper"}
+]
+```
+
+项目示例（填写到 `PROJECTS_JSON`）：
+
+```json
+[
+  {"title":"项目名称","author":"所属团队","description":"项目简介","tag":["JavaScript"],"result":"2025–2026","url":"https://example.com/project"}
 ]
 ```
 
@@ -150,7 +168,7 @@ vercel.json                 Vercel 构建配置
 | `resume-en.pdf` | 英文简历，仅双语构建时复制 |
 | `BingSiteAuth.xml` | Bing 站点验证 |
 
-简历不存在时按钮显示 `Coming soon...`。下载文件名根据对应语言的 `name` 生成：`名字-简历.pdf` 或 `English-Name-Resume.pdf`。
+构建时存在简历文件才显示原生下载链接。下载文件名根据对应语言的 `name` 生成：`名字-简历.pdf` 或 `English-Name-Resume.pdf`。
 
 ## License
 

@@ -42,76 +42,76 @@ const DEFAULT_CONFIG = {
         },
         {
             icon: '🧩',
-            content: '应用页面提供番茄钟、随机选择、日期记录和多款注意力小游戏。',
+            content: '应用页面提供随机选择、日期记录、舒尔特方格和 2048。',
             link: null,
             expiresAt: ''
         }
     ],
     education: [
         {
-            school: '星海大学',
-            degree: '硕士研究生',
-            major: '计算机科学与技术',
-            start: '2025',
-            end: '至今',
+            title: '星海大学',
+            subtitle: '硕士研究生 · 计算机科学与技术',
+            date: '2025–至今',
             description: '研究方向包括智能系统与大模型应用。'
         },
         {
-            school: '远川理工学院',
-            degree: '工学学士',
-            major: '软件工程',
-            start: '2021',
-            end: '2025',
+            title: '远川理工学院',
+            subtitle: '工学学士 · 软件工程',
+            date: '2021–2025',
             description: '主修数据结构、机器学习与软件工程。'
         }
     ],
+    studentWork: [],
     awards: [
         {
             title: '优秀学生奖学金',
-            issuer: '星海大学',
             date: '2026-06',
-            description: '奖励在课程学习与研究实践中的综合表现。'
+            description: '星海大学 · 奖励在课程学习与研究实践中的综合表现。'
         },
         {
-            title: '高校软件创意赛一等奖',
-            issuer: '软件创意赛组委会',
+            title: '高校软件创意赛',
+            subtitle: '一等奖',
             date: '2024-11',
-            description: '负责核心系统设计与前端实现。'
+            description: '软件创意赛组委会 · 负责核心系统设计与前端实现。'
         }
     ],
-    works: [
+    papers: [
         {
-            tag: 'project',
-            title: 'Just A Fish 个人主页',
-            organization: '个人项目',
-            period: '2026',
-            description: '一个通过 Vercel 环境变量驱动内容的个人主页，包含简历、书签、效率工具与小游戏。',
-            keywords: ['JavaScript', 'CSS', 'Vercel'],
-            links: [
-                { label: '项目主页', url: 'https://example.com/projects/homepage' }
-            ]
+            "title": "Efficient Collaboration for Language Model Agents",
+            "author": "Alex Chen, Taylor Liu",
+            "description": "研究语言模型智能体在长程任务中的协作与信息共享机制。",
+            "tag": [
+                "LLM Agents",
+                "Collaboration"
+            ],
+            "result": "ACL 2026",
+            "url": "https://example.com/papers/agent-collaboration"
+        }
+    ],
+    projects: [
+        {
+            "title": "Just A Fish 个人主页",
+            "author": "个人项目",
+            "description": "一个通过 Vercel 环境变量驱动内容的个人主页，包含简历、书签、效率工具与小游戏。",
+            "tag": [
+                "JavaScript",
+                "CSS",
+                "Vercel"
+            ],
+            "result": "2026",
+            "url": "https://example.com/projects/homepage"
         },
         {
-            tag: 'project',
-            title: '智能文献阅读助手',
-            organization: '星海大学智能系统实验室',
-            period: '2025 - 2026',
-            description: '面向学术论文的检索、摘要与知识整理工具，支持结构化阅读笔记和重点内容追踪。',
-            keywords: ['LLM', 'RAG', 'Web'],
-            links: [
-                { label: '项目主页', url: 'https://example.com/projects/paper-assistant' }
-            ]
-        },
-        {
-            tag: 'paper',
-            title: 'Efficient Collaboration for Language Model Agents',
-            publication: 'ACL 2026',
-            authors: 'Alex Chen, Taylor Liu',
-            description: '研究语言模型智能体在长程任务中的协作与信息共享机制。',
-            keywords: ['LLM Agents', 'Collaboration'],
-            links: [
-                { label: '论文', url: 'https://example.com/papers/agent-collaboration' }
-            ]
+            "title": "智能文献阅读助手",
+            "author": "星海大学智能系统实验室",
+            "description": "面向学术论文的检索、摘要与知识整理工具，支持结构化阅读笔记和重点内容追踪。",
+            "tag": [
+                "LLM",
+                "RAG",
+                "Web"
+            ],
+            "result": "2025 - 2026",
+            "url": "https://example.com/projects/paper-assistant"
         }
     ],
     bookmarks: [

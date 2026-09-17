@@ -2,20 +2,19 @@
     <form class="countdown-form" id="countdownForm">
         <label class="countdown-field countdown-name" for="countdownName">
             <span>{{T_COUNTDOWN_EVENT_NAME}}</span>
-            <input id="countdownName" type="text" maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
+            <input id="countdownName" type="text" required maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
         </label>
         <label class="countdown-field" for="countdownDate">
             <span>{{T_COUNTDOWN_DATE}}</span>
-            <input id="countdownDate" type="date">
+            <input id="countdownDate" type="date" required>
         </label>
         <div class="countdown-form-actions">
             <label class="countdown-convert-option" for="countdownAutoConvert">
                 <input id="countdownAutoConvert" type="checkbox">
                 <span>{{T_COUNTDOWN_AUTO_CONVERT}}</span>
             </label>
-            <button class="tool-btn tool-btn-primary" type="submit">{{T_COUNTDOWN_ADD}}</button>
+            <button class="button button-primary" type="submit">{{T_COUNTDOWN_ADD}}</button>
         </div>
-        <p class="countdown-message" id="countdownMessage" role="status" aria-live="polite"></p>
     </form>
     <div class="countdown-events">
         <div class="countdown-columns">

@@ -7,3 +7,10 @@ node_modules/
 dist/
 index.html
 modern.html
+
+# Local browser bookmark export
+/favorites_[0-9]*_[0-9]*_[0-9]*.html
+
+# Local browser test artifacts
+.playwright-cli/
+output/playwright/

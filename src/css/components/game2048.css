@@ -5,7 +5,7 @@
 .game2048-stat-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
 
 .game2048-board {
-    position: relative; width: min(100%, 280px); aspect-ratio: 1; margin: 0 auto;
+    position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 0 auto;
     padding: 8px; border-radius: var(--radius-sm); background: var(--bg-tertiary);
     touch-action: none; outline: none;
 }
@@ -21,13 +21,13 @@
 .game2048-tile-4 { background: #e0f2fe; color: #334155; }
 .game2048-tile-8 { background: #bfdbfe; color: #1e3a8a; }
 .game2048-tile-16 { background: #93c5fd; color: #1e3a8a; }
-.game2048-tile-32 { background: #60a5fa; color: #ffffff; }
+.game2048-tile-32 { background: #60a5fa; color: #172554; }
 .game2048-tile-64 { background: #2563eb; color: #ffffff; }
 .game2048-tile-128 { background: #22c55e; color: #052e16; }
 .game2048-tile-256 { background: #eab308; color: #422006; }
-.game2048-tile-512 { background: #f97316; color: #ffffff; }
-.game2048-tile-1024 { background: #ef4444; color: #ffffff; }
-.game2048-tile-2048 { background: #8b5cf6; color: #ffffff; }
+.game2048-tile-512 { background: #f97316; color: #431407; }
+.game2048-tile-1024 { background: #b91c1c; color: #ffffff; }
+.game2048-tile-2048 { background: #6d28d9; color: #ffffff; }
 .game2048-tile-super { background: #0f172a; color: #ffffff; }
 .game2048-cell.digits-4 { font-size: 1.1rem; }
 .game2048-cell.digits-5 { font-size: 0.9rem; }

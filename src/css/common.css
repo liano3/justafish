@@ -1,1 +1,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+:where(a, button, input, textarea, [tabindex]):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.button { min-height: 42px; padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: 0.85rem; line-height: 1.4; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); }
+.button-primary { color: var(--on-primary); background: var(--button-bg); border-color: var(--button-bg); }
+.button-primary:hover { background: var(--button-hover); }
+.button-secondary { color: var(--text); background: var(--surface); border-color: var(--border); }
+.button-secondary:hover { background: var(--bg-secondary); border-color: var(--border-strong); }
+.button-small { min-height: 32px; padding: 5px 9px; font-size: 0.74rem; }
+.button:disabled { opacity: 0.6; cursor: wait; }
+@media (pointer: coarse) { .header-icon-action, .resume-copy-button, .ai-chat-close, .countdown-delete, .random-picker-field-heading button { min-width: 44px; min-height: 44px; } }

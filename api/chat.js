@@ -57,13 +57,13 @@ module.exports = async function chat(req, res) {
     try {
         const response = await fetch(`${config.baseUrl}/chat/completions`, {
             method: 'POST',
+            signal: AbortSignal.timeout(30000),
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` },
             body: JSON.stringify({ model: config.model, messages: requestMessages, stream: false, max_tokens: 2048 })
         });
-        const data = await response.json().catch(() => ({}));
         if (!response.ok) return res.status(response.status === 429 ? 429 : 502).json({ error: 'AI request failed' });
-        const content = data.choices?.[0]?.message?.content;
-        const reply = Array.isArray(content) ? content.map(item => item.text || '').join('') : content;
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content;
         if (typeof reply !== 'string' || !reply.trim()) return res.status(502).json({ error: 'Empty AI response' });
         res.setHeader('Cache-Control', 'no-store');
         return res.status(200).json({ reply: reply.trim() });

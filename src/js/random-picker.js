@@ -12,7 +12,8 @@ function initRandomPicker() {
     var optionLabel = $('randomPickerOptionsLabel').textContent;
     var optionPlaceholder = optionsEditor.getAttribute('data-placeholder');
     var history = [];
-    var animationTimers = [];
+    var spinTimer;
+    var revealTimer;
     var isDrawing = false;
 
     function optionRows() {
@@ -55,14 +56,12 @@ function initRandomPicker() {
 
         input.addEventListener('input', saveOptions);
         input.addEventListener('keydown', function(event) {
-            if (event.isComposing || event.keyCode === 229) return;
+            if (event.isComposing) return;
             var rows = optionRows();
             var rowIndex = rows.indexOf(row);
             if (event.key === 'Enter') {
                 event.preventDefault();
-                input._randomPickerEnterHandled = true;
                 insertRowAfter(row);
-                setTimeout(function() { input._randomPickerEnterHandled = false; }, 0);
                 return;
             }
             if (event.key === 'Backspace' && !input.value && rows.length > 1) {
@@ -83,32 +82,15 @@ function initRandomPicker() {
                 rows[rowIndex + 1].querySelector('input').focus();
             }
         });
-        input.addEventListener('beforeinput', function(event) {
-            if (event.isComposing) return;
-            if (event.inputType === 'insertLineBreak' || event.inputType === 'insertParagraph') {
-                event.preventDefault();
-                if (!input._randomPickerEnterHandled) insertRowAfter(row);
-                return;
-            }
-            if (event.inputType !== 'insertFromPaste') return;
-            handlePastedText(input, row, event.data || event.dataTransfer, event);
-        });
         input.addEventListener('paste', function(event) {
-            handlePastedText(input, row, event.clipboardData, event);
+            const text = event.clipboardData.getData('text');
+            if (!text.includes('\n')) return;
+            event.preventDefault();
+            insertPastedRows(input, row, text);
         });
 
         row.appendChild(input);
         return row;
-    }
-
-    function handlePastedText(input, row, source, event) {
-        if (input._randomPickerPasteHandled) return;
-        var text = typeof source === 'string' ? source : source && typeof source.getData === 'function' ? source.getData('text') : '';
-        if (!text || !/\r?\n/.test(text)) return;
-        event.preventDefault();
-        input._randomPickerPasteHandled = true;
-        setTimeout(function() { input._randomPickerPasteHandled = false; }, 0);
-        insertPastedRows(input, row, text);
     }
 
     function insertPastedRows(input, row, text) {
@@ -142,10 +124,10 @@ function initRandomPicker() {
 
     function eligibleEntries(entries) {
         if (!deduplicateInput.checked) return entries;
-        var seen = Object.create(null);
+        var seen = new Set();
         return entries.filter(function(entry) {
-            if (seen[entry.value]) return false;
-            seen[entry.value] = true;
+            if (seen.has(entry.value)) return false;
+            seen.add(entry.value);
             return true;
         });
     }
@@ -171,21 +153,17 @@ function initRandomPicker() {
     }
 
     function setInputsDisabled(disabled) {
-        addOptionButton.disabled = disabled;
+        [addOptionButton, countInput, deduplicateInput, removeInput, drawButton].forEach(control => { control.disabled = disabled; });
         optionRows().forEach(function(row) {
             row.querySelector('input').disabled = disabled;
         });
     }
 
     function clearAnimation() {
-        animationTimers.forEach(function(timerId) {
-            clearInterval(timerId);
-            clearTimeout(timerId);
-        });
-        animationTimers = [];
+        clearInterval(spinTimer);
+        clearTimeout(revealTimer);
         isDrawing = false;
         setInputsDisabled(false);
-        drawButton.disabled = false;
         optionRows().forEach(function(row) { row.classList.remove('is-active'); });
     }
 
@@ -193,50 +171,26 @@ function initRandomPicker() {
         clearAnimation();
         isDrawing = true;
         setInputsDisabled(true);
-        drawButton.disabled = true;
         message.classList.remove('is-error');
         message.textContent = t('randomPickerDrawing');
         var animationRows = entries.map(function(entry) { return entry.row; });
-        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var selectedIndex = 0;
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         animationRows.forEach(function(row) { row.classList.remove('is-selected'); });
 
-        function revealNext() {
-            if (selectedIndex >= selectedEntries.length) {
-                animationTimers = [];
-                isDrawing = false;
-                setInputsDisabled(false);
-                drawButton.disabled = false;
-                message.textContent = t('randomPickerDone');
-                onComplete();
-                return;
-            }
-            var targetRow = selectedEntries[selectedIndex].row;
+        if (!reduceMotion) {
             var position = 0;
-            var spinInterval = null;
-            var duration = reduceMotion
-                ? 20
-                : (selectedEntries.length === 1 ? 900 : Math.max(120, Math.floor(1500 / selectedEntries.length)));
-            if (!reduceMotion) {
-                spinInterval = setInterval(function() {
-                    animationRows.forEach(function(row) { row.classList.remove('is-active'); });
-                    animationRows[position].classList.add('is-active');
-                    position = (position + 1) % animationRows.length;
-                }, 65);
-                animationTimers.push(spinInterval);
-            }
-            var revealTimer = setTimeout(function() {
-                if (spinInterval) clearInterval(spinInterval);
-                animationRows.forEach(function(row) { row.classList.remove('is-active'); });
-                targetRow.classList.add('is-selected');
-                selectedIndex++;
-                var nextTimer = setTimeout(revealNext, reduceMotion ? 0 : 60);
-                animationTimers.push(nextTimer);
-            }, duration);
-            animationTimers.push(revealTimer);
+            spinTimer = setInterval(function() {
+                animationRows.forEach(row => row.classList.remove('is-active'));
+                animationRows[position].classList.add('is-active');
+                position = (position + 1) % animationRows.length;
+            }, 65);
         }
-
-        revealNext();
+        revealTimer = setTimeout(function() {
+            clearAnimation();
+            selectedEntries.forEach(entry => entry.row.classList.add('is-selected'));
+            message.textContent = t('randomPickerDone');
+            onComplete();
+        }, reduceMotion ? 0 : 900);
     }
 
     function draw() {
@@ -302,16 +256,7 @@ function initRandomPicker() {
     deduplicateInput.checked = localStorage.getItem('randomPickerDeduplicate') !== 'false';
     removeInput.checked = localStorage.getItem('randomPickerRemove') === 'true';
     renderRows(storedOptions);
-    try {
-        var storedHistory = JSON.parse(localStorage.getItem('randomPickerHistory') || '[]');
-        if (Array.isArray(storedHistory)) {
-            history = storedHistory.filter(function(entry) {
-                return Array.isArray(entry) && entry.every(function(value) { return typeof value === 'string'; });
-            }).slice(0, 5);
-        }
-    } catch (error) {
-        localStorage.removeItem('randomPickerHistory');
-    }
+    history = JSON.parse(localStorage.getItem('randomPickerHistory') || '[]');
     deduplicateInput.addEventListener('change', saveOptions);
     removeInput.addEventListener('change', saveOptions);
     addOptionButton.addEventListener('click', function() {

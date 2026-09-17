@@ -5,25 +5,15 @@
 .app-detail-title h1 { font-size: 1.35rem; font-weight: 650; }
 .app-detail-back { width: 34px; height: 34px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); background: var(--surface); }
 .app-detail-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
-.app-detail-back:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .app-detail-back svg { width: 18px; height: 18px; }
-.tool-card { min-height: 540px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
-.tool-body { min-height: 0; flex: 1; padding: 28px; display: flex; flex-direction: column; justify-content: center; }
+.tool-body { padding-top: 4px; }
 .tool-body > * { width: 100%; }
-.tool-card-flat { min-height: 0; border: none; border-radius: 0; overflow: visible; background: transparent; }
-.tool-card-flat .tool-body { padding: 4px 0 0; justify-content: flex-start; }
-.tool-card-flat .countdown-app, .tool-card-flat .random-picker { max-width: none; }
-.tool-btn { min-height: 40px; padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-.tool-btn-primary { border-color: var(--primary); color: var(--on-primary); background: var(--primary); }
-.tool-btn-primary:hover { background: var(--primary-dark); }
-.tool-btn-secondary { border-color: var(--border); color: var(--text); background: var(--bg-secondary); }
-.tool-btn-secondary:hover { background: var(--bg-tertiary); }
+.tool-body .countdown-app, .tool-body .random-picker { max-width: none; }
 
 @media (max-width: 768px) {
     .app-detail-main { padding: 88px 12px calc(96px + env(safe-area-inset-bottom)); }
     .app-detail-heading { margin-bottom: 16px; }
     .app-detail-title h1 { font-size: 1.1rem; }
-    .tool-card { min-height: 520px; }
-    .tool-card-flat { min-height: 0; }
-    .tool-body { padding: 20px 14px; }
 }
+
+.app-detail-container-game { max-width: 520px; }

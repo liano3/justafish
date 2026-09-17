@@ -23,7 +23,7 @@
         {{HEADER}}
 
         <main class="app-detail-main">
-            <div class="app-detail-container">
+            <div class="app-detail-container{{APP_LAYOUT_CLASS}}">
                 <div class="app-detail-heading">
                     <a class="app-detail-back" href="{{APPS_URL}}" aria-label="{{T_BACK_TO_APPS}}" title="{{T_BACK_TO_APPS}}">
                         <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#chevron-left"></use></svg>
@@ -32,8 +32,8 @@
                         <h1>{{APP_TITLE}}</h1>
                     </div>
                 </div>
-                <section class="tool-card{{TOOL_LAYOUT_CLASS}}" aria-label="{{APP_TITLE}}">
-                    <div class="tool-body">{{APP_CONTENT}}</div>
+                <section class="tool-body" aria-label="{{APP_TITLE}}">
+                    {{APP_CONTENT}}
                 </section>
             </div>
         </main>
@@ -42,7 +42,6 @@
         {{MOBILE_NAVIGATION}}
     </div>
 
-    {{APP_OVERLAY}}
     <script>{{RUNTIME_CONFIG}}</script>
     <script src="{{APP_SCRIPT_URL}}" defer></script>
     {{VISITOR_COUNTER_SCRIPT}}

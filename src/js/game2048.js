@@ -25,9 +25,7 @@ Game2048InputManager.prototype.listen = function() {
     };
 
     document.addEventListener('keydown', function(event) {
-        var appsPage = $('apps');
         var target = event.target;
-        if (appsPage && !appsPage.classList.contains('active')) return;
         if (!board.contains(target)) return;
         if (!Object.prototype.hasOwnProperty.call(keyMap, event.key)) return;
         event.preventDefault();
@@ -80,7 +78,7 @@ function Game2048StorageManager() {
 }
 
 Game2048StorageManager.prototype.getBestScore = function() {
-    return Number(localStorage.getItem(this.bestScoreKey)) || 0;
+    return Number(localStorage.getItem(this.bestScoreKey) || 0);
 };
 
 Game2048StorageManager.prototype.setBestScore = function(score) {
@@ -88,13 +86,7 @@ Game2048StorageManager.prototype.setBestScore = function(score) {
 };
 
 Game2048StorageManager.prototype.getGameState = function() {
-    var state = localStorage.getItem(this.gameStateKey);
-    if (!state) return null;
-    try { return JSON.parse(state); }
-    catch (error) {
-        localStorage.removeItem(this.gameStateKey);
-        return null;
-    }
+    return JSON.parse(localStorage.getItem(this.gameStateKey));
 };
 
 Game2048StorageManager.prototype.setGameState = function(state) {

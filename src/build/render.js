@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const { PAGE_IDS, BUILD_FEATURE_IDS } = require('./config');
+const { PAGE_IDS } = require('./config');
 const { APPS } = require('../config/apps');
 const { UI_TEXT, MAIN_RUNTIME_TEXT_KEYS } = require('./i18n');
-const { resolveBuiltAssetUrl } = require('./assets');
+const { applyBuildVisibility, resolveBuiltAssetUrl } = require('./assets');
 const ROOT_DIR = path.join(__dirname, '../..');
 
 const PROFILE_ICON_IDS = {
@@ -13,14 +13,8 @@ const PROFILE_ICON_IDS = {
     email: 'mail'
 };
 
-function isRecord(value) {
-    return value !== null && !Array.isArray(value) && typeof value === 'object';
-}
-
 function formatMessage(value, replacements = {}) {
-    return Object.keys(replacements).reduce((result, key) => {
-        return result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(replacements[key]));
-    }, String(value || ''));
+    return value.replace(/\{(\w+)\}/g, (match, key) => replacements[key] ?? match);
 }
 
 function escapeHtml(value) {
@@ -40,11 +34,13 @@ function createTextFavicon(value) {
 }
 
 function safeUrl(value) {
-    const url = String(value || '').trim();
-    if (/^(https?:|mailto:|tel:)/i.test(url) || /^(\.\/|\.\.\/|\/)/.test(url)) {
-        return escapeHtml(url);
+    const url = (value || '').trim();
+    if (!url || url.startsWith('//')) return '';
+    try {
+        return ['http:', 'https:', 'mailto:'].includes(new URL(url, 'https://example.com').protocol) ? escapeHtml(url) : '';
+    } catch {
+        return '';
     }
-    return '#';
 }
 
 function renderIcon(iconId, className = '') {
@@ -155,11 +151,11 @@ function createSeoData(profile, locale, text) {
 }
 
 function renderProfileLinks(links) {
-    return links.map((link, index) => {
+    return links.filter(link => link.url).map((link, index) => {
         const isMail = String(link.url || '').startsWith('mailto:');
         const iconId = PROFILE_ICON_IDS[link.icon];
         const icon = iconId ? renderIcon(iconId) : '';
-        const className = `hero-link ${index === 0 ? 'hero-link-primary' : 'hero-link-secondary'}`;
+        const className = `button hero-link ${index === 0 ? 'button-primary hero-link-primary' : 'button-secondary hero-link-secondary'}`;
         return `<a href="${safeUrl(link.url)}" target="${isMail ? '_self' : '_blank'}"${isMail ? '' : ' rel="noopener noreferrer"'} class="${className}">
             ${icon}
             <span>${escapeHtml(link.label)}</span>
@@ -221,7 +217,7 @@ function renderResearchInterests(profile, text) {
 }
 
 function renderFooter(profile, seo, text) {
-    const footer = isRecord(profile.footer) ? profile.footer : {};
+    const footer = profile.footer;
     if (footer.enabled === false) return '';
 
     const segments = [];
@@ -258,7 +254,7 @@ function renderFooter(profile, seo, text) {
 }
 
 function renderVisitorCounterScript(profile) {
-    const footer = isRecord(profile.footer) ? profile.footer : {};
+    const footer = profile.footer;
     if (footer.enabled === false || footer.showVisitorCount === false) return '';
     return `<script>
     (function() {
@@ -300,86 +296,59 @@ function renderAnnouncementsSection(announcements, text) {
                 </section>`;
 }
 
-function renderEducationSection(education, text) {
-    if (!education.length) return '';
-    const items = education.map(item => {
-        const date = [item.start, item.end].filter(Boolean).join(' - ');
-        const qualification = [item.degree, item.major].filter(Boolean).join(' · ');
-        return `<div class="education-item">
-                            <div class="education-date">${escapeHtml(date)}</div>
-                            <div class="education-rail"><span></span></div>
-                            <div class="education-content">
-                                <h3>${escapeHtml(item.school)}</h3>
-                                ${qualification ? `<p class="education-degree">${escapeHtml(qualification)}</p>` : ''}
-                                ${item.description ? `<p class="education-description">${escapeHtml(item.description)}</p>` : ''}
-                            </div>
-                        </div>`;
-    }).join('\n                        ');
-    return `<section class="resume-section" aria-labelledby="educationHeading">
-                    <h2 class="resume-section-title" id="educationHeading">${escapeHtml(text.educationHeading)}</h2>
-                    <div class="education-list">
-                        ${items}
-                    </div>
+function renderResumeSection(headingId, title, icon, content) {
+    if (!content) return '';
+    return `<section class="resume-section" aria-labelledby="${headingId}">
+                    <h2 class="resume-section-title" id="${headingId}">${renderIcon(icon, 'resume-section-icon')}${escapeHtml(title)}</h2>
+                    ${content}
                 </section>`;
 }
 
-function renderAwardsSection(awards, text) {
-    if (!awards.length) return '';
-    const items = awards.map(item => {
-        return `<div class="award-item">
-                            <div class="award-date">${escapeHtml(item.date)}</div>
-                            <div class="award-content">
-                                <div class="award-heading">
+function renderResumeEntries(items) {
+    if (!items.length) return '';
+    return `<div class="resume-entry-list">${items.map(item => {
+        const description = item.descriptionUrl
+            ? `<a class="resume-entry-link" href="${safeUrl(item.descriptionUrl)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(item.description)}</span>${renderIcon('external-link')}</a>`
+            : escapeHtml(item.description);
+        return `<div class="resume-entry">
+                            <div class="resume-entry-content">
+                                <div class="resume-entry-heading">
                                     <h3>${escapeHtml(item.title)}</h3>
-                                    ${item.issuer ? `<span>${escapeHtml(item.issuer)}</span>` : ''}
+                                    ${item.subtitle ? `<span class="resume-entry-subtitle">${escapeHtml(item.subtitle)}</span>` : ''}
                                 </div>
-                                ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ''}
+                                ${item.description ? `<p class="resume-entry-description">${description}</p>` : ''}
                             </div>
+                            ${item.date ? `<div class="resume-entry-date">${escapeHtml(item.date)}</div>` : ''}
                         </div>`;
-    }).join('\n                        ');
-    return `<section class="resume-section" aria-labelledby="awardsHeading">
-                    <h2 class="resume-section-title" id="awardsHeading">${escapeHtml(text.awardsHeading)}</h2>
-                    <div class="awards-list">
-                        ${items}
-                    </div>
-                </section>`;
+    }).join('\n')}</div>`;
 }
 
-function renderWorkLinks(links) {
-    if (!Array.isArray(links) || !links.length) return '';
-    return `<div class="work-links">${links.map(link => {
-        return `<a href="${safeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}${renderIcon('external-link')}</a>`;
-    }).join('')}</div>`;
+function renderAuthors(authors, names) {
+    return String(authors || '').split(/([,，;；])/).map(part => {
+        const name = part.trim();
+        if (!name || !names.has(name)) return escapeHtml(part);
+        const start = part.indexOf(name);
+        return `${escapeHtml(part.slice(0, start))}<strong class="work-author-self">${escapeHtml(name)}</strong>${escapeHtml(part.slice(start + name.length))}`;
+    }).join('');
 }
 
-function renderWorksSection(works, text) {
-    if (!works.length) return '';
-    const cards = works.map(item => {
-        const tag = item.tag === 'paper' ? 'paper' : 'project';
-        const tagLabel = tag === 'paper' ? text.paper : text.project;
-        const meta = tag === 'paper' ? item.publication : item.period;
-        const context = tag === 'paper' ? item.authors : item.organization;
-        const keywords = Array.isArray(item.keywords) ? item.keywords : [];
-        return `<article class="work-card work-card-${tag}">
-                            <div class="work-card-header">
-                                <span class="work-type">${tagLabel}</span>
-                                ${meta ? `<span class="work-meta">${escapeHtml(meta)}</span>` : ''}
-                            </div>
+function renderPortfolioSection(items, text, profile, headingId, icon, linkLabel) {
+    if (!items.length) return '';
+    const authorNames = new Set([profile.name, ...(Array.isArray(profile.authorNames) ? profile.authorNames : [])]
+        .filter(name => typeof name === 'string' && name.trim()).map(name => name.trim()));
+    const entries = items.map(item => {
+        const tags = Array.isArray(item.tag) ? item.tag : [];
+        const url = safeUrl(item.url);
+        const link = url ? `<div class="work-links"><a href="${url}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkLabel)}${renderIcon('external-link')}</a></div>` : '';
+        return `<article class="work-entry">
+                            ${item.result || link ? `<div class="work-header">${item.result ? `<span class="work-meta">${escapeHtml(item.result)}</span>` : ''}${link}</div>` : ''}
                             <h3>${escapeHtml(item.title)}</h3>
-                            ${context ? `<p class="work-context">${escapeHtml(context)}</p>` : ''}
+                            ${item.author ? `<p class="work-context">${renderAuthors(item.author, authorNames)}</p>` : ''}
                             ${item.description ? `<p class="work-description">${escapeHtml(item.description)}</p>` : ''}
-                            <div class="work-card-footer">
-                                ${keywords.length ? `<div class="work-keywords">${keywords.map(keyword => `<span>${escapeHtml(keyword)}</span>`).join('')}</div>` : ''}
-                                ${renderWorkLinks(item.links)}
-                            </div>
+                            ${tags.length ? `<div class="work-keywords">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
                         </article>`;
-    }).join('\n                        ');
-    return `<section class="resume-section" aria-labelledby="worksHeading">
-                    <h2 class="resume-section-title" id="worksHeading">${escapeHtml(text.worksHeading)}</h2>
-                    <div class="works-grid">
-                        ${cards}
-                    </div>
-                </section>`;
+    }).join('\n');
+    return renderResumeSection(headingId, text[headingId], icon, `<div class="works-list">${entries}</div>`);
 }
 
 function resolvePageAssetUrl(value, locale) {
@@ -404,23 +373,6 @@ function renderAppDirectory(text) {
                         ${renderIcon('chevron-left', 'app-directory-arrow')}
                     </a>`).join('\n                    ');
 }
-
-function applyBuildVisibility(html, options) {
-    PAGE_IDS.forEach(pageId => {
-        if (options[pageId]) return;
-        const pageBlock = new RegExp(`[\\t ]*<!-- PAGE:${pageId}:START -->[\\s\\S]*?<!-- PAGE:${pageId}:END -->\\r?\\n?`, 'g');
-        html = html.replace(pageBlock, '');
-    });
-    BUILD_FEATURE_IDS.forEach(featureId => {
-        if (options[featureId]) return;
-        const featureBlock = new RegExp(`[\\t ]*<!-- FEATURE:${featureId}:START -->[\\s\\S]*?<!-- FEATURE:${featureId}:END -->\\r?\\n?`, 'g');
-        html = html.replace(featureBlock, '');
-    });
-    return html
-        .replace(/<!-- PAGE:(?:home|resume|bookmarks|apps):(?:START|END) -->/g, '')
-        .replace(/<!-- FEATURE:language:(?:START|END) -->/g, '');
-}
-
 
 function fillTemplate(template, values) {
     return template.replace(/{{([A-Z0-9_]+)}}/g, (match, key) => {
@@ -449,9 +401,9 @@ function layoutValues(config, locale, iconSpriteUrl, activePage) {
 
 function renderTemplate(name, values, text, options) {
     const translations = Object.fromEntries(Object.entries(text).map(([key, value]) => ['T_' + key, escapeHtml(value)]));
-    const all = { ...translations, ...values };
+    const all = { ...translations, T_DOWNLOAD_PDF: escapeHtml(text.downloadPdf), T_THEME_TO_DARK: escapeHtml(text.themeToDark), ...values };
     const read = file => fs.readFileSync(path.join(ROOT_DIR, 'src/templates', file), 'utf8');
-    const fragmentKeys = ['HERO_LINKS', 'ANNOUNCEMENTS_SECTION', 'RESUME_CONTACTS', 'EDUCATION_SECTION', 'AWARDS_SECTION', 'WORKS_SECTION', 'APPS_DIRECTORY', 'BOOKMARKS'];
+    const fragmentKeys = ['HERO_LINKS', 'ANNOUNCEMENTS_SECTION', 'RESUME_CONTACTS', 'EDUCATION_SECTION', 'STUDENT_WORK_SECTION', 'AWARDS_SECTION', 'PAPERS_SECTION', 'PROJECTS_SECTION', 'APPS_DIRECTORY', 'BOOKMARKS'];
     fragmentKeys.forEach(key => {
         if (all[key]) all[key] = all[key].replace(/{{ICON_SPRITE_URL}}/g, () => values.ICON_SPRITE_URL);
     });
@@ -459,8 +411,7 @@ function renderTemplate(name, values, text, options) {
     all.MOBILE_NAVIGATION = fillTemplate(read('partials/mobile-nav.html'), all);
     all.THEME_BOOTSTRAP = read('partials/theme.html');
     if (all.APP_CONTENT) all.APP_CONTENT = fillTemplate(all.APP_CONTENT, all);
-    if (all.APP_OVERLAY) all.APP_OVERLAY = fillTemplate(all.APP_OVERLAY, all);
-    return applyBuildVisibility(fillTemplate(read(name), all), options);
+    return applyBuildVisibility(fillTemplate(read(name), all), options, true);
 }
 
 function buildHomepage(config, seo, locale, assetManifest) {
@@ -472,9 +423,10 @@ function buildHomepage(config, seo, locale, assetManifest) {
     const stylesheetUrl = resolveBuiltAssetUrl(assetManifest.stylesheet, locale);
     const mainScriptUrl = resolveBuiltAssetUrl(assetManifest.mainScript, locale);
     const iconSpriteUrl = resolveBuiltAssetUrl(assetManifest.iconSprite, locale);
-    const runtimeConfig = `window.PAGE_LOCALE = ${JSON.stringify(locale)};\nwindow.PAGE_I18N = ${pageI18n};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\nwindow.ICON_SPRITE_URL = ${JSON.stringify(iconSpriteUrl)};\n`;
+    const runtimeConfig = `window.PAGE_I18N = ${pageI18n};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\n`;
 
     const values = layoutValues(config, locale, iconSpriteUrl, defaultPageId);
+    PAGE_IDS.forEach(id => { values[id.toUpperCase() + '_ACTIVE'] = id === defaultPageId ? ' active' : ''; });
     values.RUNTIME_CONFIG = runtimeConfig;
     values.STYLESHEET_URL = stylesheetUrl;
     values.MAIN_SCRIPT_URL = mainScriptUrl;
@@ -492,8 +444,10 @@ function buildHomepage(config, seo, locale, assetManifest) {
     values.LANG_SWITCH_HREFLANG = locale === 'en' ? 'zh-CN' : 'en';
     values.LANG_SWITCH_LABEL = locale === 'en' ? '中' : 'EN';
     values.PROFILE_AVATAR_ALT = escapeHtml(avatarAlt);
-    values.PDF_URL = locale === 'en' ? '/resume-en.pdf' : '/resume.pdf';
-    values.PDF_FILENAME = escapeHtml(createPdfFilename(config.profile, locale));
+    const pdfFile = locale === 'en' ? 'resume-en.pdf' : 'resume.pdf';
+    values.PDF_DOWNLOAD = fs.existsSync(path.join(ROOT_DIR, pdfFile))
+        ? `<a class="button button-secondary button-small resume-pdf-download" href="/${pdfFile}" download="${escapeHtml(createPdfFilename(config.profile, locale))}">${renderIcon('download').replace('{{ICON_SPRITE_URL}}', iconSpriteUrl)}${escapeHtml(text.downloadPdf)}</a>`
+        : '';
     values.SITE_NAME = escapeHtml(config.profile.siteName);
     values.SITE_ICON = escapeHtml(config.profile.siteIcon);
     values.SITE_FAVICON = createTextFavicon(config.profile.siteIcon);
@@ -514,9 +468,11 @@ function buildHomepage(config, seo, locale, assetManifest) {
     values.ANNOUNCEMENTS_SECTION = renderAnnouncementsSection(config.announcements, text);
     values.RESUME_CONTACTS = renderResumeContacts(config.profile, text);
     values.RESEARCH_INTERESTS = renderResearchInterests(config.profile, text);
-    values.EDUCATION_SECTION = renderEducationSection(config.education, text);
-    values.AWARDS_SECTION = renderAwardsSection(config.awards, text);
-    values.WORKS_SECTION = renderWorksSection(config.works, text);
+    values.EDUCATION_SECTION = renderResumeSection('educationHeading', text.educationHeading, 'scholar', renderResumeEntries(config.education));
+    values.STUDENT_WORK_SECTION = renderResumeSection('studentWorkHeading', text.studentWorkHeading, 'users', renderResumeEntries(config.studentWork));
+    values.AWARDS_SECTION = renderResumeSection('awardsHeading', text.awardsHeading, 'award', renderResumeEntries(config.awards));
+    values.PAPERS_SECTION = renderPortfolioSection(config.papers, text, config.profile, 'publicationsHeading', 'book-open', text.paperLink);
+    values.PROJECTS_SECTION = renderPortfolioSection(config.projects, text, config.profile, 'projectsHeading', 'grid', text.projectLink);
     values.APPS_DIRECTORY = renderAppDirectory(text);
 
     const bookmarkTotal = config.bookmarks.reduce((total, folder) => total + folder.links.length, 0);
@@ -548,15 +504,17 @@ function buildHomepage(config, seo, locale, assetManifest) {
             const tagItems = tags.length
                 ? `<span class="bookmark-link-tags">${tags.map(tag => `<span data-bookmark-tag-value="${escapeHtml(tag.toLowerCase())}">${escapeHtml(tag)}</span>`).join('')}</span>`
                 : '';
-            return `<a href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
-                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${renderIcon('external-link')}</span>
+            const tag = l.url ? 'a' : 'div';
+            const href = l.url ? ` href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer"` : '';
+            return `<${tag}${href} class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
+                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${l.url ? renderIcon('external-link') : ''}</span>
                             ${description ? `<span class="bookmark-link-description">${escapeHtml(description)}</span>` : ''}
                             ${tagItems}
-                        </a>`;
+                        </${tag}>`;
         }).join('\n                        ');
         const groupId = `bookmarkGroup${idx + 1}`;
         return `<div class="bookmark-category" data-bookmark-category="${escapeHtml(folder.name)}">
-                    <button type="button" class="category-header" aria-expanded="${idx === 0 ? 'true' : 'false'}" aria-controls="${groupId}" onclick="toggleCategory(this)">
+                    <button type="button" class="category-header" aria-expanded="${idx === 0 ? 'true' : 'false'}" aria-controls="${groupId}">
                         <span class="category-title">
                             <span>${escapeHtml(folder.name)}</span>
                             <span class="category-count">${folder.links.length}</span>
@@ -580,14 +538,6 @@ function buildHomepage(config, seo, locale, assetManifest) {
     console.log(`✅ ${locale === 'en' ? 'English' : 'Chinese'} homepage build completed!`);
 }
 
-function renderPomodoroOverlay() {
-    return `<div class="pomodoro-toast" id="pomodoroToast" role="alert" aria-live="assertive" hidden>
-        <div class="pomodoro-toast-icon" aria-hidden="true"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#bell"></use></svg></div>
-        <div class="pomodoro-toast-content"><strong id="pomodoroToastMessage">{{T_POMODORO_WORK_COMPLETE}}</strong><span id="pomodoroToastDetail">{{T_POMODORO_AUTO_BREAK}}</span></div>
-        <button class="pomodoro-toast-close" id="pomodoroToastClose" type="button" aria-label="{{T_CLOSE_REMINDER}}" title="{{T_CLOSE_REMINDER}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg></button>
-    </div>`;
-}
-
 function buildAppPages(config, seo, locale, assetManifest) {
     const text = UI_TEXT[locale];
     const localeRoot = locale === 'en' ? '/en/' : '/';
@@ -599,19 +549,18 @@ function buildAppPages(config, seo, locale, assetManifest) {
         const zhAppUrl = new URL(`apps/${app.id}/`, seo.rootSiteUrl).href;
         const enAppUrl = new URL(`en/apps/${app.id}/`, seo.rootSiteUrl).href;
         const runtimeText = Object.fromEntries(['themeToLight', 'themeToDark', ...app.runtime].map(key => [key, text[key]]));
-        const runtimeConfig = `window.PAGE_I18N = ${JSON.stringify(runtimeText)};\nwindow.APP_ID = ${JSON.stringify(app.id)};\n`;
+        const runtimeConfig = `window.PAGE_I18N = ${JSON.stringify(runtimeText)};\n`;
         const content = fs.readFileSync(path.join(ROOT_DIR, `src/templates/apps/${app.id}.html`), 'utf8').trim();
 
         const values = {
             ...layoutValues(config, locale, iconSpriteUrl, 'apps'),
             APP_CONTENT: content,
-            APP_OVERLAY: app.id === 'pomodoro' ? renderPomodoroOverlay() : '',
-            TOOL_LAYOUT_CLASS: ['countdown', 'random-picker'].includes(app.id) ? ' tool-card-flat' : '',
+            APP_LAYOUT_CLASS: app.layout === 'flat' ? '' : ' app-detail-container-game',
             HTML_LANG: locale === 'en' ? 'en' : 'zh-CN', APP_TITLE: escapeHtml(text[app.title]), APP_DESCRIPTION: escapeHtml(text[app.description]),
             SITE_NAME: escapeHtml(config.profile.siteName), SITE_ICON: escapeHtml(config.profile.siteIcon), SITE_FAVICON: createTextFavicon(config.profile.siteIcon), PROFILE_NAME: escapeHtml(config.profile.name),
             APP_URL: appUrl, ZH_APP_URL: zhAppUrl, EN_APP_URL: enAppUrl, APPS_URL: `${localeRoot}#apps`,
             LANG_SWITCH_URL: locale === 'en' ? `/apps/${app.id}/` : `/en/apps/${app.id}/`, LANG_SWITCH_HREFLANG: locale === 'en' ? 'zh-CN' : 'en', LANG_SWITCH_LABEL: locale === 'en' ? '中' : 'EN',
-            SITE_STYLESHEET_URL: `${assetPrefix}${assetManifest.stylesheet}`, APP_STYLESHEET_URL: `${assetPrefix}${assetManifest.apps[app.id].stylesheet}`,
+            SITE_STYLESHEET_URL: `${assetPrefix}${assetManifest.appBaseStylesheet}`, APP_STYLESHEET_URL: `${assetPrefix}${assetManifest.apps[app.id].stylesheet}`,
             ICON_SPRITE_URL: iconSpriteUrl, APP_SCRIPT_URL: `${assetPrefix}${assetManifest.apps[app.id].script}`, RUNTIME_CONFIG: runtimeConfig,
             FOOTER: renderFooter(config.profile, seo, text), VISITOR_COUNTER_SCRIPT: renderVisitorCounterScript(config.profile)
         };

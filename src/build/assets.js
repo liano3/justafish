@@ -9,20 +9,15 @@ function readFiles(filePaths) {
     return filePaths.map(f => fs.readFileSync(path.join(ROOT_DIR, f), 'utf8')).join('\n');
 }
 
-function applySourceFeatureVisibility(source, options) {
-    PAGE_IDS.forEach(pageId => {
-        if (options[pageId]) return;
-        const pageBlock = new RegExp(`[\\t ]*\\/\\* PAGE:${pageId}:START \\*\\/[\\s\\S]*?\\/\\* PAGE:${pageId}:END \\*\\/\\r?\\n?`, 'g');
-        source = source.replace(pageBlock, '');
-    });
-    BUILD_FEATURE_IDS.forEach(featureId => {
-        if (options[featureId]) return;
-        const featureBlock = new RegExp(`[\\t ]*\\/\\* FEATURE:${featureId}:START \\*\\/[\\s\\S]*?\\/\\* FEATURE:${featureId}:END \\*\\/\\r?\\n?`, 'g');
-        source = source.replace(featureBlock, '');
-    });
-    return source
-        .replace(/\/\* PAGE:(?:home|resume|bookmarks|apps):(?:START|END) \*\//g, '')
-        .replace(/\/\* FEATURE:language:(?:START|END) \*\//g, '');
+function applyBuildVisibility(source, options, html = false) {
+    for (const [kind, ids] of [['PAGE', PAGE_IDS], ['FEATURE', BUILD_FEATURE_IDS]]) {
+        for (const id of ids) {
+            const start = html ? `<!-- ${kind}:${id}:START -->` : `/\\* ${kind}:${id}:START \\*/`;
+            const end = html ? `<!-- ${kind}:${id}:END -->` : `/\\* ${kind}:${id}:END \\*/`;
+            source = source.replace(new RegExp(`${start}([\\s\\S]*?)${end}`, 'g'), (_, content) => options[id] ? content : '');
+        }
+    }
+    return source;
 }
 
 function writeHashedAsset(assetsDir, baseName, extension, content) {
@@ -37,8 +32,8 @@ function buildFrontendAssets(options) {
     fs.mkdirSync(assetsDir, { recursive: true });
 
     const cssFiles = ['src/css/common.css', 'src/css/modern.css'];
-    const css = applySourceFeatureVisibility(readFiles(cssFiles), options);
-    const siteJs = applySourceFeatureVisibility(readFiles([
+    const css = applyBuildVisibility(readFiles(cssFiles), options);
+    const siteJs = applyBuildVisibility(readFiles([
         'src/js/common.js',
         'src/js/theme.js',
         'src/js/modern/main.js'
@@ -54,12 +49,14 @@ function buildFrontendAssets(options) {
     };
 
     if (options.apps) {
+        const shellOptions = { ...options, ...Object.fromEntries(PAGE_IDS.map(id => [id, false])) };
+        manifest.appBaseStylesheet = writeHashedAsset(assetsDir, 'app-base', 'css', applyBuildVisibility(readFiles(cssFiles), shellOptions));
         APPS.forEach(app => {
             const appCss = readFiles(['src/css/components/apps.css', `src/css/components/${app.css}`]);
-            const appJs = readFiles(['src/js/common.js', 'src/js/theme.js', ...app.js.map(file => `src/js/${file}`), 'src/js/app-page.js']);
+            const appJs = readFiles(['src/js/common.js', 'src/js/theme.js', ...app.js.map(file => `src/js/${file}`)]);
             manifest.apps[app.id] = {
                 stylesheet: writeHashedAsset(assetsDir, `app-${app.id}`, 'css', appCss),
-                script: writeHashedAsset(assetsDir, `app-${app.id}`, 'js', `(function(){\n'use strict';\n${appJs}\n})();`)
+                script: writeHashedAsset(assetsDir, `app-${app.id}`, 'js', `(function(){\n'use strict';\n${appJs}\ninitTheme();\n${app.init}();\n})();`)
             };
         });
     }
@@ -84,4 +81,4 @@ function copyStaticAssets(languageEnabled) {
     });
 }
 
-module.exports = { buildFrontendAssets, resolveBuiltAssetUrl, copyStaticAssets };
+module.exports = { applyBuildVisibility, buildFrontendAssets, resolveBuiltAssetUrl, copyStaticAssets };

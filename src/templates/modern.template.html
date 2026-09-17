@@ -37,7 +37,7 @@
 
         <main class="main">
             <!-- PAGE:home:START -->
-            <div id="home" class="page active">
+            <div id="home" class="page{{HOME_ACTIVE}}">
                 {{ANNOUNCEMENTS_SECTION}}
                 <div class="hero">
                     <div class="hero-avatar">
@@ -55,18 +55,15 @@
             <!-- PAGE:home:END -->
 
             <!-- PAGE:resume:START -->
-            <div id="resume" class="page">
+            <div id="resume" class="page{{RESUME_ACTIVE}}">
                 <div class="resume-container">
                     <section class="resume-profile">
                         <div class="resume-profile-content">
                             <div class="resume-heading">
                                 <h1 class="resume-name">{{PROFILE_NAME}}</h1>
-                                <button class="resume-pdf-download" id="resumePdfDownload" type="button" data-pdf-url="{{PDF_URL}}" data-pdf-filename="{{PDF_FILENAME}}" aria-describedby="resumeActionStatus">
-                                    <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#download"></use></svg>
-                                    <span data-resume-pdf-label>{{T_DOWNLOAD_PDF}}</span>
-                                </button>
+                                {{PDF_DOWNLOAD}}
                             </div>
-                            <p class="sr-only" id="resumeActionStatus" role="status" aria-live="polite"></p>
+                            <p class="resume-action-status" id="resumeActionStatus" role="status" aria-live="polite"></p>
                             <div class="resume-contacts">
                                 {{RESUME_CONTACTS}}
                             </div>
@@ -79,14 +76,16 @@
                     </section>
 
                     {{EDUCATION_SECTION}}
+                    {{STUDENT_WORK_SECTION}}
                     {{AWARDS_SECTION}}
-                    {{WORKS_SECTION}}
+                    {{PAPERS_SECTION}}
+                    {{PROJECTS_SECTION}}
                 </div>
             </div>
             <!-- PAGE:resume:END -->
 
             <!-- PAGE:bookmarks:START -->
-            <div id="bookmarks" class="page">
+            <div id="bookmarks" class="page{{BOOKMARKS_ACTIVE}}">
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">{{T_BOOKMARKS_TITLE}}</h2>
@@ -114,7 +113,7 @@
             <!-- PAGE:bookmarks:END -->
 
             <!-- PAGE:apps:START -->
-            <div id="apps" class="page">
+            <div id="apps" class="page{{APPS_ACTIVE}}">
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">{{T_APPS_TITLE}}</h2>
@@ -139,8 +138,8 @@
     </button>
 
     <!-- PAGE:bookmarks:START -->
-    <div class="ai-chat" id="aiChat" hidden>
-        <section class="ai-chat-panel" role="dialog" aria-modal="true" aria-labelledby="aiChatTitle">
+    <dialog class="ai-chat" id="aiChat" aria-labelledby="aiChatTitle">
+        <section class="ai-chat-panel">
             <header class="ai-chat-header">
                 <h2 id="aiChatTitle">{{T_AI_CHAT_TITLE}}</h2>
                 <button class="ai-chat-close" id="aiChatClose" type="button" aria-label="{{T_AI_CHAT_CLOSE}}" title="{{T_AI_CHAT_CLOSE}}">
@@ -149,11 +148,11 @@
             </header>
             <div class="ai-chat-messages" id="aiChatMessages" aria-live="polite"></div>
             <form class="ai-chat-form" id="aiChatForm">
-                <textarea id="aiChatInput" rows="1" maxlength="2000" placeholder="{{T_AI_CHAT_PLACEHOLDER}}"></textarea>
-                <button class="ai-chat-send" id="aiChatSend" type="submit">{{T_AI_CHAT_SEND}}</button>
+                <textarea aria-label="{{T_AI_CHAT_PLACEHOLDER}}" id="aiChatInput" rows="1" maxlength="2000" placeholder="{{T_AI_CHAT_PLACEHOLDER}}"></textarea>
+                <button class="button button-primary ai-chat-send" id="aiChatSend" type="submit">{{T_AI_CHAT_SEND}}</button>
             </form>
         </section>
-    </div>
+    </dialog>
     <!-- PAGE:bookmarks:END -->
 
     <script>{{RUNTIME_CONFIG}}</script>

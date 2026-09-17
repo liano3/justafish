@@ -7,16 +7,15 @@
 .countdown-form-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; }
 .countdown-convert-option { min-width: 0; display: flex; align-items: center; gap: 8px; margin-right: auto; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; cursor: pointer; }
 .countdown-convert-option input { width: 15px; height: 15px; flex: 0 0 auto; accent-color: var(--primary); cursor: pointer; }
-.countdown-convert-option input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .countdown-message { grid-column: 1 / -1; min-height: 1.4em; margin: -4px 0 -8px; color: var(--danger); font-size: 0.8rem; }
 .countdown-events { margin-top: 18px; }
 .countdown-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .countdown-group { min-width: 0; }
 .countdown-group > h2 { margin-bottom: 8px; }
 .countdown-list { display: flex; flex-direction: column; gap: 8px; }
-.countdown-item { min-height: 82px; display: grid; grid-template-columns: minmax(0, 1fr) 34px; align-items: center; gap: 6px 8px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary); }
+.countdown-item { min-height: 82px; display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 6px 8px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary); }
 .countdown-item-copy { min-width: 0; }
-.countdown-item-copy h3 { overflow: hidden; color: var(--text); font-size: 0.92rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.countdown-item-copy h3 { color: var(--text); font-size: 0.92rem; font-weight: 600; overflow-wrap: anywhere; }
 .countdown-item-meta { margin-top: 3px; color: var(--text-muted); font-size: 0.76rem; }
 .countdown-remaining { grid-column: 1; grid-row: 2; overflow-wrap: anywhere; font-size: 0.88rem; font-weight: 650; line-height: 1.4; }
 .countdown-next { grid-column: 1; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; overflow-wrap: anywhere; }
@@ -25,7 +24,6 @@
 [data-theme="dark"] .countdown-group-future .countdown-remaining { color: var(--primary); }
 .countdown-delete { grid-column: 2; grid-row: 1 / span 2; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: var(--radius-sm); color: var(--text-muted); background: transparent; cursor: pointer; }
 .countdown-delete:hover { color: var(--danger); background: var(--surface); }
-.countdown-delete:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .countdown-delete svg { width: 17px; height: 17px; }
 .countdown-empty { padding: 28px 12px; border: 1px dashed var(--border); border-radius: var(--radius-sm); color: var(--text-muted); background: var(--bg-secondary); font-size: 0.86rem; text-align: center; }
 

@@ -3,20 +3,14 @@ function initCountdown() {
     var nameInput = $('countdownName');
     var dateInput = $('countdownDate');
     var autoConvertInput = $('countdownAutoConvert');
-    var message = $('countdownMessage');
     var countdownList = $('countdownList');
     var anniversaryList = $('anniversaryList');
     var iconSprite = document.querySelector('.countdown-app').getAttribute('data-icon-sprite');
     var storageKey = 'countdownEvents';
     var events = [];
+    let renderedDay;
 
-    function parseLocalDate(value) {
-        if (typeof value !== 'string') return null;
-        var parts = value.split('-').map(Number);
-        if (parts.length !== 3 || parts.some(isNaN)) return null;
-        var date = new Date(parts[0], parts[1] - 1, parts[2]);
-        return date.getFullYear() === parts[0] && date.getMonth() === parts[1] - 1 && date.getDate() === parts[2] ? date : null;
-    }
+    function parseLocalDate(value) { return new Date(value + 'T00:00:00'); }
 
     function startOfToday() {
         var today = new Date();
@@ -72,6 +66,7 @@ function initCountdown() {
         events = events.filter(function(event) { return event.id !== id; });
         save();
         render();
+        if (document.activeElement === document.body) nameInput.focus();
     }
 
     function createEmptyState(key) {
@@ -108,6 +103,7 @@ function initCountdown() {
         var remove = document.createElement('button');
         remove.className = 'countdown-delete';
         remove.type = 'button';
+        remove.dataset.eventId = event.id;
         remove.setAttribute('aria-label', t('countdownDeleteLabel', { name: event.name }));
         remove.title = remove.getAttribute('aria-label');
         remove.innerHTML = '<svg aria-hidden="true"><use href="' + iconSprite + '#x"></use></svg>';
@@ -143,7 +139,9 @@ function initCountdown() {
     }
 
     function render() {
+        const focusedId = document.activeElement.dataset.eventId;
         var today = startOfToday();
+        renderedDay = today.getTime();
         var changed = false;
         events = events.filter(function(event) {
             if (event.kind !== 'countdown' || parseLocalDate(event.date) >= today) return true;
@@ -160,18 +158,16 @@ function initCountdown() {
         renderGroup(anniversaryList, events.filter(function(event) {
             return event.kind === 'anniversary';
         }), today, 'anniversaryEmpty', true);
+        if (focusedId) {
+            const next = Array.from(document.querySelectorAll('.countdown-delete')).find(button => button.dataset.eventId === focusedId);
+            (next || nameInput).focus();
+        }
     }
 
     form.addEventListener('submit', function(event) {
         event.preventDefault();
         var name = nameInput.value.trim();
         var date = parseLocalDate(dateInput.value);
-        message.textContent = '';
-        if (!name || !date) {
-            message.textContent = t('countdownInvalid');
-            (!name ? nameInput : dateInput).focus();
-            return;
-        }
         events.push({
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
             name: name,
@@ -185,22 +181,9 @@ function initCountdown() {
         nameInput.focus();
     });
 
-    try {
-        var stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        if (Array.isArray(stored)) {
-            events = stored.filter(function(event) {
-                return event
-                    && typeof event.id === 'string'
-                    && typeof event.name === 'string'
-                    && parseLocalDate(event.date)
-                    && (event.kind === 'countdown' || event.kind === 'anniversary');
-            }).map(function(event) {
-                return { id: event.id, name: event.name, date: event.date, kind: event.kind, autoConvert: event.autoConvert === true };
-            });
-        }
-    } catch (error) {
-        localStorage.removeItem(storageKey);
-    }
+    events = JSON.parse(localStorage.getItem(storageKey) || '[]');
     render();
-    setInterval(render, 60000);
+    const refreshDate = () => { if (startOfToday().getTime() !== renderedDay) render(); };
+    setInterval(refreshDate, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDate(); });
 }

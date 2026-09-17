@@ -6,11 +6,10 @@ const { buildFrontendAssets, copyStaticAssets } = require('./src/build/assets');
 const { createSeoData, buildHomepage, buildAppPages, writeSeoFiles } = require('./src/build/render');
 
 function build() {
+    const { pages, zhConfig, enConfig } = loadConfigs();
     const distDir = path.join(__dirname, 'dist');
     fs.rmSync(distDir, { recursive: true, force: true });
     fs.mkdirSync(distDir, { recursive: true });
-
-    const { pages, zhConfig, enConfig } = loadConfigs();
 
     const zhSeo = createSeoData(zhConfig.profile, 'zh', UI_TEXT.zh);
     const enSeo = pages.language
@@ -36,7 +35,8 @@ function build() {
     console.log(`   Announcements: ${localeCount(zhConfig.announcements.length, enConfig.announcements.length)}`);
     console.log(`   Education: ${localeCount(zhConfig.education.length, enConfig.education.length)}`);
     console.log(`   Awards: ${localeCount(zhConfig.awards.length, enConfig.awards.length)}`);
-    console.log(`   Works: ${localeCount(zhConfig.works.length, enConfig.works.length)}`);
+    console.log(`   Papers: ${localeCount(zhConfig.papers.length, enConfig.papers.length)}`);
+    console.log(`   Projects: ${localeCount(zhConfig.projects.length, enConfig.projects.length)}`);
     console.log(`   Bookmarks: ${localeCount(zhConfig.bookmarks.length, enConfig.bookmarks.length)} folders`);
 }
 

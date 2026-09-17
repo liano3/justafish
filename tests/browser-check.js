@@ -1,5 +1,5 @@
-async page => {
-    const base = 'http://localhost:8080';
+async function browserCheck(page) {
+    const base = await page.evaluate(() => location.origin);
     const checks = [];
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -84,6 +84,7 @@ async page => {
     let resolveUnlock;
     let unlockArrived;
     const passwords = [];
+    let failReply = false;
     await page.route('**/api/chat', async route => {
         const body = route.request().postDataJSON();
         if (!body.messages) {
@@ -92,6 +93,7 @@ async page => {
             return;
         }
         passwords.push(body.password);
+        if (failReply) { failReply = false; await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); return; }
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reply: 'Mock reply' }) });
     });
     await goto('/#bookmarks');
@@ -108,50 +110,28 @@ async page => {
     assert((await page.locator('#aiChatMessages').innerText()).includes('Mock reply'), 'Chat reply');
     await page.locator('#aiChatClose').click();
     assert(await page.locator('#bookmarkSearch').inputValue() === 'changed-query', 'Do not erase newer search');
-    await page.unroute('**/api/chat');
+    await page.locator('#bookmarkSearch').fill('submitted-password');
+    const reopen = new Promise(resolve => { unlockArrived = resolve; });
+    await page.locator('#bookmarkSearch').press('Enter');
+    await reopen;
+    await resolveUnlock();
+    await page.locator('#aiChatInput').waitFor({ state: 'visible' });
+    await page.locator('#aiChatInput').focus();
+    await page.keyboard.press('Shift+Tab');
+    assert(await page.locator('#aiChatClose').evaluate(el => el === document.activeElement), 'Native dialog keyboard navigation');
+    failReply = true;
+    await page.locator('#aiChatInput').fill('Retry this');
+    await page.locator('#aiChatSend').click();
+    await page.waitForFunction(() => !document.getElementById('aiChatSend').disabled);
+    assert(await page.locator('#aiChatInput').inputValue() === 'Retry this', 'Failed message remains editable');
+    await page.locator('#aiChatSend').click();
+    await page.waitForFunction(() => document.getElementById('aiChatMessages').textContent.includes('Mock reply'));
+    await page.keyboard.press('Escape');
+    assert(await page.locator('#bookmarkSearch').evaluate(el => el === document.activeElement), 'Chat restores focus');
     checks.push('Delayed chat unlock retains submitted password and newer search');
 
+    await page.unroute('**/api/chat');
     await page.clock.install({ time: new Date('2026-09-16T12:00:00+08:00') });
-    await goto('/apps/pomodoro/');
-    await page.locator('#pomodoroWork').fill('10');
-    await page.locator('#pomodoroWork').blur();
-    await page.locator('#pomodoroBreak').fill('3');
-    await page.locator('#pomodoroBreak').blur();
-    if (await page.locator('#pomodoroSound').isChecked()) await page.locator('label[for="pomodoroSound"]').click();
-    await page.locator('#pomodoroStart').click();
-    await page.clock.runFor(30000);
-    const deadline = await page.evaluate(() => JSON.parse(localStorage.getItem('pomodoroState')).deadline);
-    await page.getByRole('link', { name: '返回应用' }).click();
-    await page.locator('a[href="./apps/pomodoro/"]').click();
-    assert(await page.locator('#pomodoroStart').innerText() === '暂停', 'Running state restored');
-    assert(await page.locator('#pomodoroWork').inputValue() === '10', 'Work length restored');
-    assert(await page.locator('#pomodoroBreak').inputValue() === '3', 'Break length restored');
-    assert(await page.evaluate(() => JSON.parse(localStorage.getItem('pomodoroState')).deadline) === deadline, 'Deadline unchanged on navigation');
-    await page.locator('#pomodoroStart').click();
-    const paused = await page.locator('#pomodoroTimer').innerText();
-    await page.reload();
-    await page.clock.runFor(30000);
-    assert(await page.locator('#pomodoroTimer').innerText() === paused, 'Paused remaining time restored');
-    await page.locator('#pomodoroStart').click();
-    const resumeDeadline = await page.evaluate(() => JSON.parse(localStorage.getItem('pomodoroState')).deadline);
-    await goto('/');
-    await page.clock.setSystemTime(new Date(resumeDeadline + 60000));
-    await goto('/apps/pomodoro/');
-    assert(await page.locator('#pomodoroStatus').innerText() === '休息中...', 'Offline phase change');
-    assert(await page.locator('#pomodoroCount').innerText() === '1', 'Count focus once');
-    assert(await page.locator('#pomodoroTotal').innerText() === '10', 'Record correct focus length');
-    await page.reload();
-    assert(await page.locator('#pomodoroCount').innerText() === '1', 'Do not count same phase twice');
-    await goto('/');
-    await page.clock.setSystemTime(new Date(resumeDeadline + (3 + 10 + 3 + 10 + 1) * 60000));
-    await goto('/apps/pomodoro/');
-    assert(await page.locator('#pomodoroCount').innerText() === '3', 'Restore several offline cycles');
-    assert(await page.locator('#pomodoroTotal').innerText() === '30', 'Offline total minutes');
-    await page.locator('#pomodoroReset').click();
-    assert(await page.locator('#pomodoroTimer').innerText() === '10:00', 'Reset uses saved length');
-    checks.push('Pomodoro navigation, running/paused reload, offline phases, no duplicate statistics and reset');
-
-    await page.clock.setSystemTime(new Date('2026-09-16T12:00:00+08:00'));
     await goto('/apps/countdown/');
     const add = async (name, date, checked) => {
         await page.locator('#countdownName').fill(name);
@@ -163,6 +143,10 @@ async page => {
     await add('移除', '2026-09-16', false);
     assert(await page.locator('#countdownList .countdown-item').count() === 2, 'Keep both due-today events');
     assert(await page.locator('#countdownList input').count() === 0, 'No checkbox inside countdown cards');
+    await page.locator('.countdown-delete').first().focus();
+    const focused = await page.locator('.countdown-delete').first().elementHandle();
+    await page.clock.runFor(60000);
+    assert(await focused.evaluate(el => el.isConnected && el === document.activeElement), 'Minute tick retains node and focus');
     await page.clock.setSystemTime(new Date('2026-09-17T00:00:00+08:00'));
     await page.clock.runFor(60000);
     assert(await page.locator('#countdownList .countdown-item').count() === 0, 'Process following day');
@@ -170,7 +154,7 @@ async page => {
     assert((await page.locator('#anniversaryList').innerText()).includes('距下次还有 364 天'), 'Next anniversary');
     checks.push('Countdown zero day retained, next-day conversion and form-only option');
 
-    const routes = ['', '#resume', '#bookmarks', '#apps', 'apps/pomodoro/', 'apps/random-picker/', 'apps/countdown/', 'apps/memory/', 'apps/schulte/', 'apps/2048/'];
+    const routes = ['', '#resume', '#bookmarks', '#apps', 'apps/random-picker/', 'apps/countdown/', 'apps/schulte/', 'apps/2048/'];
     let surfaces = 0;
     for (const locale of ['', 'en/']) {
         for (const route of routes) {
@@ -179,20 +163,11 @@ async page => {
             for (const width of [1280, 390, 320]) {
                 await page.setViewportSize({ width, height: 900 });
                 assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Page overflow: ' + page.url());
-                if (route === 'apps/pomodoro/') {
-                    assert(await page.evaluate(() => {
-                        const card = document.querySelector('.tool-card').getBoundingClientRect();
-                        return Array.from(document.querySelectorAll('.pomodoro-setting')).every(el => {
-                            const rect = el.getBoundingClientRect();
-                            return rect.left >= card.left && rect.right <= card.right;
-                        });
-                    }), 'Clipped pomodoro settings');
-                }
                 surfaces++;
             }
         }
     }
-    checks.push('20 Chinese/English routes at 1280, 390 and 320 pixels (' + surfaces + ' layouts)');
+    checks.push('16 Chinese/English routes at 1280, 390 and 320 pixels (' + surfaces + ' layouts)');
     assert(errors.length === 0, errors.join('\n'));
     return { passed: true, checks, errors };
 }
