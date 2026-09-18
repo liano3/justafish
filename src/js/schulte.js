@@ -4,7 +4,8 @@ function initSchulte() {
     var bestDisplay = $('schulteBest');
     var overlay = $('schulteOverlay');
     var restartBtn = $('schulteRestart');
-    var numbers = [], currentNum = 1, startTime = null, timerRAF = null, isRunning = false;
+    var status = $('schulteStatus');
+    var currentNum = 1, startTime = null, timerRAF = null, isRunning = false;
     var bestTime = parseFloat(localStorage.getItem('schulteBest')) || null;
 
     function updateTimer() {
@@ -21,9 +22,10 @@ function initSchulte() {
 
     function createGrid() {
         grid.innerHTML = '';
-        numbers = shuffle(Array.from({length: 25}, function(_, i) { return i + 1; }));
+        var numbers = shuffle(Array.from({length: 25}, function(_, i) { return i + 1; }));
         currentNum = 1; startTime = null; isRunning = false;
         timeDisplay.textContent = '0.00';
+        status.textContent = '';
         bestDisplay.textContent = bestTime ? bestTime.toFixed(2) + 's' : '-';
         overlay.hidden = false;
         stopTimer();
@@ -44,6 +46,7 @@ function initSchulte() {
                         isRunning = false;
                         var elapsed = (performance.now() - startTime) / 1000;
                         timeDisplay.textContent = elapsed.toFixed(2);
+                        status.textContent = t('schulteComplete', { seconds: elapsed.toFixed(2) });
                         if (!bestTime || elapsed < bestTime) {
                             bestTime = elapsed;
                             localStorage.setItem('schulteBest', bestTime.toString());
@@ -76,13 +79,10 @@ function initSchulte() {
         }
     });
 
-    if (restartBtn) {
-        restartBtn.addEventListener('click', function(e) {
-            if (e) e.stopPropagation();
-            createGrid();
-            overlay.focus();
-        });
-    }
+    restartBtn.addEventListener('click', function() {
+        createGrid();
+        overlay.focus();
+    });
 
     createGrid();
 }

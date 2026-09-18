@@ -45,11 +45,11 @@ vercel.json                 Vercel 构建配置
 
 运行 `npm test` 检查配置、API、双语构建和页面开关。浏览器回归先运行 `npm run preview`，再在另一终端执行 `npm run test:browser`；可用 `TEST_BASE_URL` 指定其他预览地址。测试通过 Playwright CLI 创建隔离会话，使用模拟聊天响应，不调用真实 AI 服务。
 
-页面关闭后，其对应 JS/CSS 不进入构建；工具详情页只加载公共样式与自身资源。新增工具在 `src/config/apps.js` 中声明入口。面向现代浏览器，工具直接使用 localStorage 保存数据，不维护备用存储或旧版本存档迁移。邮箱复制需要 HTTPS 或 localhost。
+页面关闭后，其对应 JS/CSS 不进入构建；工具详情页只加载公共样式与自身资源。新增工具在 `src/config/apps.js` 中声明入口，用 `contentWidth: 'wide'` 指定较宽的表单布局。面向现代浏览器，工具直接使用 localStorage 保存数据；倒计时以 `countdownEvents` 数组保存，不做多标签页同步或旧格式迁移。网站使用 HTTPS 或 localhost。浏览器测试固定使用 `@playwright/cli@0.1.20`。
 
 ## 配置
 
-所有配置均为 JSON。英文对象只覆盖填写的字段，英文数组未设置时继承中文数据。
+内容配置采用 JSON。英文对象只覆盖填写的字段，英文数组未设置时继承中文数据。
 
 | 变量 | 类型 | 内容 |
 | --- | --- | --- |

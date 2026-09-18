@@ -155,7 +155,7 @@ function renderProfileLinks(links) {
         const isMail = String(link.url || '').startsWith('mailto:');
         const iconId = PROFILE_ICON_IDS[link.icon];
         const icon = iconId ? renderIcon(iconId) : '';
-        const className = `button hero-link ${index === 0 ? 'button-primary hero-link-primary' : 'button-secondary hero-link-secondary'}`;
+        const className = `button hero-link ${index === 0 ? 'button-primary' : 'button-secondary'}`;
         return `<a href="${safeUrl(link.url)}" target="${isMail ? '_self' : '_blank'}"${isMail ? '' : ' rel="noopener noreferrer"'} class="${className}">
             ${icon}
             <span>${escapeHtml(link.label)}</span>
@@ -199,7 +199,7 @@ function renderResumeContacts(profile, text) {
                                         ${renderIcon('mail')}
                                         <span>${escapeHtml(email)}</span>
                                     </a>
-                                    <button class="resume-copy-button" type="button" data-copy-email="${escapeHtml(email)}" aria-label="${escapeHtml(text.copyEmail)}" aria-describedby="resumeActionStatus" title="${escapeHtml(text.copyEmail)}">
+                                    <button class="icon-button resume-copy-button" type="button" data-copy-email="${escapeHtml(email)}" aria-label="${escapeHtml(text.copyEmail)}" aria-describedby="resumeActionStatus" title="${escapeHtml(text.copyEmail)}">
                                         ${renderIcon('copy', 'resume-copy-icon')}
                                         ${renderIcon('check', 'resume-copy-success-icon')}
                                     </button>
@@ -311,14 +311,12 @@ function renderResumeEntries(items) {
             ? `<a class="resume-entry-link" href="${safeUrl(item.descriptionUrl)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(item.description)}</span>${renderIcon('external-link')}</a>`
             : escapeHtml(item.description);
         return `<div class="resume-entry">
-                            <div class="resume-entry-content">
-                                <div class="resume-entry-heading">
+                            <div class="resume-entry-heading">
                                     <h3>${escapeHtml(item.title)}</h3>
                                     ${item.subtitle ? `<span class="resume-entry-subtitle">${escapeHtml(item.subtitle)}</span>` : ''}
-                                </div>
-                                ${item.description ? `<p class="resume-entry-description">${description}</p>` : ''}
                             </div>
                             ${item.date ? `<div class="resume-entry-date">${escapeHtml(item.date)}</div>` : ''}
+                            ${item.description ? `<p class="resume-entry-description">${description}</p>` : ''}
                         </div>`;
     }).join('\n')}</div>`;
 }
@@ -367,7 +365,7 @@ function createPdfFilename(profile, locale) {
 }
 
 function renderAppDirectory(text) {
-    return APPS.map(app => `<a class="app-directory-link" href="./apps/${app.id}/">
+    return APPS.map(app => `<a class="app-directory-link" data-app="${app.id}" href="./apps/${app.id}/">
                         <span class="app-directory-icon">${renderIcon(app.icon)}</span>
                         <span class="app-directory-copy"><strong>${escapeHtml(text[app.title])}</strong><span>${escapeHtml(text[app.description])}</span></span>
                         ${renderIcon('chevron-left', 'app-directory-arrow')}
@@ -389,7 +387,7 @@ function layoutValues(config, locale, iconSpriteUrl, activePage) {
     const icons = { home: 'home', resume: 'file-text', bookmarks: 'bookmark', apps: 'grid' };
     const nav = mobile => PAGE_IDS.filter(id => config.pages[id]).map(id => {
         const active = id === activePage;
-        const cls = (mobile ? 'mobile-nav-link' : 'nav-link') + (active ? ' active' : '');
+        const cls = mobile ? 'mobile-nav-link' : 'nav-link';
         const icon = mobile ? renderIcon(icons[id]).replace('{{ICON_SPRITE_URL}}', iconSpriteUrl) : '';
         return `<a class="${cls}" href="${pageUrl(id)}" data-page="${id}"${active ? ' aria-current="page"' : ''}>${icon}${escapeHtml(text['NAV_' + id.toUpperCase()])}</a>`;
     }).join('\n');
@@ -401,7 +399,7 @@ function layoutValues(config, locale, iconSpriteUrl, activePage) {
 
 function renderTemplate(name, values, text, options) {
     const translations = Object.fromEntries(Object.entries(text).map(([key, value]) => ['T_' + key, escapeHtml(value)]));
-    const all = { ...translations, T_DOWNLOAD_PDF: escapeHtml(text.downloadPdf), T_THEME_TO_DARK: escapeHtml(text.themeToDark), ...values };
+    const all = { ...translations, T_THEME_TO_DARK: escapeHtml(text.themeToDark), ...values };
     const read = file => fs.readFileSync(path.join(ROOT_DIR, 'src/templates', file), 'utf8');
     const fragmentKeys = ['HERO_LINKS', 'ANNOUNCEMENTS_SECTION', 'RESUME_CONTACTS', 'EDUCATION_SECTION', 'STUDENT_WORK_SECTION', 'AWARDS_SECTION', 'PAPERS_SECTION', 'PROJECTS_SECTION', 'APPS_DIRECTORY', 'BOOKMARKS'];
     fragmentKeys.forEach(key => {
@@ -414,10 +412,63 @@ function renderTemplate(name, values, text, options) {
     return applyBuildVisibility(fillTemplate(read(name), all), options, true);
 }
 
+function renderBookmarks(folders, text) {
+    const bookmarkTotal = folders.reduce((total, folder) => total + folder.links.length, 0);
+    const status = escapeHtml(formatMessage(text.bookmarksTotal, { count: bookmarkTotal }));
+
+    const bookmarkTagCounts = new Map();
+    folders.forEach(folder => {
+        folder.links.forEach(link => {
+            getBookmarkTags(link).forEach(label => {
+                const normalized = label.toLowerCase();
+                const existing = bookmarkTagCounts.get(normalized);
+                if (existing) existing.count++;
+                else bookmarkTagCounts.set(normalized, { label, count: 1 });
+            });
+        });
+    });
+    const bookmarkTagFilter = bookmarkTagCounts.size
+        ? `<div class="bookmark-tag-filter" id="bookmarkTagFilter" aria-label="${escapeHtml(text.BOOKMARK_TAG_FILTER_ARIA)}">
+                        <button type="button" class="bookmark-tag-filter-button is-active" data-bookmark-tag="" aria-pressed="true">${escapeHtml(text.BOOKMARK_TAG_ALL)} <span>${bookmarkTotal}</span></button>
+                        ${Array.from(bookmarkTagCounts.entries()).map(([normalized, tag]) => `<button type="button" class="bookmark-tag-filter-button" data-bookmark-tag="${escapeHtml(normalized)}" aria-pressed="false">${escapeHtml(tag.label)} <span>${tag.count}</span></button>`).join('')}
+                    </div>`
+        : '';
+
+    const bookmarks = folders.map((folder, idx) => {
+        const links = folder.links.map(l => {
+            const description = String(l.description || '').trim();
+            const tags = getBookmarkTags(l);
+            const tagItems = tags.length
+                ? `<span class="bookmark-link-tags">${tags.map(tag => `<span data-bookmark-tag-value="${escapeHtml(tag.toLowerCase())}">${escapeHtml(tag)}</span>`).join('')}</span>`
+                : '';
+            const tag = l.url ? 'a' : 'div';
+            const href = l.url ? ` href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer"` : '';
+            return `<${tag}${href} class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
+                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${l.url ? renderIcon('external-link') : ''}</span>
+                            ${description ? `<span class="bookmark-link-description">${escapeHtml(description)}</span>` : ''}
+                            ${tagItems}
+                        </${tag}>`;
+        }).join('\n                        ');
+        const groupId = `bookmarkGroup${idx + 1}`;
+        return `<div class="bookmark-category" data-bookmark-category="${escapeHtml(folder.name)}">
+                    <button type="button" class="category-header" aria-expanded="${idx === 0 ? 'true' : 'false'}" aria-controls="${groupId}">
+                        <span class="category-title">
+                            <span>${escapeHtml(folder.name)}</span>
+                            <span class="category-count">${folder.links.length}</span>
+                        </span>
+                        ${renderIcon('chevron-down', 'category-toggle')}
+                    </button>
+                    <div class="bookmark-links" id="${groupId}">
+                        ${links}
+                    </div>
+                </div>`;
+    }).join('\n                        ');
+    return { BOOKMARK_STATUS: status, BOOKMARK_TAG_FILTER: bookmarkTagFilter, BOOKMARKS: bookmarks };
+}
+
 function buildHomepage(config, seo, locale, assetManifest) {
     const text = UI_TEXT[locale];
     const enabledPageIds = PAGE_IDS.filter(pageId => config.pages[pageId]);
-    const defaultPageId = enabledPageIds[0];
     const runtimeText = Object.fromEntries(MAIN_RUNTIME_TEXT_KEYS.map(key => [key, text[key]]));
     const pageI18n = JSON.stringify(runtimeText).replace(/</g, '\\u003c');
     const stylesheetUrl = resolveBuiltAssetUrl(assetManifest.stylesheet, locale);
@@ -425,8 +476,8 @@ function buildHomepage(config, seo, locale, assetManifest) {
     const iconSpriteUrl = resolveBuiltAssetUrl(assetManifest.iconSprite, locale);
     const runtimeConfig = `window.PAGE_I18N = ${pageI18n};\nwindow.ENABLED_PAGE_IDS = ${JSON.stringify(enabledPageIds)};\n`;
 
-    const values = layoutValues(config, locale, iconSpriteUrl, defaultPageId);
-    PAGE_IDS.forEach(id => { values[id.toUpperCase() + '_ACTIVE'] = id === defaultPageId ? ' active' : ''; });
+    const values = layoutValues(config, locale, iconSpriteUrl, enabledPageIds[0]);
+    values.ENABLED_PAGE_IDS = JSON.stringify(enabledPageIds);
     values.RUNTIME_CONFIG = runtimeConfig;
     values.STYLESHEET_URL = stylesheetUrl;
     values.MAIN_SCRIPT_URL = mainScriptUrl;
@@ -453,6 +504,7 @@ function buildHomepage(config, seo, locale, assetManifest) {
     values.SITE_FAVICON = createTextFavicon(config.profile.siteIcon);
     values.PROFILE_NAME = escapeHtml(config.profile.name);
     values.PROFILE_NICKNAME = escapeHtml(config.profile.nickname || config.profile.name);
+    values.HERO_AVATAR_ALT = escapeHtml(formatMessage(text.avatarAlt, { name: config.profile.nickname || config.profile.siteName }));
     values.PROFILE_TITLE = escapeHtml(config.profile.title);
     values.PROFILE_AVATAR = safeUrl(avatarUrl);
     values.PROFILE_SLOGAN = escapeHtml(config.profile.slogan);
@@ -475,58 +527,7 @@ function buildHomepage(config, seo, locale, assetManifest) {
     values.PROJECTS_SECTION = renderPortfolioSection(config.projects, text, config.profile, 'projectsHeading', 'grid', text.projectLink);
     values.APPS_DIRECTORY = renderAppDirectory(text);
 
-    const bookmarkTotal = config.bookmarks.reduce((total, folder) => total + folder.links.length, 0);
-    values.BOOKMARK_STATUS = escapeHtml(formatMessage(text.bookmarksTotal, { count: bookmarkTotal }));
-
-    const bookmarkTagCounts = new Map();
-    config.bookmarks.forEach(folder => {
-        folder.links.forEach(link => {
-            getBookmarkTags(link).forEach(label => {
-                const normalized = label.toLowerCase();
-                const existing = bookmarkTagCounts.get(normalized);
-                if (existing) existing.count++;
-                else bookmarkTagCounts.set(normalized, { label, count: 1 });
-            });
-        });
-    });
-    const bookmarkTagFilter = bookmarkTagCounts.size
-        ? `<div class="bookmark-tag-filter" id="bookmarkTagFilter" aria-label="${escapeHtml(text.BOOKMARK_TAG_FILTER_ARIA)}">
-                        <button type="button" class="bookmark-tag-filter-button is-active" data-bookmark-tag="" aria-pressed="true">${escapeHtml(text.BOOKMARK_TAG_ALL)} <span>${bookmarkTotal}</span></button>
-                        ${Array.from(bookmarkTagCounts.entries()).map(([normalized, tag]) => `<button type="button" class="bookmark-tag-filter-button" data-bookmark-tag="${escapeHtml(normalized)}" aria-pressed="false">${escapeHtml(tag.label)} <span>${tag.count}</span></button>`).join('')}
-                    </div>`
-        : '';
-    values.BOOKMARK_TAG_FILTER = bookmarkTagFilter;
-
-    const bookmarks = config.bookmarks.map((folder, idx) => {
-        const links = folder.links.map(l => {
-            const description = String(l.description || '').trim();
-            const tags = getBookmarkTags(l);
-            const tagItems = tags.length
-                ? `<span class="bookmark-link-tags">${tags.map(tag => `<span data-bookmark-tag-value="${escapeHtml(tag.toLowerCase())}">${escapeHtml(tag)}</span>`).join('')}</span>`
-                : '';
-            const tag = l.url ? 'a' : 'div';
-            const href = l.url ? ` href="${safeUrl(l.url)}" target="_blank" rel="noopener noreferrer"` : '';
-            return `<${tag}${href} class="bookmark-link" data-bookmark-url="${escapeHtml(l.url)}">
-                            <span class="bookmark-link-heading"><span>${escapeHtml(l.label)}</span>${l.url ? renderIcon('external-link') : ''}</span>
-                            ${description ? `<span class="bookmark-link-description">${escapeHtml(description)}</span>` : ''}
-                            ${tagItems}
-                        </${tag}>`;
-        }).join('\n                        ');
-        const groupId = `bookmarkGroup${idx + 1}`;
-        return `<div class="bookmark-category" data-bookmark-category="${escapeHtml(folder.name)}">
-                    <button type="button" class="category-header" aria-expanded="${idx === 0 ? 'true' : 'false'}" aria-controls="${groupId}">
-                        <span class="category-title">
-                            <span>${escapeHtml(folder.name)}</span>
-                            <span class="category-count">${folder.links.length}</span>
-                        </span>
-                        ${renderIcon('chevron-down', `category-toggle ${idx === 0 ? 'expanded' : ''}`)}
-                    </button>
-                    <div class="bookmark-links ${idx === 0 ? 'show' : ''}" id="${groupId}">
-                        ${links}
-                    </div>
-                </div>`;
-    }).join('\n                        ');
-    values.BOOKMARKS = bookmarks;
+    Object.assign(values, renderBookmarks(config.bookmarks, text));
     values.ICON_SPRITE_URL = escapeHtml(iconSpriteUrl);
     const html = renderTemplate('modern.template.html', values, text, config.pages);
 
@@ -555,7 +556,7 @@ function buildAppPages(config, seo, locale, assetManifest) {
         const values = {
             ...layoutValues(config, locale, iconSpriteUrl, 'apps'),
             APP_CONTENT: content,
-            APP_LAYOUT_CLASS: app.layout === 'flat' ? '' : ' app-detail-container-game',
+            APP_LAYOUT_CLASS: app.contentWidth === 'wide' ? '' : ' app-detail-container-game',
             HTML_LANG: locale === 'en' ? 'en' : 'zh-CN', APP_TITLE: escapeHtml(text[app.title]), APP_DESCRIPTION: escapeHtml(text[app.description]),
             SITE_NAME: escapeHtml(config.profile.siteName), SITE_ICON: escapeHtml(config.profile.siteIcon), SITE_FAVICON: createTextFavicon(config.profile.siteIcon), PROFILE_NAME: escapeHtml(config.profile.name),
             APP_URL: appUrl, ZH_APP_URL: zhAppUrl, EN_APP_URL: enAppUrl, APPS_URL: `${localeRoot}#apps`,

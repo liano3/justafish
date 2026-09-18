@@ -1,12 +1,24 @@
+/* Shared type scale and controls, used by every page and tool. */
+:root { --text-xs: .75rem; --text-sm: .875rem; --text-base: 1rem; --text-lg: 1.125rem; --text-xl: 1.5rem; --text-2xl: 2rem; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 [hidden] { display: none !important; }
 
 :where(a, button, input, textarea, [tabindex]):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.button { min-height: 42px; padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: 0.85rem; line-height: 1.4; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); }
+.button { min-height: 44px; padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: var(--pill); font: inherit; font-size: var(--text-sm); line-height: 1.4; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color var(--transition), border-color var(--transition), transform var(--transition); }
 .button-primary { color: var(--on-primary); background: var(--button-bg); border-color: var(--button-bg); }
 .button-primary:hover { background: var(--button-hover); }
 .button-secondary { color: var(--text); background: var(--surface); border-color: var(--border); }
 .button-secondary:hover { background: var(--bg-secondary); border-color: var(--border-strong); }
-.button-small { min-height: 32px; padding: 5px 9px; font-size: 0.74rem; }
+.button-small { min-height: 32px; padding: 5px 9px; font-size: var(--text-xs); }
+.button:not(:disabled):active { transform: scale(0.97); }
 .button:disabled { opacity: 0.6; cursor: wait; }
-@media (pointer: coarse) { .header-icon-action, .resume-copy-button, .ai-chat-close, .countdown-delete, .random-picker-field-heading button { min-width: 44px; min-height: 44px; } }
+.field-input { min-width: 0; width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--bg-secondary); font: inherit; font-size: var(--text-base); line-height: 1.5; transition: border-color var(--transition), box-shadow var(--transition); }
+.field-input::placeholder { color: var(--text-muted); }
+.field-input:focus { border-color: var(--primary); outline: 2px solid var(--primary-soft); outline-offset: 1px; }
+.icon-button { width: 44px; height: 44px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-secondary); background: transparent; font: inherit; cursor: pointer; transition: color var(--transition), background-color var(--transition), border-color var(--transition); }
+.icon-button:hover { border-color: var(--border); color: var(--primary); background: var(--primary-soft); }
+.icon-button:disabled { cursor: wait; opacity: .6; }
+.icon-button svg { width: 18px; height: 18px; }
+@media (pointer: coarse) { .button-small { min-height: 44px; } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

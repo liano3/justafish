@@ -2,15 +2,35 @@ function initCountdown() {
     var form = $('countdownForm');
     var nameInput = $('countdownName');
     var dateInput = $('countdownDate');
+    var datePicker = $('countdownDatePicker');
+    var dateButton = $('countdownDateButton');
     var autoConvertInput = $('countdownAutoConvert');
     var countdownList = $('countdownList');
     var anniversaryList = $('anniversaryList');
     var iconSprite = document.querySelector('.countdown-app').getAttribute('data-icon-sprite');
     var storageKey = 'countdownEvents';
-    var events = [];
+    var events = JSON.parse(localStorage.getItem(storageKey) || '[]');
     let renderedDay;
 
     function parseLocalDate(value) { return new Date(value + 'T00:00:00'); }
+
+    function validateDate() {
+        datePicker.value = dateInput.value;
+        var valid = datePicker.value === dateInput.value && datePicker.validity.valid;
+        dateInput.setCustomValidity(valid ? '' : t('countdownInvalidDate'));
+        return valid && Boolean(dateInput.value);
+    }
+
+    dateInput.addEventListener('input', validateDate);
+    dateButton.addEventListener('click', function() {
+        validateDate();
+        datePicker.showPicker();
+    });
+    datePicker.addEventListener('change', function() {
+        dateInput.value = datePicker.value;
+        validateDate();
+        dateInput.focus();
+    });
 
     function startOfToday() {
         var today = new Date();
@@ -28,11 +48,11 @@ function initCountdown() {
         return target;
     }
 
-    function daysUntilAnniversary(date, today) {
+    function nextAnniversary(date, today) {
         var months = (today.getFullYear() - date.getFullYear()) * 12;
         var next = addMonthsClamped(date, months);
         if (next < today) next = addMonthsClamped(date, months + 12);
-        return differenceInDays(next, today);
+        return next;
     }
 
     function calendarDuration(start, end) {
@@ -46,25 +66,19 @@ function initCountdown() {
         };
     }
 
-    function durationLabel(date, today, days) {
-        var duration = calendarDuration(days > 0 ? today : date, days > 0 ? date : today);
+    function durationLabel(date, today) {
+        var duration = calendarDuration(today, date);
         if (!duration.years && !duration.months) return '';
         var parts = [];
         if (duration.years) parts.push(t('countdownDurationYear', { count: duration.years }));
         if (duration.months) parts.push(t('countdownDurationMonth', { count: duration.months }));
         if (duration.days) parts.push(t('countdownDurationDay', { count: duration.days }));
         var isChinese = t('dateLocale').startsWith('zh');
-        var detail = parts.join(isChinese ? '' : ' ');
-        return isChinese ? '（' + detail + '）' : ' (' + detail + ')';
-    }
-
-    function save() {
-        localStorage.setItem(storageKey, JSON.stringify(events));
+        return parts.join(isChinese ? '' : ' ');
     }
 
     function removeEvent(id) {
-        events = events.filter(function(event) { return event.id !== id; });
-        save();
+        events = events.filter(event => event.id !== id);
         render();
         if (document.activeElement === document.body) nameInput.focus();
     }
@@ -78,7 +92,8 @@ function initCountdown() {
 
     function createEventItem(event, today) {
         var date = parseLocalDate(event.date);
-        var days = differenceInDays(date, today);
+        var targetDate = event.kind === 'anniversary' ? nextAnniversary(date, today) : date;
+        var days = differenceInDays(targetDate, today);
         var item = document.createElement('article');
         item.className = 'countdown-item';
 
@@ -98,10 +113,13 @@ function initCountdown() {
         remaining.className = 'countdown-remaining';
         remaining.textContent = days === 0
             ? t('countdownToday')
-            : (days > 0 ? t('countdownFuture', { days: days }) : t('countdownPast', { days: Math.abs(days) })) + durationLabel(date, today, days);
+            : t('countdownFuture', { days: days });
+        var duration = document.createElement('span');
+        duration.className = 'countdown-duration';
+        duration.textContent = durationLabel(targetDate, today);
 
         var remove = document.createElement('button');
-        remove.className = 'countdown-delete';
+        remove.className = 'icon-button countdown-delete';
         remove.type = 'button';
         remove.dataset.eventId = event.id;
         remove.setAttribute('aria-label', t('countdownDeleteLabel', { name: event.name }));
@@ -111,16 +129,8 @@ function initCountdown() {
 
         item.appendChild(copy);
         item.appendChild(remaining);
+        if (duration.textContent) item.appendChild(duration);
         item.appendChild(remove);
-        if (event.kind === 'anniversary') {
-            var nextDays = daysUntilAnniversary(date, today);
-            var next = document.createElement('div');
-            next.className = 'countdown-next';
-            next.textContent = nextDays === 0
-                ? t('anniversaryToday')
-                : t('anniversaryNext', { days: nextDays });
-            item.appendChild(next);
-        }
         return item;
     }
 
@@ -130,7 +140,7 @@ function initCountdown() {
             target.appendChild(createEmptyState(emptyKey));
             return;
         }
-        groupEvents.slice().sort(function(a, b) {
+        groupEvents.sort(function(a, b) {
             var difference = parseLocalDate(a.date) - parseLocalDate(b.date);
             return newestFirst ? -difference : difference;
         }).forEach(function(event) {
@@ -142,15 +152,11 @@ function initCountdown() {
         const focusedId = document.activeElement.dataset.eventId;
         var today = startOfToday();
         renderedDay = today.getTime();
-        var changed = false;
-        events = events.filter(function(event) {
-            if (event.kind !== 'countdown' || parseLocalDate(event.date) >= today) return true;
-            changed = true;
-            if (!event.autoConvert) return false;
-            event.kind = 'anniversary';
-            return true;
+        events = events.flatMap(function(event) {
+            if (event.kind !== 'countdown' || parseLocalDate(event.date) >= today) return [event];
+            return event.autoConvert ? [{ ...event, kind: 'anniversary' }] : [];
         });
-        if (changed) save();
+        localStorage.setItem(storageKey, JSON.stringify(events));
 
         renderGroup(countdownList, events.filter(function(event) {
             return event.kind === 'countdown';
@@ -164,24 +170,34 @@ function initCountdown() {
         }
     }
 
+    nameInput.addEventListener('input', function() { nameInput.setCustomValidity(''); });
     form.addEventListener('submit', function(event) {
         event.preventDefault();
+        if (!validateDate()) {
+            dateInput.reportValidity();
+            return;
+        }
         var name = nameInput.value.trim();
+        if (!name) {
+            nameInput.setCustomValidity(t('countdownInvalid'));
+            nameInput.reportValidity();
+            return;
+        }
         var date = parseLocalDate(dateInput.value);
-        events.push({
-            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        var record = {
+            id: crypto.randomUUID(),
             name: name,
             date: dateInput.value,
             kind: date >= startOfToday() ? 'countdown' : 'anniversary',
             autoConvert: autoConvertInput.checked
-        });
-        save();
+        };
+        events.push(record);
         form.reset();
+        dateInput.setCustomValidity('');
         render();
         nameInput.focus();
     });
 
-    events = JSON.parse(localStorage.getItem(storageKey) || '[]');
     render();
     const refreshDate = () => { if (startOfToday().getTime() !== renderedDay) render(); };
     setInterval(refreshDate, 60000);

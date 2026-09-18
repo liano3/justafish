@@ -4,7 +4,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'justafish-browser-'));
 const session = 'fish-' + Date.now().toString(36);
-const cli = args => execFileSync('npx', ['--yes', '--package', '@playwright/cli', 'playwright-cli', '--session', session, ...args], { cwd: directory, encoding: 'utf8' });
+const cli = args => execFileSync('npx', ['--yes', '--package', '@playwright/cli@0.1.20', 'playwright-cli', '--session', session, ...args], { cwd: directory, encoding: 'utf8' });
 try {
     const opened = cli(['open', process.env.TEST_BASE_URL || 'http://localhost:8080/']);
     if (opened.includes('### Error')) throw new Error(opened);

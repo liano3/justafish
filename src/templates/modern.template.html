@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{HTML_LANG}}">
+<html lang="{{HTML_LANG}}" data-page="{{DEFAULT_PAGE_ID}}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{SITE_NAME}}</title>
     <meta name="description" content="{{SEO_DESCRIPTION}}">
     <meta name="keywords" content="{{SEO_KEYWORDS}}">
@@ -28,6 +28,10 @@
     <meta name="twitter:description" content="{{SEO_DESCRIPTION}}">
     <meta name="twitter:image" content="{{SHARE_IMAGE}}">
     <script type="application/ld+json">{{STRUCTURED_DATA}}</script>
+    <script>
+        const initialPage = location.hash.slice(1);
+        if ({{ENABLED_PAGE_IDS}}.includes(initialPage)) document.documentElement.dataset.page = initialPage;
+    </script>
     {{THEME_BOOTSTRAP}}
     <link rel="stylesheet" href="{{STYLESHEET_URL}}">
 </head>
@@ -37,11 +41,11 @@
 
         <main class="main">
             <!-- PAGE:home:START -->
-            <div id="home" class="page{{HOME_ACTIVE}}">
+            <div id="home" class="page">
                 {{ANNOUNCEMENTS_SECTION}}
                 <div class="hero">
                     <div class="hero-avatar">
-                        <img src="{{PROFILE_AVATAR}}" alt="{{PROFILE_AVATAR_ALT}}" width="120" height="120" decoding="async">
+                        <img src="{{PROFILE_AVATAR}}" alt="{{HERO_AVATAR_ALT}}" width="120" height="120" decoding="async">
                     </div>
                     <h1 class="hero-title">{{PROFILE_NICKNAME}}</h1>
                     <p class="hero-subtitle">{{PROFILE_TITLE}}</p>
@@ -55,21 +59,19 @@
             <!-- PAGE:home:END -->
 
             <!-- PAGE:resume:START -->
-            <div id="resume" class="page{{RESUME_ACTIVE}}">
+            <div id="resume" class="page">
                 <div class="resume-container">
                     <section class="resume-profile">
-                        <div class="resume-profile-content">
-                            <div class="resume-heading">
-                                <h1 class="resume-name">{{PROFILE_NAME}}</h1>
-                                {{PDF_DOWNLOAD}}
-                            </div>
-                            <p class="resume-action-status" id="resumeActionStatus" role="status" aria-live="polite"></p>
-                            <div class="resume-contacts">
-                                {{RESUME_CONTACTS}}
-                            </div>
-                            <p class="resume-introduction">{{PROFILE_INTRODUCTION}}</p>
-                            {{RESEARCH_INTERESTS}}
+                        <div class="resume-heading">
+                            <h1 class="resume-name">{{PROFILE_NAME}}</h1>
+                            {{PDF_DOWNLOAD}}
                         </div>
+                        <p class="resume-action-status" id="resumeActionStatus" role="status" aria-live="polite"></p>
+                        <div class="resume-contacts">
+                            {{RESUME_CONTACTS}}
+                        </div>
+                        <p class="resume-introduction">{{PROFILE_INTRODUCTION}}</p>
+                        {{RESEARCH_INTERESTS}}
                         <div class="resume-avatar">
                             <img src="{{PROFILE_AVATAR}}" alt="{{PROFILE_NAME}}" width="112" height="112" loading="lazy" decoding="async">
                         </div>
@@ -85,7 +87,7 @@
             <!-- PAGE:resume:END -->
 
             <!-- PAGE:bookmarks:START -->
-            <div id="bookmarks" class="page{{BOOKMARKS_ACTIVE}}">
+            <div id="bookmarks" class="page">
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">{{T_BOOKMARKS_TITLE}}</h2>
@@ -96,8 +98,8 @@
                                 <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#search"></use></svg>
                             </span>
                             <label class="sr-only" for="bookmarkSearch">{{T_BOOKMARK_SEARCH_LABEL}}</label>
-                            <input id="bookmarkSearch" type="search" placeholder="{{T_BOOKMARK_SEARCH_PLACEHOLDER}}" autocomplete="off" spellcheck="false" aria-describedby="bookmarkSearchStatus">
-                            <button class="bookmark-search-clear" id="bookmarkSearchClear" type="button" aria-label="{{T_BOOKMARK_CLEAR}}" title="{{T_BOOKMARK_CLEAR}}" hidden>
+                            <input class="field-input" id="bookmarkSearch" type="search" placeholder="{{T_BOOKMARK_SEARCH_PLACEHOLDER}}" autocomplete="off" spellcheck="false" aria-describedby="bookmarkSearchStatus">
+                            <button class="icon-button bookmark-search-clear" id="bookmarkSearchClear" type="button" aria-label="{{T_BOOKMARK_CLEAR}}" title="{{T_BOOKMARK_CLEAR}}" hidden>
                                 <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg>
                             </button>
                         </div>
@@ -113,7 +115,7 @@
             <!-- PAGE:bookmarks:END -->
 
             <!-- PAGE:apps:START -->
-            <div id="apps" class="page{{APPS_ACTIVE}}">
+            <div id="apps" class="page">
                 <div class="container">
                     <div class="section-header">
                         <h2 class="section-title">{{T_APPS_TITLE}}</h2>
@@ -142,13 +144,13 @@
         <section class="ai-chat-panel">
             <header class="ai-chat-header">
                 <h2 id="aiChatTitle">{{T_AI_CHAT_TITLE}}</h2>
-                <button class="ai-chat-close" id="aiChatClose" type="button" aria-label="{{T_AI_CHAT_CLOSE}}" title="{{T_AI_CHAT_CLOSE}}">
+                <button class="icon-button ai-chat-close" id="aiChatClose" type="button" aria-label="{{T_AI_CHAT_CLOSE}}" title="{{T_AI_CHAT_CLOSE}}">
                     <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#x"></use></svg>
                 </button>
             </header>
             <div class="ai-chat-messages" id="aiChatMessages" aria-live="polite"></div>
             <form class="ai-chat-form" id="aiChatForm">
-                <textarea aria-label="{{T_AI_CHAT_PLACEHOLDER}}" id="aiChatInput" rows="1" maxlength="2000" placeholder="{{T_AI_CHAT_PLACEHOLDER}}"></textarea>
+                <textarea class="field-input" aria-label="{{T_AI_CHAT_PLACEHOLDER}}" id="aiChatInput" rows="1" maxlength="2000" placeholder="{{T_AI_CHAT_PLACEHOLDER}}"></textarea>
                 <button class="button button-primary ai-chat-send" id="aiChatSend" type="submit">{{T_AI_CHAT_SEND}}</button>
             </form>
         </section>

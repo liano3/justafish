@@ -48,7 +48,7 @@ function initRandomPicker() {
         var row = document.createElement('div');
         row.className = 'random-picker-option';
         var input = document.createElement('input');
-        input.className = 'random-picker-option-input';
+        input.className = 'field-input random-picker-option-input';
         input.type = 'text';
         input.value = value || '';
         input.autocomplete = 'off';
@@ -230,7 +230,11 @@ function initRandomPicker() {
             renderHistory();
 
             if (removeInput.checked) {
-                selectedEntries.forEach(function(entry) { entry.row.remove(); });
+                var selectedValues = new Set(selected);
+                var removed = deduplicateInput.checked
+                    ? entries.filter(entry => selectedValues.has(entry.value))
+                    : selectedEntries;
+                removed.forEach(function(entry) { entry.row.remove(); });
                 if (!optionRows().length) optionsEditor.appendChild(createRow(''));
                 updateRowLabels();
             }

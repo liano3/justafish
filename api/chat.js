@@ -24,6 +24,7 @@ function getEgg(password) {
 }
 
 module.exports = async function chat(req, res) {
+    res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const config = getConfig();
@@ -65,7 +66,6 @@ module.exports = async function chat(req, res) {
         const data = await response.json();
         const reply = data.choices?.[0]?.message?.content;
         if (typeof reply !== 'string' || !reply.trim()) return res.status(502).json({ error: 'Empty AI response' });
-        res.setHeader('Cache-Control', 'no-store');
         return res.status(200).json({ reply: reply.trim() });
     } catch (error) {
         return res.status(502).json({ error: 'AI request failed' });

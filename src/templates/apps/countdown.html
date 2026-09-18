@@ -2,12 +2,17 @@
     <form class="countdown-form" id="countdownForm">
         <label class="countdown-field countdown-name" for="countdownName">
             <span>{{T_COUNTDOWN_EVENT_NAME}}</span>
-            <input id="countdownName" type="text" required maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
+            <input class="field-input" id="countdownName" type="text" required maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
         </label>
-        <label class="countdown-field" for="countdownDate">
-            <span>{{T_COUNTDOWN_DATE}}</span>
-            <input id="countdownDate" type="date" required>
-        </label>
+        <div class="countdown-field">
+            <label for="countdownDate">{{T_COUNTDOWN_DATE}}</label>
+            <div class="countdown-date-control">
+                <input class="field-input" id="countdownDate" type="text" required maxlength="10" placeholder="{{T_COUNTDOWN_DATE_PLACEHOLDER}}" aria-describedby="countdownDateFormat" autocomplete="off" spellcheck="false">
+                <button class="icon-button countdown-date-button" id="countdownDateButton" type="button" aria-label="{{T_COUNTDOWN_PICK_DATE}}"><svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#calendar"></use></svg></button>
+                <input id="countdownDatePicker" class="countdown-date-picker" type="date" min="0001-01-01" max="9999-12-31" tabindex="-1" aria-hidden="true">
+            </div>
+            <small id="countdownDateFormat">{{T_COUNTDOWN_DATE_FORMAT}}</small>
+        </div>
         <div class="countdown-form-actions">
             <label class="countdown-convert-option" for="countdownAutoConvert">
                 <input id="countdownAutoConvert" type="checkbox">

@@ -26,6 +26,7 @@ Game2048InputManager.prototype.listen = function() {
 
     document.addEventListener('keydown', function(event) {
         var target = event.target;
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         if (!board.contains(target)) return;
         if (!Object.prototype.hasOwnProperty.call(keyMap, event.key)) return;
         event.preventDefault();
@@ -40,19 +41,17 @@ Game2048InputManager.prototype.listen = function() {
     });
 
     var keepPlayingButton = document.querySelector('[data-2048-continue]');
-    if (keepPlayingButton) {
-        keepPlayingButton.addEventListener('click', function() {
-            self.emit('keepPlaying');
-            board.focus({ preventScroll: true });
-        });
-    }
+    keepPlayingButton.addEventListener('click', function() {
+        self.emit('keepPlaying');
+        board.focus({ preventScroll: true });
+    });
 
     board.addEventListener('pointerdown', function(event) {
         if (event.target.closest('button')) return;
         if (event.pointerType === 'mouse' && event.button !== 0) return;
         self.pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
         board.focus({ preventScroll: true });
-        if (board.setPointerCapture) board.setPointerCapture(event.pointerId);
+        board.setPointerCapture(event.pointerId);
     });
 
     board.addEventListener('pointerup', function(event) {
@@ -118,21 +117,47 @@ Game2048Actuator.prototype.createCells = function() {
 
 Game2048Actuator.prototype.actuate = function(grid, metadata) {
     var cells = this.grid.children;
+    var animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var step = cells[1].offsetLeft - cells[0].offsetLeft;
+    function slide(element, from, to) {
+        if (!animate || !from || (from.x === to.x && from.y === to.y)) return;
+        return element.animate([
+            { transform: 'translate(' + ((from.x - to.x) * step) + 'px,' + ((from.y - to.y) * step) + 'px)' },
+            { transform: 'translate(0,0)' }
+        ], { duration: 120, easing: 'ease-out' });
+    }
     for (var y = 0; y < grid.size; y++) {
         for (var x = 0; x < grid.size; x++) {
             var tile = grid.cellContent({ x: x, y: y });
             var cell = cells[y * grid.size + x];
-            cell.className = 'game2048-cell';
             cell.textContent = '';
             if (!tile) continue;
 
             var digits = String(tile.value).length;
             var valueClass = tile.value <= 2048 ? tile.value : 'super';
             var digitClass = digits >= 6 ? 'digits-many' : 'digits-' + digits;
-            cell.classList.add('game2048-tile', 'game2048-tile-' + valueClass, digitClass);
-            if (tile.mergedFrom) cell.classList.add('is-merged');
-            else if (!tile.previousPosition) cell.classList.add('is-new');
-            cell.textContent = tile.value;
+            var piece = document.createElement('span');
+            piece.className = 'game2048-tile game2048-tile-' + valueClass + ' ' + digitClass;
+            piece.textContent = tile.value;
+            cell.appendChild(piece);
+            if (tile.mergedFrom) {
+                piece.classList.add('is-merged');
+                if (animate) {
+                    piece.style.animationDelay = '120ms';
+                    tile.mergedFrom.forEach(function(source) {
+                        var ghost = document.createElement('span');
+                        ghost.className = 'game2048-merge-source game2048-tile-' + (source.value <= 2048 ? source.value : 'super');
+                        ghost.textContent = source.value;
+                        ghost.setAttribute('aria-hidden', 'true');
+                        cell.appendChild(ghost);
+                        var movement = slide(ghost, source.previousPosition || source, tile);
+                        if (movement) movement.onfinish = function() { ghost.remove(); };
+                        else ghost.remove();
+                    });
+                }
+            } else if (tile.previousPosition) {
+                slide(piece, tile.previousPosition, tile);
+            } else piece.classList.add('is-new');
         }
     }
 

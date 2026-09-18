@@ -93,7 +93,8 @@ test('builds both languages and respects page switches with shared navigation', 
                 assert.equal(js.includes('function ' + fn), enabled.includes(id));
                 assert.equal(css.includes(selector), enabled.includes(id));
             }
-            assert.ok(homepage.includes('id="' + enabled[0] + '" class="page active"'));
+            assert.ok(homepage.includes('data-page="' + enabled[0] + '"'));
+            assert.ok(homepage.includes('id="' + enabled[0] + '" class="page"'));
             assert.doesNotMatch(homepage, /onclick=/);
             assert.doesNotMatch(js + css, /(?:PAGE|FEATURE):[a-z]+:(?:START|END)/);
             assert.equal((css.match(/\{/g) || []).length, (css.match(/\}/g) || []).length);

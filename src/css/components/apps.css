@@ -1,19 +1,19 @@
-.app-detail-main { flex: 1; padding: 116px 24px 104px; }
+.app-detail-main { flex: 1; padding: 128px 24px 104px; }
 .app-detail-container { width: min(100%, 760px); margin: 0 auto; }
 .app-detail-heading { margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
 .app-detail-title { min-width: 0; }
-.app-detail-title h1 { font-size: 1.35rem; font-weight: 650; }
-.app-detail-back { width: 34px; height: 34px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); background: var(--surface); }
+.app-detail-title h1 { font-size: var(--text-2xl); font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
+.app-detail-back { width: 44px; height: 44px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--pill); color: var(--text-secondary); background: var(--surface); }
 .app-detail-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 .app-detail-back svg { width: 18px; height: 18px; }
-.tool-body { padding-top: 4px; }
+.tool-body { padding: 28px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .tool-body > * { width: 100%; }
-.tool-body .countdown-app, .tool-body .random-picker { max-width: none; }
 
 @media (max-width: 768px) {
     .app-detail-main { padding: 88px 12px calc(96px + env(safe-area-inset-bottom)); }
+    .tool-body { padding: 20px 14px; }
     .app-detail-heading { margin-bottom: 16px; }
-    .app-detail-title h1 { font-size: 1.1rem; }
+    .app-detail-title h1 { font-size: 1.75rem; }
 }
 
 .app-detail-container-game { max-width: 520px; }

@@ -44,13 +44,11 @@ function renderPage(pageId) {
     /* PAGE:bookmarks:START */
     if (pageId !== 'bookmarks') closeBookmarkChat(false);
     /* PAGE:bookmarks:END */
-    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var page = $(pageId);
     if (!page) return;
-    page.classList.add('active');
+    document.documentElement.dataset.page = pageId;
     document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(function(link) {
         var isActive = link.dataset.page === pageId;
-        link.classList.toggle('active', isActive);
         if (isActive) link.setAttribute('aria-current', 'page');
         else link.removeAttribute('aria-current');
     });
@@ -271,9 +269,7 @@ function initAnnouncements() {
 /* PAGE:home:END */
 
 /* PAGE:bookmarks:START */
-function toggleCategory(header) {
-    var expanded = header.querySelector('.category-toggle').classList.toggle('expanded');
-    header.nextElementSibling.classList.toggle('show', expanded);
+function setCategoryExpanded(header, expanded) {
     header.setAttribute('aria-expanded', expanded.toString());
 };
 
@@ -285,7 +281,10 @@ function initBookmarkSearch() {
     var categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
     var tagButtons = Array.from(document.querySelectorAll('[data-bookmark-tag]'));
     var activeTag = '';
-    categories.forEach(category => category.querySelector('.category-header').addEventListener('click', () => toggleCategory(category.querySelector('.category-header'))));
+    categories.forEach(category => {
+        const header = category.querySelector('.category-header');
+        header.addEventListener('click', () => setCategoryExpanded(header, header.getAttribute('aria-expanded') !== 'true'));
+    });
     if (!input || !clearButton || !status || !emptyState || !categories.length) return;
 
     const index = new Map(categories.map(category => [category, Array.from(category.querySelectorAll('.bookmark-link')).map(node => ({
@@ -299,26 +298,16 @@ function initBookmarkSearch() {
     function restoreCategory(category) {
         var originalExpanded = category.dataset.searchExpanded;
         if (originalExpanded === undefined) return;
-        var expanded = originalExpanded === 'true';
-        var header = category.querySelector('.category-header');
-        var linksContainer = category.querySelector('.bookmark-links');
-        var toggle = category.querySelector('.category-toggle');
-        header.setAttribute('aria-expanded', expanded.toString());
-        linksContainer.classList.toggle('show', expanded);
-        toggle.classList.toggle('expanded', expanded);
+        setCategoryExpanded(category.querySelector('.category-header'), originalExpanded === 'true');
         delete category.dataset.searchExpanded;
     }
 
     function expandForSearch(category) {
         var header = category.querySelector('.category-header');
-        var linksContainer = category.querySelector('.bookmark-links');
-        var toggle = category.querySelector('.category-toggle');
         if (category.dataset.searchExpanded === undefined) {
             category.dataset.searchExpanded = header.getAttribute('aria-expanded') || 'false';
         }
-        header.setAttribute('aria-expanded', 'true');
-        linksContainer.classList.add('show');
-        toggle.classList.add('expanded');
+        setCategoryExpanded(header, true);
     }
 
     function filterBookmarks() {
