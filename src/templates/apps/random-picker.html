@@ -1,38 +1,33 @@
 <div class="random-picker">
-    <div class="random-picker-field">
-        <div class="random-picker-field-heading">
-            <span id="randomPickerOptionsLabel">{{T_RANDOM_OPTIONS}}</span>
-            <button class="icon-button" id="randomPickerAddOption" type="button" aria-label="{{T_RANDOM_ADD_OPTION}}" title="{{T_RANDOM_ADD_OPTION}}">
-                <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#plus"></use></svg>
-            </button>
+    <div class="form-field">
+        <label for="randomPickerOptions">{{T_RANDOM_OPTIONS}}</label>
+        <div class="random-picker-editor">
+            <div class="random-picker-rail" aria-hidden="true"><div id="randomPickerMarkers"></div></div>
+            <textarea class="field-input" id="randomPickerOptions" rows="4" wrap="off" placeholder="{{T_RANDOM_OPTIONS_PLACEHOLDER}}" autocomplete="off"></textarea>
         </div>
-        <div class="random-picker-options-editor" id="randomPickerOptions" role="group" aria-labelledby="randomPickerOptionsLabel" data-placeholder="{{T_RANDOM_OPTIONS_PLACEHOLDER}}"></div>
     </div>
     <div class="random-picker-controls">
         <label class="random-picker-count" for="randomPickerCount">
             <span>{{T_RANDOM_DRAW_COUNT}}</span>
             <input class="field-input" id="randomPickerCount" type="number" min="1" max="10" value="1">
         </label>
-        <label class="random-picker-remove" for="randomPickerDeduplicate">
-            <input type="checkbox" id="randomPickerDeduplicate" checked>
-            <span>{{T_RANDOM_DEDUPLICATE}}</span>
-        </label>
-        <label class="random-picker-remove" for="randomPickerRemove">
+        <label class="checkbox-field" for="randomPickerRemove">
             <input type="checkbox" id="randomPickerRemove">
             <span>{{T_RANDOM_REMOVE_DRAWN}}</span>
         </label>
     </div>
     <div class="random-picker-actions">
         <button class="button button-primary" id="randomPickerDraw" type="button">{{T_RANDOM_DRAW}}</button>
+        <button class="button button-secondary" id="randomPickerDeduplicate" type="button">{{T_RANDOM_DEDUPLICATE}}</button>
         <button class="button button-secondary" id="randomPickerReset" type="button">{{T_RANDOM_RESET}}</button>
     </div>
-    <p class="random-picker-message" id="randomPickerMessage" role="status" aria-live="polite"></p>
+    <p class="status-message" id="randomPickerMessage" role="status" aria-live="polite"></p>
     <section class="random-picker-output" aria-labelledby="randomPickerResultTitle">
-        <h2 id="randomPickerResultTitle">{{T_RANDOM_RESULT}}</h2>
+        <h2 class="section-label" id="randomPickerResultTitle">{{T_RANDOM_RESULT}}</h2>
         <div class="random-picker-result" id="randomPickerResult">—</div>
     </section>
     <section class="random-picker-history" aria-labelledby="randomPickerHistoryTitle">
-        <h2 id="randomPickerHistoryTitle">{{T_RANDOM_HISTORY}}</h2>
+        <h2 class="section-label" id="randomPickerHistoryTitle">{{T_RANDOM_HISTORY}}</h2>
         <ol id="randomPickerHistory"></ol>
     </section>
 </div>

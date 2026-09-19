@@ -12,3 +12,12 @@ function shuffle(items) {
     }
     return result;
 }
+
+function readStored(key, fallback, validate) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key));
+        return validate(value) ? value : fallback;
+    } catch {
+        return fallback;
+    }
+}

@@ -10,14 +10,14 @@ Game2048InputManager.prototype.on = function(event, callback) {
 };
 
 Game2048InputManager.prototype.emit = function(event, data) {
-    var callbacks = this.events[event];
+    const callbacks = this.events[event];
     if (callbacks) callbacks.forEach(function(callback) { callback(data); });
 };
 
 Game2048InputManager.prototype.listen = function() {
-    var self = this;
-    var board = $('game2048Board');
-    var keyMap = {
+    const self = this;
+    const board = $('game2048Board');
+    const keyMap = {
         ArrowUp: 0, w: 0, W: 0,
         ArrowRight: 1, d: 1, D: 1,
         ArrowDown: 2, s: 2, S: 2,
@@ -25,7 +25,7 @@ Game2048InputManager.prototype.listen = function() {
     };
 
     document.addEventListener('keydown', function(event) {
-        var target = event.target;
+        const target = event.target;
         if (event.altKey || event.ctrlKey || event.metaKey) return;
         if (!board.contains(target)) return;
         if (!Object.prototype.hasOwnProperty.call(keyMap, event.key)) return;
@@ -40,7 +40,7 @@ Game2048InputManager.prototype.listen = function() {
         });
     });
 
-    var keepPlayingButton = document.querySelector('[data-2048-continue]');
+    const keepPlayingButton = document.querySelector('[data-2048-continue]');
     keepPlayingButton.addEventListener('click', function() {
         self.emit('keepPlaying');
         board.focus({ preventScroll: true });
@@ -56,8 +56,8 @@ Game2048InputManager.prototype.listen = function() {
 
     board.addEventListener('pointerup', function(event) {
         if (!self.pointerStart || self.pointerStart.id !== event.pointerId) return;
-        var dx = event.clientX - self.pointerStart.x;
-        var dy = event.clientY - self.pointerStart.y;
+        const dx = event.clientX - self.pointerStart.x;
+        const dy = event.clientY - self.pointerStart.y;
         self.pointerStart = null;
         if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
         event.preventDefault();
@@ -77,7 +77,7 @@ function Game2048StorageManager() {
 }
 
 Game2048StorageManager.prototype.getBestScore = function() {
-    return Number(localStorage.getItem(this.bestScoreKey) || 0);
+    return readStored(this.bestScoreKey, 0, value => Number.isFinite(value) && value >= 0);
 };
 
 Game2048StorageManager.prototype.setBestScore = function(score) {
@@ -85,7 +85,13 @@ Game2048StorageManager.prototype.setBestScore = function(score) {
 };
 
 Game2048StorageManager.prototype.getGameState = function() {
-    return JSON.parse(localStorage.getItem(this.gameStateKey));
+    return readStored(this.gameStateKey, null, state => state &&
+        Number.isFinite(state.score) && state.score >= 0 &&
+        ['over', 'won', 'keepPlaying'].every(key => typeof state[key] === 'boolean') &&
+        state.grid?.size === 4 && Array.isArray(state.grid.cells) && state.grid.cells.length === 4 &&
+        state.grid.cells.every((column, x) => Array.isArray(column) && column.length === 4 &&
+            column.every((tile, y) => tile === null || (tile?.position?.x === x && tile.position.y === y &&
+                typeof tile.value === 'number' && tile.value >= 2 && Number.isInteger(Math.log2(tile.value))))));
 };
 
 Game2048StorageManager.prototype.setGameState = function(state) {
@@ -101,24 +107,23 @@ function Game2048Actuator() {
     this.score = $('game2048Score');
     this.best = $('game2048Best');
     this.message = $('game2048Message');
-    this.messageText = $('game2048MessageText');
     this.keepPlayingButton = document.querySelector('[data-2048-continue]');
     this.createCells();
 }
 
 Game2048Actuator.prototype.createCells = function() {
     this.grid.innerHTML = '';
-    for (var i = 0; i < 16; i++) {
-        var cell = document.createElement('div');
+    for (let i = 0; i < 16; i++) {
+        const cell = document.createElement('div');
         cell.className = 'game2048-cell';
         this.grid.appendChild(cell);
     }
 };
 
 Game2048Actuator.prototype.actuate = function(grid, metadata) {
-    var cells = this.grid.children;
-    var animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var step = cells[1].offsetLeft - cells[0].offsetLeft;
+    const cells = this.grid.children;
+    const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const step = cells[1].offsetLeft - cells[0].offsetLeft;
     function slide(element, from, to) {
         if (!animate || !from || (from.x === to.x && from.y === to.y)) return;
         return element.animate([
@@ -126,17 +131,17 @@ Game2048Actuator.prototype.actuate = function(grid, metadata) {
             { transform: 'translate(0,0)' }
         ], { duration: 120, easing: 'ease-out' });
     }
-    for (var y = 0; y < grid.size; y++) {
-        for (var x = 0; x < grid.size; x++) {
-            var tile = grid.cellContent({ x: x, y: y });
-            var cell = cells[y * grid.size + x];
+    for (let y = 0; y < grid.size; y++) {
+        for (let x = 0; x < grid.size; x++) {
+            const tile = grid.cellContent({ x: x, y: y });
+            const cell = cells[y * grid.size + x];
             cell.textContent = '';
             if (!tile) continue;
 
-            var digits = String(tile.value).length;
-            var valueClass = tile.value <= 2048 ? tile.value : 'super';
-            var digitClass = digits >= 6 ? 'digits-many' : 'digits-' + digits;
-            var piece = document.createElement('span');
+            const digits = String(tile.value).length;
+            const valueClass = tile.value <= 2048 ? tile.value : 'super';
+            const digitClass = digits >= 6 ? 'digits-many' : 'digits-' + digits;
+            const piece = document.createElement('span');
             piece.className = 'game2048-tile game2048-tile-' + valueClass + ' ' + digitClass;
             piece.textContent = tile.value;
             cell.appendChild(piece);
@@ -145,12 +150,12 @@ Game2048Actuator.prototype.actuate = function(grid, metadata) {
                 if (animate) {
                     piece.style.animationDelay = '120ms';
                     tile.mergedFrom.forEach(function(source) {
-                        var ghost = document.createElement('span');
+                        const ghost = document.createElement('span');
                         ghost.className = 'game2048-merge-source game2048-tile-' + (source.value <= 2048 ? source.value : 'super');
                         ghost.textContent = source.value;
                         ghost.setAttribute('aria-hidden', 'true');
                         cell.appendChild(ghost);
-                        var movement = slide(ghost, source.previousPosition || source, tile);
+                        const movement = slide(ghost, source.previousPosition || source, tile);
                         if (movement) movement.onfinish = function() { ghost.remove(); };
                         else ghost.remove();
                     });
@@ -163,17 +168,14 @@ Game2048Actuator.prototype.actuate = function(grid, metadata) {
 
     this.score.textContent = metadata.score;
     this.best.textContent = metadata.bestScore;
-    if (metadata.terminated) {
-        this.messageText.textContent = metadata.over ? t('gameOver') : t('gameWon');
-        this.keepPlayingButton.hidden = metadata.over;
-        this.message.classList.add('show');
-    } else {
-        this.message.classList.remove('show');
-    }
+    this.message.hidden = !metadata.terminated;
+    this.message.textContent = metadata.terminated ? t(metadata.over ? 'gameOver' : 'gameWon') : '';
+    this.keepPlayingButton.hidden = !metadata.terminated || metadata.over;
 };
 
 Game2048Actuator.prototype.continueGame = function() {
-    this.message.classList.remove('show');
+    this.message.hidden = true;
+    this.keepPlayingButton.hidden = true;
 };
 
 function initGame2048() {

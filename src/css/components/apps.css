@@ -1,11 +1,8 @@
 .app-detail-main { flex: 1; padding: 128px 24px 104px; }
 .app-detail-container { width: min(100%, 760px); margin: 0 auto; }
 .app-detail-heading { margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
-.app-detail-title { min-width: 0; }
-.app-detail-title h1 { font-size: var(--text-2xl); font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
-.app-detail-back { width: 44px; height: 44px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--pill); color: var(--text-secondary); background: var(--surface); }
-.app-detail-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
-.app-detail-back svg { width: 18px; height: 18px; }
+.app-detail-heading h1 { font-size: var(--text-2xl); font-weight: 650; line-height: 1.25; overflow-wrap: anywhere; }
+.app-detail-back { background: var(--surface); }
 .tool-body { padding: 28px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .tool-body > * { width: 100%; }
 
@@ -13,7 +10,13 @@
     .app-detail-main { padding: 88px 12px calc(96px + env(safe-area-inset-bottom)); }
     .tool-body { padding: 20px 14px; }
     .app-detail-heading { margin-bottom: 16px; }
-    .app-detail-title h1 { font-size: 1.75rem; }
+    .app-detail-heading h1 { font-size: var(--text-xl); }
 }
 
 .app-detail-container-game { max-width: 520px; }
+
+.game-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 16px; }
+.game-stat { min-width: 72px; text-align: center; }
+.game-stat-value { color: var(--text); font-size: var(--text-xl); font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.game-stat-label { margin-top: 4px; color: var(--text-muted); font-size: var(--text-sm); }
+.game-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }

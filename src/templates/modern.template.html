@@ -66,7 +66,7 @@
                             <h1 class="resume-name">{{PROFILE_NAME}}</h1>
                             {{PDF_DOWNLOAD}}
                         </div>
-                        <p class="resume-action-status" id="resumeActionStatus" role="status" aria-live="polite"></p>
+                        <p class="status-message resume-action-status" id="resumeActionStatus" role="status" aria-live="polite"></p>
                         <div class="resume-contacts">
                             {{RESUME_CONTACTS}}
                         </div>
@@ -89,9 +89,7 @@
             <!-- PAGE:bookmarks:START -->
             <div id="bookmarks" class="page">
                 <div class="container">
-                    <div class="section-header">
-                        <h2 class="section-title">{{T_BOOKMARKS_TITLE}}</h2>
-                    </div>
+                    <h2 class="section-title">{{T_BOOKMARKS_TITLE}}</h2>
                     <div class="bookmark-search" role="search">
                         <div class="bookmark-search-field">
                             <span class="bookmark-search-icon" aria-hidden="true">
@@ -109,7 +107,7 @@
                     <div class="bookmark-categories" id="bookmarkCategories">
                         {{BOOKMARKS}}
                     </div>
-                    <p class="bookmark-search-empty" id="bookmarkSearchEmpty" hidden>{{T_BOOKMARK_EMPTY}}</p>
+                    <p class="empty-state" id="bookmarkSearchEmpty" hidden>{{T_BOOKMARK_EMPTY}}</p>
                 </div>
             </div>
             <!-- PAGE:bookmarks:END -->
@@ -117,9 +115,7 @@
             <!-- PAGE:apps:START -->
             <div id="apps" class="page">
                 <div class="container">
-                    <div class="section-header">
-                        <h2 class="section-title">{{T_APPS_TITLE}}</h2>
-                    </div>
+                    <h2 class="section-title">{{T_APPS_TITLE}}</h2>
                     <div class="app-directory">{{APPS_DIRECTORY}}</div>
                 </div>
             </div>

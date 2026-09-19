@@ -1,8 +1,4 @@
 .game2048 { max-width: 384px; margin: 0 auto; }
-.game2048-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 16px; }
-.game2048-stat { min-width: 72px; text-align: center; }
-.game2048-stat-value { color: var(--text); font-size: var(--text-xl); font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.game2048-stat-label { color: var(--text-muted); font-size: var(--text-sm); margin-top: 3px; }
 
 .game2048-board {
     position: relative; width: min(100%, 384px); aspect-ratio: 1; margin: 0 auto;
@@ -13,10 +9,10 @@
 .game2048-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 8px; width: 100%; height: 100%; }
 .game2048-cell {
     position: relative; display: flex; align-items: center; justify-content: center; min-width: 0;
-    border-radius: 10px; background: var(--bg-secondary); color: var(--text);
+    border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text);
     font-size: var(--text-xl); font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.game2048-tile, .game2048-merge-source { position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit; box-shadow: var(--shadow-sm); }
+.game2048-tile, .game2048-merge-source { position: absolute; inset: 0; display: grid; place-items: center; border-radius: inherit; }
 .game2048-tile { z-index: 1; }
 .game2048-merge-source { z-index: 2; }
 .game2048-tile-2 { background: #fff; color: #243954; box-shadow: inset 0 0 0 2px #bccde2; }
@@ -39,19 +35,9 @@
 .game2048-tile.is-new { animation: game2048Pop 0.16s ease-out; }
 .game2048-tile.is-merged { animation: game2048Merge 0.2s ease-out; }
 
-.game2048-message {
-    position: absolute; inset: 8px; z-index: 5; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px; border-radius: 10px;
-    background: #64748b; color: #ffffff; opacity: 0; visibility: hidden; pointer-events: none;
-    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
-}
-.game2048-message.show { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
-.game2048-message-text { font-size: var(--text-lg); font-weight: 700; }
-.game2048-message-actions { display: flex; gap: 8px; }
+.game2048-message { text-align: center; }
 
-.game2048-controls { display: flex; align-items: center; justify-content: center; margin-top: 18px; }
 .game2048-new-game { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
-.game2048-new-game svg { width: 16px; height: 16px; }
 
 @keyframes game2048Pop { from { transform: scale(0.65); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes game2048Merge { 50% { transform: scale(1.12); } }

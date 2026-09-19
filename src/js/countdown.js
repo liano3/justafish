@@ -1,22 +1,29 @@
 function initCountdown() {
-    var form = $('countdownForm');
-    var nameInput = $('countdownName');
-    var dateInput = $('countdownDate');
-    var datePicker = $('countdownDatePicker');
-    var dateButton = $('countdownDateButton');
-    var autoConvertInput = $('countdownAutoConvert');
-    var countdownList = $('countdownList');
-    var anniversaryList = $('anniversaryList');
-    var iconSprite = document.querySelector('.countdown-app').getAttribute('data-icon-sprite');
-    var storageKey = 'countdownEvents';
-    var events = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const form = $('countdownForm');
+    const nameInput = $('countdownName');
+    const dateInput = $('countdownDate');
+    const datePicker = $('countdownDatePicker');
+    const dateButton = $('countdownDateButton');
+    const autoConvertInput = $('countdownAutoConvert');
+    const countdownList = $('countdownList');
+    const anniversaryList = $('anniversaryList');
+    const iconSprite = document.querySelector('.countdown-app').getAttribute('data-icon-sprite');
+    const storageKey = 'countdownEvents';
+    let events = readStored(storageKey, [], Array.isArray).filter(event => {
+        if (!event || typeof event.id !== 'string' || typeof event.name !== 'string' ||
+            !['countdown', 'anniversary'].includes(event.kind) || !/^\d{4}-\d{2}-\d{2}$/.test(event.date)) return false;
+        const date = parseLocalDate(event.date);
+        return Number.isFinite(date.getTime()) && date.getFullYear() > 0 &&
+            date.getFullYear() === Number(event.date.slice(0, 4)) &&
+            date.getMonth() + 1 === Number(event.date.slice(5, 7)) && date.getDate() === Number(event.date.slice(8, 10));
+    });
     let renderedDay;
 
     function parseLocalDate(value) { return new Date(value + 'T00:00:00'); }
 
     function validateDate() {
         datePicker.value = dateInput.value;
-        var valid = datePicker.value === dateInput.value && datePicker.validity.valid;
+        const valid = datePicker.value === dateInput.value && datePicker.validity.valid;
         dateInput.setCustomValidity(valid ? '' : t('countdownInvalidDate'));
         return valid && Boolean(dateInput.value);
     }
@@ -33,7 +40,7 @@ function initCountdown() {
     });
 
     function startOfToday() {
-        var today = new Date();
+        const today = new Date();
         return new Date(today.getFullYear(), today.getMonth(), today.getDate());
     }
 
@@ -42,23 +49,26 @@ function initCountdown() {
     }
 
     function addMonthsClamped(date, months) {
-        var target = new Date(date.getFullYear(), date.getMonth() + months, 1);
-        var lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
-        target.setDate(Math.min(date.getDate(), lastDay));
+        const target = new Date(date);
+        target.setDate(1);
+        target.setMonth(target.getMonth() + months);
+        const lastDay = new Date(target);
+        lastDay.setMonth(lastDay.getMonth() + 1, 0);
+        target.setDate(Math.min(date.getDate(), lastDay.getDate()));
         return target;
     }
 
     function nextAnniversary(date, today) {
-        var months = (today.getFullYear() - date.getFullYear()) * 12;
-        var next = addMonthsClamped(date, months);
+        const months = (today.getFullYear() - date.getFullYear()) * 12;
+        let next = addMonthsClamped(date, months);
         if (next < today) next = addMonthsClamped(date, months + 12);
         return next;
     }
 
     function calendarDuration(start, end) {
-        var months = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
+        let months = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
         if (addMonthsClamped(start, months) > end) months -= 1;
-        var cursor = addMonthsClamped(start, months);
+        const cursor = addMonthsClamped(start, months);
         return {
             years: Math.floor(months / 12),
             months: months % 12,
@@ -67,13 +77,13 @@ function initCountdown() {
     }
 
     function durationLabel(date, today) {
-        var duration = calendarDuration(today, date);
+        const duration = calendarDuration(today, date);
         if (!duration.years && !duration.months) return '';
-        var parts = [];
+        const parts = [];
         if (duration.years) parts.push(t('countdownDurationYear', { count: duration.years }));
         if (duration.months) parts.push(t('countdownDurationMonth', { count: duration.months }));
         if (duration.days) parts.push(t('countdownDurationDay', { count: duration.days }));
-        var isChinese = t('dateLocale').startsWith('zh');
+        const isChinese = t('dateLocale').startsWith('zh');
         return parts.join(isChinese ? '' : ' ');
     }
 
@@ -84,24 +94,24 @@ function initCountdown() {
     }
 
     function createEmptyState(key) {
-        var empty = document.createElement('p');
-        empty.className = 'countdown-empty';
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
         empty.textContent = t(key);
         return empty;
     }
 
     function createEventItem(event, today) {
-        var date = parseLocalDate(event.date);
-        var targetDate = event.kind === 'anniversary' ? nextAnniversary(date, today) : date;
-        var days = differenceInDays(targetDate, today);
-        var item = document.createElement('article');
+        const date = parseLocalDate(event.date);
+        const targetDate = event.kind === 'anniversary' ? nextAnniversary(date, today) : date;
+        const days = differenceInDays(targetDate, today);
+        const item = document.createElement('article');
         item.className = 'countdown-item';
 
-        var copy = document.createElement('div');
+        const copy = document.createElement('div');
         copy.className = 'countdown-item-copy';
-        var title = document.createElement('h3');
+        const title = document.createElement('h3');
         title.textContent = event.name;
-        var meta = document.createElement('div');
+        const meta = document.createElement('div');
         meta.className = 'countdown-item-meta';
         meta.textContent = new Intl.DateTimeFormat(t('dateLocale'), {
             year: 'numeric', month: 'long', day: 'numeric'
@@ -109,16 +119,16 @@ function initCountdown() {
         copy.appendChild(title);
         copy.appendChild(meta);
 
-        var remaining = document.createElement('strong');
+        const remaining = document.createElement('strong');
         remaining.className = 'countdown-remaining';
         remaining.textContent = days === 0
             ? t('countdownToday')
             : t('countdownFuture', { days: days });
-        var duration = document.createElement('span');
+        const duration = document.createElement('span');
         duration.className = 'countdown-duration';
         duration.textContent = durationLabel(targetDate, today);
 
-        var remove = document.createElement('button');
+        const remove = document.createElement('button');
         remove.className = 'icon-button countdown-delete';
         remove.type = 'button';
         remove.dataset.eventId = event.id;
@@ -134,23 +144,21 @@ function initCountdown() {
         return item;
     }
 
-    function renderGroup(target, groupEvents, today, emptyKey, newestFirst) {
+    function renderGroup(target, groupEvents, today, emptyKey) {
         target.innerHTML = '';
         if (!groupEvents.length) {
             target.appendChild(createEmptyState(emptyKey));
             return;
         }
-        groupEvents.sort(function(a, b) {
-            var difference = parseLocalDate(a.date) - parseLocalDate(b.date);
-            return newestFirst ? -difference : difference;
-        }).forEach(function(event) {
+        const targetDate = event => event.kind === 'anniversary' ? nextAnniversary(parseLocalDate(event.date), today) : parseLocalDate(event.date);
+        groupEvents.sort((a, b) => targetDate(a) - targetDate(b)).forEach(function(event) {
             target.appendChild(createEventItem(event, today));
         });
     }
 
     function render() {
         const focusedId = document.activeElement.dataset.eventId;
-        var today = startOfToday();
+        const today = startOfToday();
         renderedDay = today.getTime();
         events = events.flatMap(function(event) {
             if (event.kind !== 'countdown' || parseLocalDate(event.date) >= today) return [event];
@@ -160,10 +168,10 @@ function initCountdown() {
 
         renderGroup(countdownList, events.filter(function(event) {
             return event.kind === 'countdown';
-        }), today, 'countdownEmpty', false);
+        }), today, 'countdownEmpty');
         renderGroup(anniversaryList, events.filter(function(event) {
             return event.kind === 'anniversary';
-        }), today, 'anniversaryEmpty', true);
+        }), today, 'anniversaryEmpty');
         if (focusedId) {
             const next = Array.from(document.querySelectorAll('.countdown-delete')).find(button => button.dataset.eventId === focusedId);
             (next || nameInput).focus();
@@ -177,14 +185,14 @@ function initCountdown() {
             dateInput.reportValidity();
             return;
         }
-        var name = nameInput.value.trim();
+        const name = nameInput.value.trim();
         if (!name) {
             nameInput.setCustomValidity(t('countdownInvalid'));
             nameInput.reportValidity();
             return;
         }
-        var date = parseLocalDate(dateInput.value);
-        var record = {
+        const date = parseLocalDate(dateInput.value);
+        const record = {
             id: crypto.randomUUID(),
             name: name,
             date: dateInput.value,

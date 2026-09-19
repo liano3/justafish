@@ -1,10 +1,10 @@
 <div class="countdown-app" data-icon-sprite="{{ICON_SPRITE_URL}}">
     <form class="countdown-form" id="countdownForm">
-        <label class="countdown-field countdown-name" for="countdownName">
+        <label class="form-field" for="countdownName">
             <span>{{T_COUNTDOWN_EVENT_NAME}}</span>
             <input class="field-input" id="countdownName" type="text" required maxlength="60" placeholder="{{T_COUNTDOWN_EVENT_PLACEHOLDER}}" autocomplete="off">
         </label>
-        <div class="countdown-field">
+        <div class="form-field">
             <label for="countdownDate">{{T_COUNTDOWN_DATE}}</label>
             <div class="countdown-date-control">
                 <input class="field-input" id="countdownDate" type="text" required maxlength="10" placeholder="{{T_COUNTDOWN_DATE_PLACEHOLDER}}" aria-describedby="countdownDateFormat" autocomplete="off" spellcheck="false">
@@ -14,23 +14,21 @@
             <small id="countdownDateFormat">{{T_COUNTDOWN_DATE_FORMAT}}</small>
         </div>
         <div class="countdown-form-actions">
-            <label class="countdown-convert-option" for="countdownAutoConvert">
+            <label class="checkbox-field" for="countdownAutoConvert">
                 <input id="countdownAutoConvert" type="checkbox">
                 <span>{{T_COUNTDOWN_AUTO_CONVERT}}</span>
             </label>
             <button class="button button-primary" type="submit">{{T_COUNTDOWN_ADD}}</button>
         </div>
     </form>
-    <div class="countdown-events">
-        <div class="countdown-columns">
-            <section class="countdown-group countdown-group-future" aria-labelledby="countdownListTitle">
-                <h2 id="countdownListTitle">{{T_COUNTDOWN_LIST}}</h2>
-                <div class="countdown-list" id="countdownList"></div>
-            </section>
-            <section class="countdown-group countdown-group-anniversary" aria-labelledby="anniversaryListTitle">
-                <h2 id="anniversaryListTitle">{{T_ANNIVERSARY_LIST}}</h2>
-                <div class="countdown-list" id="anniversaryList"></div>
-            </section>
-        </div>
+    <div class="countdown-columns">
+        <section class="countdown-group" aria-labelledby="countdownListTitle">
+            <h2 class="section-label" id="countdownListTitle">{{T_COUNTDOWN_LIST}}</h2>
+            <div class="countdown-list" id="countdownList"></div>
+        </section>
+        <section class="countdown-group" aria-labelledby="anniversaryListTitle">
+            <h2 class="section-label" id="anniversaryListTitle">{{T_ANNIVERSARY_LIST}}</h2>
+            <div class="countdown-list" id="anniversaryList"></div>
+        </section>
     </div>
 </div>

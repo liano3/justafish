@@ -1,18 +1,18 @@
 /* PAGE:bookmarks:START */
-var closeBookmarkChat = function() {};
+let closeBookmarkChat = function() {};
 /* PAGE:bookmarks:END */
-var validPageIds = window.ENABLED_PAGE_IDS;
-var defaultPageId = validPageIds[0];
-var currentPageId = null;
-var backToTopButton = null;
-var backToTopProgress = null;
-var backToTopTicking = false;
-var pageScrollPositions = {};
+const validPageIds = window.ENABLED_PAGE_IDS;
+const defaultPageId = validPageIds[0];
+let currentPageId = null;
+let backToTopButton = null;
+let backToTopProgress = null;
+let backToTopTicking = false;
+const pageScrollPositions = {};
 
 function updateBackToTopVisibility() {
     if (!backToTopButton) return;
-    var scrollableDistance = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    var progress = scrollableDistance > 0
+    const scrollableDistance = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const progress = scrollableDistance > 0
         ? Math.min(100, Math.max(0, Math.round(window.scrollY / scrollableDistance * 100)))
         : 0;
     backToTopButton.hidden = window.scrollY <= 320;
@@ -32,7 +32,7 @@ function initBackToTop() {
         requestAnimationFrame(updateBackToTopVisibility);
     }, { passive: true });
     backToTopButton.addEventListener('click', function() {
-        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     });
     updateBackToTopVisibility();
@@ -44,11 +44,11 @@ function renderPage(pageId) {
     /* PAGE:bookmarks:START */
     if (pageId !== 'bookmarks') closeBookmarkChat(false);
     /* PAGE:bookmarks:END */
-    var page = $(pageId);
+    const page = $(pageId);
     if (!page) return;
     document.documentElement.dataset.page = pageId;
     document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(function(link) {
-        var isActive = link.dataset.page === pageId;
+        const isActive = link.dataset.page === pageId;
         if (isActive) link.setAttribute('aria-current', 'page');
         else link.removeAttribute('aria-current');
     });
@@ -61,17 +61,17 @@ function renderPage(pageId) {
 
 function getPageFromHash() {
     if (!window.location.hash) return defaultPageId;
-    var pageId = window.location.hash.slice(1);
+    const pageId = window.location.hash.slice(1);
     return validPageIds.indexOf(pageId) === -1 ? null : pageId;
 }
 
 function getPageUrl(pageId) {
-    var baseUrl = window.location.pathname + window.location.search;
+    const baseUrl = window.location.pathname + window.location.search;
     return pageId === 'home' ? baseUrl : baseUrl + '#' + pageId;
 }
 
 function syncPageFromLocation() {
-    var pageId = getPageFromHash();
+    let pageId = getPageFromHash();
     if (!pageId) {
         pageId = defaultPageId;
         window.history.replaceState({ page: pageId }, '', getPageUrl(pageId));
@@ -85,20 +85,13 @@ function syncPageFromLocation() {
 
 function switchPage(pageId) {
     if (validPageIds.indexOf(pageId) === -1) return;
-    var nextUrl = getPageUrl(pageId);
-    var currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    const nextUrl = getPageUrl(pageId);
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
     if (nextUrl !== currentUrl) {
         window.history.pushState({ page: pageId }, '', nextUrl);
     }
     renderPage(pageId);
 };
-
-/* FEATURE:language:START */
-function switchLanguage(link) {
-    var target = link.getAttribute('href') || '/';
-    window.location.href = target + (window.location.hash || '');
-};
-/* FEATURE:language:END */
 
 function initPageRouting() {
     document.querySelectorAll('a[data-page]').forEach(function(link) {
@@ -109,11 +102,11 @@ function initPageRouting() {
         });
     });
     /* FEATURE:language:START */
-    var languageLink = document.querySelector('.language-switch');
+    const languageLink = document.querySelector('.language-switch');
     if (languageLink) languageLink.addEventListener('click', function(event) {
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        switchLanguage(languageLink);
+        window.location.href = languageLink.href + window.location.hash;
     });
     /* FEATURE:language:END */
     syncPageFromLocation();
@@ -123,42 +116,38 @@ function initPageRouting() {
 
 /* PAGE:resume:START */
 function initResumeAge() {
-    var ageDisplay = $('resumeAge');
+    const ageDisplay = $('resumeAge');
     if (!ageDisplay) return;
-    var parts = (ageDisplay.dataset.birthday || '').split('-').map(Number);
+    const parts = (ageDisplay.dataset.birthday || '').split('-').map(Number);
     if (parts.length !== 3 || parts.some(function(value) { return !Number.isFinite(value); })) return;
-    var today = new Date();
-    var age = today.getFullYear() - parts[0];
+    const today = new Date();
+    let age = today.getFullYear() - parts[0];
     if (today.getMonth() < parts[1] - 1 || (today.getMonth() === parts[1] - 1 && today.getDate() < parts[2])) age--;
     if (age >= 0) ageDisplay.textContent = t('ageYears', { age: age });
 }
 
-function setResumeActionStatus(message) {
-    var status = $('resumeActionStatus');
-    if (status) status.textContent = message;
-}
-
 function initResumeActions() {
-    var copyButton = document.querySelector('[data-copy-email]');
-    var copyResetTimer = null;
+    const copyButton = document.querySelector('[data-copy-email]');
+    const status = $('resumeActionStatus');
+    let copyResetTimer = null;
 
     if (copyButton) {
         copyButton.addEventListener('click', async function() {
-            var email = copyButton.dataset.copyEmail || '';
+            const email = copyButton.dataset.copyEmail || '';
             try {
                 await navigator.clipboard.writeText(email);
                 clearTimeout(copyResetTimer);
                 copyButton.classList.add('is-copied');
                 copyButton.setAttribute('aria-label', t('emailCopied'));
                 copyButton.title = t('copied');
-                setResumeActionStatus(t('emailCopiedStatus', { email: email }));
+                status.textContent = t('emailCopiedStatus', { email: email });
                 copyResetTimer = setTimeout(function() {
                     copyButton.classList.remove('is-copied');
                     copyButton.setAttribute('aria-label', t('copyEmail'));
                     copyButton.title = t('copyEmail');
                 }, 1800);
             } catch {
-                setResumeActionStatus(t('copyEmailFailed'));
+                status.textContent = t('copyEmailFailed');
                 copyButton.setAttribute('aria-label', t('copyEmailFailed'));
                 copyButton.title = t('copyFailed');
             }
@@ -171,15 +160,15 @@ function initResumeActions() {
 
 /* PAGE:home:START */
 function initAnnouncements() {
-    var banner = $('announcementBanner');
+    const banner = $('announcementBanner');
     if (!banner) return;
-    var slides = Array.from(banner.querySelectorAll('[data-announcement-slide]'));
-    var originalDots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
+    let slides = Array.from(banner.querySelectorAll('[data-announcement-slide]'));
+    const originalDots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
 
     slides = slides.filter(function(slide, index) {
-        var expiresAt = slide.dataset.expiresAt;
+        const expiresAt = slide.dataset.expiresAt;
         if (!expiresAt) return true;
-        var expired = new Date(expiresAt + 'T23:59:59').getTime() < Date.now();
+        const expired = new Date(expiresAt + 'T23:59:59').getTime() < Date.now();
         if (expired) {
             slide.remove();
             if (originalDots[index]) originalDots[index].remove();
@@ -192,22 +181,21 @@ function initAnnouncements() {
         return;
     }
 
-    var dots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
+    const dots = Array.from(banner.querySelectorAll('[data-announcement-index]'));
     dots.forEach(function(dot, index) {
         dot.dataset.announcementIndex = index;
         dot.setAttribute('aria-label', t('announcementIndex', { index: index + 1 }));
     });
 
-    var currentIndex = -1;
-    var rotationTimer = null;
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let currentIndex = -1;
+    let rotationTimer = null;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     function showAnnouncement(nextIndex, immediate) {
-        var normalizedIndex = (nextIndex + slides.length) % slides.length;
+        const normalizedIndex = (nextIndex + slides.length) % slides.length;
         if (normalizedIndex === currentIndex) return;
-        var previousSlide = currentIndex >= 0 ? slides[currentIndex] : null;
+        const previousSlide = currentIndex >= 0 ? slides[currentIndex] : null;
         if (previousSlide) {
-            previousSlide.classList.remove('is-active');
             previousSlide.setAttribute('aria-hidden', 'true');
             if (!immediate) {
                 previousSlide.classList.add('is-leaving');
@@ -219,11 +207,9 @@ function initAnnouncements() {
 
         currentIndex = normalizedIndex;
         slides[currentIndex].classList.remove('is-leaving');
-        slides[currentIndex].classList.add('is-active');
         slides[currentIndex].setAttribute('aria-hidden', 'false');
         dots.forEach(function(dot, index) {
-            var isActive = index === currentIndex;
-            dot.classList.toggle('is-active', isActive);
+            const isActive = index === currentIndex;
             dot.setAttribute('aria-pressed', isActive.toString());
         });
     }
@@ -242,7 +228,7 @@ function initAnnouncements() {
     }
 
     slides.forEach(function(slide) {
-        slide.classList.remove('is-active', 'is-leaving');
+        slide.classList.remove('is-leaving');
         slide.setAttribute('aria-hidden', 'true');
     });
     showAnnouncement(0, true);
@@ -269,21 +255,17 @@ function initAnnouncements() {
 /* PAGE:home:END */
 
 /* PAGE:bookmarks:START */
-function setCategoryExpanded(header, expanded) {
-    header.setAttribute('aria-expanded', expanded.toString());
-};
-
 function initBookmarkSearch() {
-    var input = $('bookmarkSearch');
-    var clearButton = $('bookmarkSearchClear');
-    var status = $('bookmarkSearchStatus');
-    var emptyState = $('bookmarkSearchEmpty');
-    var categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
-    var tagButtons = Array.from(document.querySelectorAll('[data-bookmark-tag]'));
-    var activeTag = '';
+    const input = $('bookmarkSearch');
+    const clearButton = $('bookmarkSearchClear');
+    const status = $('bookmarkSearchStatus');
+    const emptyState = $('bookmarkSearchEmpty');
+    const categories = Array.from(document.querySelectorAll('[data-bookmark-category]'));
+    const tagButtons = Array.from(document.querySelectorAll('[data-bookmark-tag]'));
+    let activeTag = '';
     categories.forEach(category => {
         const header = category.querySelector('.category-header');
-        header.addEventListener('click', () => setCategoryExpanded(header, header.getAttribute('aria-expanded') !== 'true'));
+        header.addEventListener('click', () => header.setAttribute('aria-expanded', String(header.getAttribute('aria-expanded') !== 'true')));
     });
     if (!input || !clearButton || !status || !emptyState || !categories.length) return;
 
@@ -291,44 +273,44 @@ function initBookmarkSearch() {
         node, text: (node.textContent + ' ' + node.dataset.bookmarkUrl).toLowerCase(),
         tags: new Set(Array.from(node.querySelectorAll('[data-bookmark-tag-value]'), tag => tag.dataset.bookmarkTagValue))
     }))]));
-    var totalCount = categories.reduce(function(total, category) {
+    const totalCount = categories.reduce(function(total, category) {
         return total + category.querySelectorAll('.bookmark-link').length;
     }, 0);
 
     function restoreCategory(category) {
-        var originalExpanded = category.dataset.searchExpanded;
+        const originalExpanded = category.dataset.searchExpanded;
         if (originalExpanded === undefined) return;
-        setCategoryExpanded(category.querySelector('.category-header'), originalExpanded === 'true');
+        category.querySelector('.category-header').setAttribute('aria-expanded', originalExpanded);
         delete category.dataset.searchExpanded;
     }
 
     function expandForSearch(category) {
-        var header = category.querySelector('.category-header');
+        const header = category.querySelector('.category-header');
         if (category.dataset.searchExpanded === undefined) {
             category.dataset.searchExpanded = header.getAttribute('aria-expanded') || 'false';
         }
-        setCategoryExpanded(header, true);
+        header.setAttribute('aria-expanded', 'true');
     }
 
     function filterBookmarks() {
-        var query = input.value.trim().toLowerCase();
-        var filterActive = Boolean(query || activeTag);
-        var visibleCount = 0;
+        const query = input.value.trim().toLowerCase();
+        const filterActive = Boolean(query || activeTag);
+        let visibleCount = 0;
 
         categories.forEach(function(category) {
-            var categoryName = (category.dataset.bookmarkCategory || '').toLowerCase();
-            var categoryMatches = Boolean(query) && categoryName.indexOf(query) !== -1;
-            var links = index.get(category);
-            var categoryCount = 0;
+            const categoryName = (category.dataset.bookmarkCategory || '').toLowerCase();
+            const categoryMatches = Boolean(query) && categoryName.indexOf(query) !== -1;
+            const links = index.get(category);
+            let categoryCount = 0;
 
             links.forEach(function(link) {
-                var matches = (!query || categoryMatches || link.text.includes(query)) && (!activeTag || link.tags.has(activeTag));
+                const matches = (!query || categoryMatches || link.text.includes(query)) && (!activeTag || link.tags.has(activeTag));
                 link.node.hidden = !matches;
                 if (matches) categoryCount++;
             });
 
             category.hidden = filterActive && categoryCount === 0;
-            var count = category.querySelector('.category-count');
+            const count = category.querySelector('.category-count');
             if (count) count.textContent = String(categoryCount);
             if (filterActive && categoryCount) expandForSearch(category);
             else if (!filterActive) restoreCategory(category);
@@ -359,8 +341,7 @@ function initBookmarkSearch() {
         button.addEventListener('click', function() {
             activeTag = (button.dataset.bookmarkTag || '').toLowerCase();
             tagButtons.forEach(function(item) {
-                var selected = item === button;
-                item.classList.toggle('is-active', selected);
+                const selected = item === button;
                 item.setAttribute('aria-pressed', selected.toString());
             });
             filterBookmarks();
@@ -369,24 +350,24 @@ function initBookmarkSearch() {
 }
 
 function initBookmarkChat() {
-    var searchInput = $('bookmarkSearch');
-    var chat = $('aiChat');
-    var title = $('aiChatTitle');
-    var closeButton = $('aiChatClose');
-    var form = $('aiChatForm');
-    var input = $('aiChatInput');
-    var sendButton = $('aiChatSend');
-    var messages = $('aiChatMessages');
+    const searchInput = $('bookmarkSearch');
+    const chat = $('aiChat');
+    const title = $('aiChatTitle');
+    const closeButton = $('aiChatClose');
+    const form = $('aiChatForm');
+    const input = $('aiChatInput');
+    const sendButton = $('aiChatSend');
+    const messages = $('aiChatMessages');
     if (!searchInput || !chat || !title || !closeButton || !form || !input || !sendButton || !messages) return;
 
-    var history = [];
-    var password = '';
-    var isSending = false;
-    var unlockRequestId = 0;
-    var chatSession = 0;
+    let history = [];
+    let password = '';
+    let isSending = false;
+    let unlockRequestId = 0;
+    let chatSession = 0;
 
     function addMessage(role, text) {
-        var message = document.createElement('div');
+        const message = document.createElement('div');
         message.className = 'ai-chat-message ai-chat-message-' + role;
         message.textContent = text;
         messages.appendChild(message);
@@ -418,8 +399,8 @@ function initBookmarkChat() {
     searchInput.addEventListener('keydown', function(event) {
         if (event.isComposing || event.key !== 'Enter' || !searchInput.value.trim()) return;
         event.preventDefault();
-        var submittedPassword = searchInput.value;
-        var requestId = ++unlockRequestId;
+        const submittedPassword = searchInput.value;
+        const requestId = ++unlockRequestId;
         fetch('/api/chat', {
             method: 'POST',
             signal: AbortSignal.timeout(30000),
@@ -448,12 +429,12 @@ function initBookmarkChat() {
 
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
-        var text = input.value.trim();
+        const text = input.value.trim();
         if (!text || isSending) return;
-        var session = chatSession;
+        const session = chatSession;
         input.value = '';
         addMessage('user', text);
-        var reply = addMessage('assistant', t('AI_CHAT_WAIT'));
+        const reply = addMessage('assistant', t('AI_CHAT_WAIT'));
         isSending = true;
         sendButton.disabled = true;
         try {

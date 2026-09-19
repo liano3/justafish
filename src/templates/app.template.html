@@ -25,12 +25,10 @@
         <main class="app-detail-main">
             <div class="app-detail-container{{APP_LAYOUT_CLASS}}">
                 <div class="app-detail-heading">
-                    <a class="app-detail-back" href="{{APPS_URL}}" aria-label="{{T_BACK_TO_APPS}}" title="{{T_BACK_TO_APPS}}">
+                    <a class="icon-button app-detail-back" href="{{APPS_URL}}" aria-label="{{T_BACK_TO_APPS}}" title="{{T_BACK_TO_APPS}}">
                         <svg aria-hidden="true"><use href="{{ICON_SPRITE_URL}}#chevron-left"></use></svg>
                     </a>
-                    <div class="app-detail-title">
-                        <h1>{{APP_TITLE}}</h1>
-                    </div>
+                    <h1>{{APP_TITLE}}</h1>
                 </div>
                 <section class="tool-body" aria-label="{{APP_TITLE}}">
                     {{APP_CONTENT}}

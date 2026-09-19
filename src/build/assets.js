@@ -64,9 +64,9 @@ function buildFrontendAssets(options) {
     return manifest;
 }
 
-function resolveBuiltAssetUrl(assetPath, locale) {
-    if (!assetPath) return '';
-    return `${locale === 'en' ? '../' : './'}${assetPath}`;
+function resolveBuiltAssetUrl(assetPath, locale, depth = 0) {
+    const levels = depth + (locale === 'en' ? 1 : 0);
+    return (levels ? '../'.repeat(levels) : './') + assetPath;
 }
 
 function copyStaticAssets(languageEnabled) {

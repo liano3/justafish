@@ -1,272 +1,150 @@
 function initRandomPicker() {
-    var optionsEditor = $('randomPickerOptions');
-    var addOptionButton = $('randomPickerAddOption');
-    var countInput = $('randomPickerCount');
-    var deduplicateInput = $('randomPickerDeduplicate');
-    var removeInput = $('randomPickerRemove');
-    var drawButton = $('randomPickerDraw');
-    var resetButton = $('randomPickerReset');
-    var resultDisplay = $('randomPickerResult');
-    var historyList = $('randomPickerHistory');
-    var message = $('randomPickerMessage');
-    var optionLabel = $('randomPickerOptionsLabel').textContent;
-    var optionPlaceholder = optionsEditor.getAttribute('data-placeholder');
-    var history = [];
-    var spinTimer;
-    var revealTimer;
-    var isDrawing = false;
+    const optionsEditor = $('randomPickerOptions');
+    const markers = $('randomPickerMarkers');
+    const countInput = $('randomPickerCount');
+    const deduplicateButton = $('randomPickerDeduplicate');
+    const removeInput = $('randomPickerRemove');
+    const drawButton = $('randomPickerDraw');
+    const resultDisplay = $('randomPickerResult');
+    const historyList = $('randomPickerHistory');
+    const message = $('randomPickerMessage');
+    let history = readStored('randomPickerHistory', [], Array.isArray)
+        .filter(entry => Array.isArray(entry) && entry.length && entry.every(value => typeof value === 'string'))
+        .slice(0, 5);
+    let spinTimer;
+    let revealTimer;
 
-    function optionRows() {
-        return Array.from(optionsEditor.querySelectorAll('.random-picker-option'));
+    function options() {
+        return optionsEditor.value.split('\n').map(value => value.trim());
     }
 
-    function updateRowLabels() {
-        optionRows().forEach(function(row, index) {
-            var input = row.querySelector('input');
-            input.setAttribute('aria-label', optionLabel + ' ' + (index + 1));
-            input.placeholder = index === 0 ? optionPlaceholder : '';
-        });
+    function syncScroll() {
+        markers.style.transform = `translateY(${-optionsEditor.scrollTop}px)`;
+    }
+
+    function renderMarkers() {
+        // Normalize pasted line separators so each marker matches one native text line.
+        const normalized = optionsEditor.value.replace(/\r\n|[\r\u2028\u2029]/g, '\n');
+        if (normalized !== optionsEditor.value) {
+            const { selectionStart, selectionEnd } = optionsEditor;
+            optionsEditor.value = normalized;
+            optionsEditor.setSelectionRange(selectionStart, selectionEnd);
+        }
+        markers.replaceChildren(...options().map(value => {
+            const marker = document.createElement('span');
+            marker.className = 'random-picker-marker';
+            marker.toggleAttribute('data-option', Boolean(value));
+            return marker;
+        }));
+        syncScroll();
     }
 
     function saveOptions() {
-        var values = optionRows().map(function(row) {
-            return row.querySelector('input').value.trim();
-        }).filter(Boolean);
-        localStorage.setItem('randomPickerOptions', values.join('\n'));
-        localStorage.setItem('randomPickerDeduplicate', deduplicateInput.checked.toString());
-        localStorage.setItem('randomPickerRemove', removeInput.checked.toString());
-    }
-
-    function insertRowAfter(row) {
-        var nextRow = createRow('');
-        row.after(nextRow);
-        updateRowLabels();
-        nextRow.querySelector('input').focus();
-    }
-
-    function createRow(value) {
-        var row = document.createElement('div');
-        row.className = 'random-picker-option';
-        var input = document.createElement('input');
-        input.className = 'field-input random-picker-option-input';
-        input.type = 'text';
-        input.value = value || '';
-        input.autocomplete = 'off';
-        input.enterKeyHint = 'next';
-
-        input.addEventListener('input', saveOptions);
-        input.addEventListener('keydown', function(event) {
-            if (event.isComposing) return;
-            var rows = optionRows();
-            var rowIndex = rows.indexOf(row);
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                insertRowAfter(row);
-                return;
-            }
-            if (event.key === 'Backspace' && !input.value && rows.length > 1) {
-                event.preventDefault();
-                var previousInput = rows[rowIndex > 0 ? rowIndex - 1 : 1].querySelector('input');
-                row.remove();
-                updateRowLabels();
-                saveOptions();
-                previousInput.focus();
-                previousInput.setSelectionRange(previousInput.value.length, previousInput.value.length);
-                return;
-            }
-            if (event.key === 'ArrowUp' && rowIndex > 0) {
-                event.preventDefault();
-                rows[rowIndex - 1].querySelector('input').focus();
-            } else if (event.key === 'ArrowDown' && rowIndex < rows.length - 1) {
-                event.preventDefault();
-                rows[rowIndex + 1].querySelector('input').focus();
-            }
-        });
-        input.addEventListener('paste', function(event) {
-            const text = event.clipboardData.getData('text');
-            if (!text.includes('\n')) return;
-            event.preventDefault();
-            insertPastedRows(input, row, text);
-        });
-
-        row.appendChild(input);
-        return row;
-    }
-
-    function insertPastedRows(input, row, text) {
-        var values = text.split(/\r?\n/).map(function(item) { return item.trim(); }).filter(Boolean);
-        if (!values.length) return;
-        input.value = values.shift();
-        var insertAfter = row;
-        values.forEach(function(item) {
-            var nextRow = createRow(item);
-            insertAfter.after(nextRow);
-            insertAfter = nextRow;
-        });
-        updateRowLabels();
-        saveOptions();
-        insertAfter.querySelector('input').focus();
-    }
-
-    function renderRows(values) {
-        optionsEditor.innerHTML = '';
-        (values.length ? values : ['']).forEach(function(value) {
-            optionsEditor.appendChild(createRow(value));
-        });
-        updateRowLabels();
-    }
-
-    function allEntries() {
-        return optionRows().map(function(row) {
-            return { row: row, value: row.querySelector('input').value.trim() };
-        }).filter(function(entry) { return Boolean(entry.value); });
-    }
-
-    function eligibleEntries(entries) {
-        if (!deduplicateInput.checked) return entries;
-        var seen = new Set();
-        return entries.filter(function(entry) {
-            if (seen.has(entry.value)) return false;
-            seen.add(entry.value);
-            return true;
-        });
-    }
-
-    function saveHistory() {
-        localStorage.setItem('randomPickerHistory', JSON.stringify(history));
+        localStorage.setItem('randomPickerOptions', optionsEditor.value);
+        localStorage.setItem('randomPickerRemove', String(removeInput.checked));
     }
 
     function renderHistory() {
-        historyList.innerHTML = '';
-        if (!history.length) {
-            var empty = document.createElement('li');
-            empty.className = 'random-picker-history-empty';
-            empty.textContent = t('randomPickerHistoryEmpty');
-            historyList.appendChild(empty);
-            return;
-        }
-        history.forEach(function(entry) {
-            var item = document.createElement('li');
-            item.textContent = entry.join(' · ');
+        historyList.replaceChildren();
+        historyList.classList.toggle('empty-state', !history.length);
+        (history.length ? history.map(entry => entry.join(' · ')) : [t('randomPickerHistoryEmpty')]).forEach(text => {
+            const item = document.createElement('li');
+            item.textContent = text;
             historyList.appendChild(item);
         });
+        localStorage.setItem('randomPickerHistory', JSON.stringify(history));
     }
 
-    function setInputsDisabled(disabled) {
-        [addOptionButton, countInput, deduplicateInput, removeInput, drawButton].forEach(control => { control.disabled = disabled; });
-        optionRows().forEach(function(row) {
-            row.querySelector('input').disabled = disabled;
-        });
+    function setDrawing(drawing) {
+        [countInput, deduplicateButton, removeInput, drawButton].forEach(control => { control.disabled = drawing; });
+        optionsEditor.readOnly = drawing;
+        optionsEditor.setAttribute('aria-busy', String(drawing));
     }
 
-    function clearAnimation() {
+    function stopDrawing() {
         clearInterval(spinTimer);
         clearTimeout(revealTimer);
-        isDrawing = false;
-        setInputsDisabled(false);
-        optionRows().forEach(function(row) { row.classList.remove('is-active'); });
-    }
-
-    function animateSelection(entries, selectedEntries, onComplete) {
-        clearAnimation();
-        isDrawing = true;
-        setInputsDisabled(true);
-        message.classList.remove('is-error');
-        message.textContent = t('randomPickerDrawing');
-        var animationRows = entries.map(function(entry) { return entry.row; });
-        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        animationRows.forEach(function(row) { row.classList.remove('is-selected'); });
-
-        if (!reduceMotion) {
-            var position = 0;
-            spinTimer = setInterval(function() {
-                animationRows.forEach(row => row.classList.remove('is-active'));
-                animationRows[position].classList.add('is-active');
-                position = (position + 1) % animationRows.length;
-            }, 65);
-        }
-        revealTimer = setTimeout(function() {
-            clearAnimation();
-            selectedEntries.forEach(entry => entry.row.classList.add('is-selected'));
-            message.textContent = t('randomPickerDone');
-            onComplete();
-        }, reduceMotion ? 0 : 900);
+        setDrawing(false);
     }
 
     function draw() {
-        if (isDrawing) return;
-        var entries = allEntries();
-        var eligible = eligibleEntries(entries);
-        var requested = Math.max(1, Math.min(10, parseInt(countInput.value) || 1));
+        if (drawButton.disabled) return;
+        const entries = options().map((value, line) => ({ value, line })).filter(entry => entry.value);
+        const requested = Math.max(1, Math.min(10, parseInt(countInput.value) || 1));
         countInput.value = requested;
-        message.textContent = '';
         message.classList.remove('is-error');
-        if (!eligible.length) {
+        if (!entries.length || requested > entries.length) {
             message.classList.add('is-error');
-            message.textContent = t('randomPickerEmpty');
-            optionRows()[0].querySelector('input').focus();
-            return;
-        }
-        if (requested > eligible.length) {
-            message.classList.add('is-error');
-            message.textContent = t('randomPickerCount', { count: eligible.length });
-            countInput.focus();
+            message.textContent = t(entries.length ? 'randomPickerCount' : 'randomPickerEmpty', { count: entries.length });
+            (entries.length ? countInput : optionsEditor).focus();
             return;
         }
 
-        var selectedEntries = shuffle(eligible).slice(0, requested);
-        var selected = selectedEntries.map(function(entry) { return entry.value; });
+        // Indices preserve independently weighted duplicates until the user removes them.
+        const selectedEntries = shuffle(entries).slice(0, requested);
+        const selectedLines = new Set(selectedEntries.map(entry => entry.line));
+        const selected = selectedEntries.map(entry => entry.value);
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        renderMarkers();
+        const rows = Array.from(markers.children);
+        setDrawing(true);
         resultDisplay.textContent = '…';
-        animateSelection(entries, selectedEntries, function() {
-            resultDisplay.innerHTML = '';
-            selected.forEach(function(value) {
-                var item = document.createElement('strong');
+        message.textContent = t('randomPickerDrawing');
+        if (!reduceMotion) {
+            let position = 0;
+            spinTimer = setInterval(() => {
+                const line = entries[position].line;
+                rows.forEach((row, index) => row.classList.toggle('is-active', index === line));
+                position = (position + 1) % entries.length;
+            }, 65);
+        }
+        revealTimer = setTimeout(() => {
+            stopDrawing();
+            rows.forEach((row, index) => {
+                row.classList.remove('is-active');
+                row.classList.toggle('is-selected', selectedLines.has(index));
+            });
+            resultDisplay.replaceChildren();
+            selected.forEach(value => {
+                const item = document.createElement('strong');
                 item.textContent = value;
                 resultDisplay.appendChild(item);
             });
-            history.unshift(selected);
-            history = history.slice(0, 5);
-            saveHistory();
+            message.textContent = t('randomPickerDone');
+            history = [selected, ...history].slice(0, 5);
             renderHistory();
-
             if (removeInput.checked) {
-                var selectedValues = new Set(selected);
-                var removed = deduplicateInput.checked
-                    ? entries.filter(entry => selectedValues.has(entry.value))
-                    : selectedEntries;
-                removed.forEach(function(entry) { entry.row.remove(); });
-                if (!optionRows().length) optionsEditor.appendChild(createRow(''));
-                updateRowLabels();
+                optionsEditor.value = entries.filter(entry => !selectedLines.has(entry.line)).map(entry => entry.value).join('\n');
+                renderMarkers();
             }
             saveOptions();
-        });
+        }, reduceMotion ? 0 : 900);
     }
 
-    function reset() {
-        clearAnimation();
-        renderRows([]);
+    optionsEditor.value = localStorage.getItem('randomPickerOptions') || '';
+    removeInput.checked = readStored('randomPickerRemove', false, value => typeof value === 'boolean');
+    optionsEditor.addEventListener('input', () => { renderMarkers(); saveOptions(); });
+    optionsEditor.addEventListener('scroll', syncScroll, { passive: true });
+    removeInput.addEventListener('change', saveOptions);
+    deduplicateButton.addEventListener('click', () => {
+        optionsEditor.value = Array.from(new Set(options().filter(Boolean))).join('\n');
+        renderMarkers();
+        saveOptions();
+    });
+    drawButton.addEventListener('click', draw);
+    $('randomPickerReset').addEventListener('click', () => {
+        stopDrawing();
+        optionsEditor.value = '';
+        renderMarkers();
         countInput.value = '1';
         resultDisplay.textContent = '—';
         message.textContent = '';
         message.classList.remove('is-error');
         history = [];
         saveOptions();
-        saveHistory();
         renderHistory();
-        optionRows()[0].querySelector('input').focus();
-    }
-
-    var storedOptions = (localStorage.getItem('randomPickerOptions') || '').split(/\r?\n/).map(function(item) { return item.trim(); }).filter(Boolean);
-    deduplicateInput.checked = localStorage.getItem('randomPickerDeduplicate') !== 'false';
-    removeInput.checked = localStorage.getItem('randomPickerRemove') === 'true';
-    renderRows(storedOptions);
-    history = JSON.parse(localStorage.getItem('randomPickerHistory') || '[]');
-    deduplicateInput.addEventListener('change', saveOptions);
-    removeInput.addEventListener('change', saveOptions);
-    addOptionButton.addEventListener('click', function() {
-        insertRowAfter(optionRows()[optionRows().length - 1]);
+        optionsEditor.focus();
     });
-    drawButton.addEventListener('click', draw);
-    resetButton.addEventListener('click', reset);
+    renderMarkers();
     renderHistory();
 }

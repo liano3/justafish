@@ -1,17 +1,10 @@
 .schulte-grid-wrapper { position: relative; max-width: 384px; margin: 0 auto; }
 .schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 384px; margin: 0 auto; }
 .schulte-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); background: var(--bg-secondary); font-size: var(--text-xl); font-weight: 600; cursor: pointer; user-select: none; transition: color var(--transition), background-color var(--transition), border-color var(--transition), transform var(--transition); }
-.schulte-cell:hover { background: var(--bg-tertiary); }
+@media (hover: hover) { .schulte-cell:not(:disabled):hover { background: var(--bg-tertiary); } }
 .schulte-cell.correct { border-color: var(--success); color: var(--success); background: color-mix(in srgb, var(--success) 16%, transparent); transform: scale(0.95); }
 .schulte-cell.wrong { border-color: var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); animation: schulteShake 0.3s ease; }
 .schulte-overlay { position: absolute; inset: 0; z-index: 10; width: 100%; display: flex; align-items: center; justify-content: center; border: none; border-radius: var(--radius-sm); color: var(--text); background: color-mix(in srgb, var(--surface) 65%, transparent); font: inherit; font-weight: 600; cursor: pointer; backdrop-filter: blur(6px); }
 .schulte-cell:disabled { cursor: default; }
-.schulte-info { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
-.schulte-stat { text-align: center; }
-.schulte-stat-value { color: var(--text); font-size: var(--text-xl); font-weight: 700; }
-.schulte-stat-label { color: var(--text-muted); font-size: var(--text-sm); }
-.schulte-status { min-height: 1.6em; margin-bottom: 16px; text-align: center; color: var(--primary); font-size: var(--text-base); font-weight: 600; }
-.schulte-status:empty { display: none; }
-.schulte-controls { display: flex; justify-content: center; margin-top: 20px; }
 
 @keyframes schulteShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
